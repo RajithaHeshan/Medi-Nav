@@ -45,6 +45,21 @@
 			path = "Medi-NavUITests";
 			sourceTree = "<group>";
 		};
+		390C25D82F40351F005906E6 /* Core */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Core;
+			sourceTree = "<group>";
+		};
+		390C25DB2F403AFC005906E6 /* DesignSystem */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		390C25DF2F403B61005906E6 /* Features */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Features;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,10 +90,13 @@
 		390C25992F40226F005906E6 = {
 			isa = PBXGroup;
 			children = (
+				390C25D82F40351F005906E6 /* Core */,
 				390C25A42F40226F005906E6 /* Medi-Nav */,
 				390C25B22F402271005906E6 /* Medi-NavTests */,
 				390C25BC2F402271005906E6 /* Medi-NavUITests */,
 				390C25A32F40226F005906E6 /* Products */,
+				390C25DB2F403AFC005906E6 /* DesignSystem */,
+				390C25DF2F403B61005906E6 /* Features */,
 			);
 			sourceTree = "<group>";
 		};
@@ -109,6 +127,9 @@
 			);
 			fileSystemSynchronizedGroups = (
 				390C25A42F40226F005906E6 /* Medi-Nav */,
+				390C25D82F40351F005906E6 /* Core */,
+				390C25DB2F403AFC005906E6 /* DesignSystem */,
+				390C25DF2F403B61005906E6 /* Features */,
 			);
 			name = "Medi-Nav";
 			packageProductDependencies = (
