@@ -171,4 +171,5 @@ struct EmergencyOptionRow: View {
 
 #Preview {
     EmergencyView()
+    CustomTabBar(selectedTab: .constant(.home))
 }
