@@ -21,27 +21,19 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottomTrailing) {
-                // Background Color
-                Color(uiColor: .systemGroupedBackground)
-                    .ignoresSafeArea()
                 
+                // 1. Scrollable Content
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
-                        
-                        // 1. Header Section
                         headerSection
-                        
-                        // 2. Hero Card (Updated with Queue Info)
                         heroCardSection
                         
-                        // 3. Grid Menu
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                             ForEach(menuOptions) { option in
                                 GridCard(option: option)
                             }
                         }
                         
-                        // 4. Visit Progress
                         VStack(alignment: .leading, spacing: 20) {
                             Text("Visit Progress")
                                 .font(.title3)
@@ -57,12 +49,13 @@ struct HomeView: View {
                         .background(Color(uiColor: .systemBackground))
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                         
-                        Spacer(minLength: 80) // Bottom padding for FAB
+                        // SPACER FIX: Ensures last item scrolls clearly past the Floating Button
+                        Spacer(minLength: 120)
                     }
                     .padding()
                 }
                 
-                // 5. Floating Action Button (Emergency)
+                // 2. Floating Emergency Button
                 Button {
                     print("Emergency tapped")
                 } label: {
@@ -75,16 +68,17 @@ struct HomeView: View {
                     .background(Color.red)
                     .foregroundStyle(.white)
                     .clipShape(Capsule())
-                    .shadow(radius: 10)
+                    .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
                 }
                 .padding(.trailing, 20)
-                .padding(.bottom, 20)
+                // PADDING FIX: Lifts button 90pts to clear the Custom Tab Bar
+                .padding(.bottom, 90)
             }
+            .background(Color(uiColor: .systemGroupedBackground))
         }
     }
     
     // MARK: - Subviews
-    
     private var headerSection: some View {
         HStack {
             Circle()
@@ -100,20 +94,15 @@ struct HomeView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            
             Spacer()
-            
             Image(systemName: "bell.badge.fill")
                 .font(.title2)
                 .foregroundStyle(Color(uiColor: .label))
         }
     }
     
-    // UPDATED: Hero Card with Queue & Time
     private var heroCardSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            
-            // A. Doctor & Location Info
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("DR. Wilson")
@@ -124,7 +113,6 @@ struct HomeView: View {
                         .opacity(0.9)
                 }
                 Spacer()
-                // Live Status Badge
                 Text("In Progress")
                     .font(.caption2)
                     .fontWeight(.bold)
@@ -135,98 +123,65 @@ struct HomeView: View {
                     .clipShape(Capsule())
             }
             
-            // B. Queue Status Container (The White Box)
             HStack(spacing: 0) {
-                // Queue Position
                 HStack(spacing: 12) {
                     ZStack {
-                        Circle()
-                            .fill(Color.teal.opacity(0.1))
-                            .frame(width: 40, height: 40)
-                        Image(systemName: "person.3.fill")
-                            .foregroundStyle(.teal)
+                        Circle().fill(Color.teal.opacity(0.1)).frame(width: 40, height: 40)
+                        Image(systemName: "person.3.fill").foregroundStyle(.teal)
                     }
-                    
                     VStack(alignment: .leading, spacing: 0) {
-                        Text("Queue No")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text("05")
-                            .font(.title3)
-                            .bold()
-                            .foregroundStyle(Color(uiColor: .label))
+                        Text("Queue No").font(.caption).foregroundStyle(.secondary)
+                        Text("05").font(.title3).bold().foregroundStyle(Color(uiColor: .label))
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
-                // Vertical Divider
-                Rectangle()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(width: 1, height: 35)
+                Rectangle().fill(Color.gray.opacity(0.2)).frame(width: 1, height: 35)
                 
-                // Estimated Time
                 HStack(spacing: 12) {
                     ZStack {
-                        Circle()
-                            .fill(Color.orange.opacity(0.1))
-                            .frame(width: 40, height: 40)
-                        Image(systemName: "hourglass")
-                            .foregroundStyle(.orange)
+                        Circle().fill(Color.orange.opacity(0.1)).frame(width: 40, height: 40)
+                        Image(systemName: "hourglass").foregroundStyle(.orange)
                     }
-                    
                     VStack(alignment: .leading, spacing: 0) {
-                        Text("Est. Wait")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text("15 mins")
-                            .font(.title3)
-                            .bold()
-                            .foregroundStyle(Color(uiColor: .label))
+                        Text("Est. Wait").font(.caption).foregroundStyle(.secondary)
+                        Text("15 mins").font(.title3).bold().foregroundStyle(Color(uiColor: .label))
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 16)
             }
             .padding(12)
-            .background(Color(uiColor: .systemBackground)) // White/Dark mode adaptable
+            .background(Color(uiColor: .systemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 16))
             
-            Divider()
-                .background(Color.white.opacity(0.3))
+            Divider().background(Color.white.opacity(0.3))
             
-            // C. Footer Action
             HStack {
-                Text("Please proceed to waiting area")
-                    .font(.caption)
-                    .opacity(0.9)
+                Text("Please proceed to waiting area").font(.caption).opacity(0.9)
                 Spacer()
-                
-                // Map Navigation Button
-                Button {
-                    // Action: Navigate to Map
-                } label: {
-                    HStack(spacing: 4) {
-                        Text("View Map")
-                        Image(systemName: "arrow.right")
-                    }
-                    .font(.caption)
-                    .bold()
-                }
-                .buttonStyle(.plain) // Keeps the text color white
+                Button { } label: {
+                    HStack(spacing: 4) { Text("View Map"); Image(systemName: "arrow.right") }
+                        .font(.caption).bold()
+                }.buttonStyle(.plain)
             }
         }
         .padding(20)
         .foregroundStyle(.white)
-        .background(
-            LinearGradient(colors: [Color.teal, Color.green], startPoint: .topLeading, endPoint: .bottomTrailing)
-        )
+        .background(LinearGradient(colors: [Color.teal, Color.green], startPoint: .topLeading, endPoint: .bottomTrailing))
         .clipShape(RoundedRectangle(cornerRadius: 24))
-        // Modern Soft Shadow
         .shadow(color: .green.opacity(0.3), radius: 15, x: 0, y: 8)
     }
 }
 
-// MARK: - Preview
+// MARK: - SENIOR DEVELOPER PREVIEW
+// This validates that your component architecture works!
 #Preview {
-    HomeView()
+    ZStack(alignment: .bottom) {
+        HomeView()
+        
+        // We use your REAL component here, not fake code.
+        // If this works, your folder structure is perfect.
+        CustomTabBar(selectedTab: .constant(.home))
+    }
 }
