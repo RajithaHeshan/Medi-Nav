@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 
-
 struct VisitStep: Identifiable {
     let id = UUID()
     let title: String
