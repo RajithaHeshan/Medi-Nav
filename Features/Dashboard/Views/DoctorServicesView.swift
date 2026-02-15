@@ -1,7 +1,8 @@
 
 import SwiftUI
+import Combine
 
-// 1. Data Model for the Service Carousel
+
 struct ServiceHeroItem: Identifiable {
     let id = UUID()
     let title: String
@@ -13,30 +14,32 @@ struct ServiceHeroItem: Identifiable {
 struct DoctorServicesView: View {
     @Environment(\.dismiss) var dismiss
     
-    // 2. Data for the 4 Cards
+    
+    @State private var currentPage = 0
+    
+   
+    private let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
+    
+  
     private let heroCards = [
-        // Card 1: Booking
         ServiceHeroItem(
             title: "Please Book Your Doctor",
             subtitle: "Schedule a Visit With our top Specialist",
             buttonText: "Book Now",
             icon: "person.3.fill"
         ),
-        // Card 2: Booking History
         ServiceHeroItem(
             title: "Please view Doctor booking history",
             subtitle: "View all the doctor booking history",
             buttonText: "View Now",
             icon: "clock.arrow.circlepath"
         ),
-        // Card 3: Consultation
         ServiceHeroItem(
             title: "Please meet your doctor",
             subtitle: "Meet doctor and get consulting and prescription",
             buttonText: "Get Consulting",
             icon: "stethoscope"
         ),
-        // Card 4: Consulting History
         ServiceHeroItem(
             title: "View your consulting record",
             subtitle: "Check all the past records",
@@ -45,7 +48,6 @@ struct DoctorServicesView: View {
         )
     ]
     
-    // Grid Configuration
     private let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
@@ -58,7 +60,7 @@ struct DoctorServicesView: View {
             
             VStack(spacing: 24) {
                 
-                // Header
+               
                 headerSection
                 
                 ScrollView(showsIndicators: false) {
@@ -71,23 +73,30 @@ struct DoctorServicesView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 4)
                         
-                        // MARK: - 3. NEW SWIPEABLE CAROUSEL
-                        TabView {
-                            ForEach(heroCards) { card in
-                                ServiceHeroCard(card: card)
-                                    .padding(.horizontal) // Side padding for the card inside
+                        
+                        TabView(selection: $currentPage) {
+                            ForEach(0..<heroCards.count, id: \.self) { index in
+                                ServiceHeroCard(card: heroCards[index])
+                                    .padding(.horizontal)
+                                    .tag(index) // Essential for auto-scrolling
                             }
                         }
                         .tabViewStyle(.page(indexDisplayMode: .always))
-                        .frame(height: 240) // Height for card + dots
+                        .frame(height: 240)
                         .indexViewStyle(.page(backgroundDisplayMode: .interactive))
                         .onAppear {
-                            // Customize Dot Colors to match the Green Theme
                             UIPageControl.appearance().currentPageIndicatorTintColor = .systemTeal
                             UIPageControl.appearance().pageIndicatorTintColor = .systemGray4
                         }
                         
-                        // Grid Menu (Kept as requested)
+                        .onReceive(timer) { _ in
+                            withAnimation(.spring()) {
+                                // Loop: 0 -> 1 -> 2 -> 3 -> 0
+                                currentPage = (currentPage + 1) % heroCards.count
+                            }
+                        }
+                        
+                       
                         LazyVGrid(columns: columns, spacing: 16) {
                             ServiceGridItem(title: "Doctors", icon: "person.3.fill", color: .blue)
                             ServiceGridItem(title: "Booking History", icon: "clock.arrow.circlepath", color: .orange)
@@ -105,7 +114,7 @@ struct DoctorServicesView: View {
         .navigationBarHidden(true)
     }
     
-    // MARK: - Header
+    
     private var headerSection: some View {
         HStack {
             Button {
@@ -132,7 +141,8 @@ struct DoctorServicesView: View {
     }
 }
 
-// MARK: - 4. Reusable Hero Card Component
+// MARK: - Reusable Components
+
 struct ServiceHeroCard: View {
     let card: ServiceHeroItem
     
@@ -143,7 +153,7 @@ struct ServiceHeroCard: View {
                     .font(.title3)
                     .bold()
                     .foregroundStyle(.white)
-                    .fixedSize(horizontal: false, vertical: true) // Wraps text if long
+                    .fixedSize(horizontal: false, vertical: true)
                 
                 Text(card.subtitle)
                     .font(.caption)
@@ -152,7 +162,6 @@ struct ServiceHeroCard: View {
                     .lineLimit(2)
                 
                 Button {
-                    // Future Action
                     print("Tapped: \(card.buttonText)")
                 } label: {
                     Text(card.buttonText)
@@ -168,7 +177,6 @@ struct ServiceHeroCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
-            // Icon / Image
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.white.opacity(0.2))
@@ -180,7 +188,6 @@ struct ServiceHeroCard: View {
             }
         }
         .padding(24)
-        // SAME COLOR AND GRADIENT AS REQUESTED
         .background(
             LinearGradient(colors: [Color.teal, Color.green], startPoint: .topLeading, endPoint: .bottomTrailing)
         )
@@ -189,7 +196,6 @@ struct ServiceHeroCard: View {
     }
 }
 
-// MARK: - Grid Item Component (Kept same)
 struct ServiceGridItem: View {
     let title: String
     let icon: String
@@ -197,7 +203,7 @@ struct ServiceGridItem: View {
     
     var body: some View {
         Button {
-            
+            // Action
         } label: {
             VStack(spacing: 16) {
                 ZStack {
