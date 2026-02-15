@@ -1,7 +1,7 @@
+
 import SwiftUI
 
-
-struct Doctor: Identifiable {
+struct Doctor: Identifiable, Hashable {
     let id = UUID()
     let name: String
     let specialty: String
@@ -17,14 +17,17 @@ struct Doctor: Identifiable {
 
 struct FindDoctorView: View {
     @Environment(\.dismiss) var dismiss
-    @State private var searchText = ""
     
-  
+    
+    @State private var searchText = ""
     @State private var selectedCategory = "All"
     
-    private let categories = ["All", "Cardiology", "Dentist", "Neurology"]
+   
+    @State private var selectedDoctor: Doctor?
     
    
+    private let categories = ["All", "Cardiology", "Dentist", "Neurology"]
+    
     private let doctors = [
         Doctor(
             name: "Dr. Sarah Jenkins",
@@ -72,24 +75,23 @@ struct FindDoctorView: View {
         )
     ]
     
- 
+    // MARK: - Filter Logic
     var filteredDoctors: [Doctor] {
         if selectedCategory == "All" {
             return doctors
         } else {
             return doctors.filter { doctor in
-               
                 if selectedCategory == "Cardiology" {
                     return doctor.specialty == "Cardiologist"
                 } else if selectedCategory == "Neurology" {
                     return doctor.specialty == "Neurologist"
                 } else {
-                   
                     return doctor.specialty == selectedCategory
                 }
             }
         }
     }
+    
     
     var body: some View {
         NavigationStack {
@@ -119,24 +121,19 @@ struct FindDoctorView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 16)
                 
-               
+           
                 ScrollView {
                     VStack(spacing: 0) {
-                        
-                        
                         ForEach(filteredDoctors) { doctor in
-                            DoctorRowItem(doctor: doctor)
+                            
+                            // 🔴 Trigger Action
+                            DoctorRowItem(doctor: doctor) {
+                                if doctor.isBookable {
+                                    selectedDoctor = doctor
+                                }
+                            }
+                            
                             Divider().padding(.leading, 80)
-                        }
-                        
-                       
-                        if filteredDoctors.isEmpty {
-                            ContentUnavailableView(
-                                "No Doctors Found",
-                                systemImage: "stethoscope",
-                                description: Text("No specialists available in \(selectedCategory).")
-                            )
-                            .padding(.top, 40)
                         }
                     }
                 }
@@ -145,13 +142,19 @@ struct FindDoctorView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button { dismiss() } label: {
-                        Image(systemName: "chevron.left").bold()
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .bold()
                     }
                 }
             }
-           
-            .animation(.easeInOut, value: selectedCategory)
+            
+            .navigationDestination(item: $selectedDoctor) { doctor in
+                DoctorBookingView(doctor: doctor)
+                    .navigationBarBackButtonHidden(true)
+            }
         }
     }
 }
@@ -159,6 +162,7 @@ struct FindDoctorView: View {
 
 struct DoctorRowItem: View {
     let doctor: Doctor
+    var onBook: () -> Void
     
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
@@ -169,7 +173,6 @@ struct DoctorRowItem: View {
                     .fill(Color(uiColor: .systemGray6))
                     .frame(width: 60, height: 60)
                 
-               
                 Image(doctor.image)
                     .resizable()
                     .scaledToFill()
@@ -177,7 +180,7 @@ struct DoctorRowItem: View {
                     .clipShape(Circle())
             }
             
-            
+            // Info
             VStack(alignment: .leading, spacing: 4) {
                 Text(doctor.name)
                     .font(.headline)
@@ -186,7 +189,6 @@ struct DoctorRowItem: View {
                 Text(doctor.specialty)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                
                 
                 HStack(spacing: 4) {
                     Image(systemName: "circle.fill")
@@ -206,8 +208,8 @@ struct DoctorRowItem: View {
             
             Spacer()
             
-            
-            Button { } label: {
+            // Action Button
+            Button(action: onBook) {
                 Text(doctor.isBookable ? "Book" : "Wait")
                     .font(.subheadline)
                     .fontWeight(.semibold)

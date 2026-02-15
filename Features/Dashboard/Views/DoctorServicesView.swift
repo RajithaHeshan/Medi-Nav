@@ -171,4 +171,7 @@ struct ServiceGridItem: View {
 
 #Preview {
     DoctorServicesView()
+    CustomTabBar(selectedTab: .constant(.home))
 }
+
+
