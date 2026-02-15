@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 
@@ -25,10 +24,50 @@ struct FindDoctorView: View {
     
 
     private let doctors = [
-        Doctor(name: "Dr. Sarah Jenkins", specialty: "Cardiologist", rating: 4.9, reviewCount: 120, fee: 150, image: "person.fill", status: "Available Today", statusColor: .green, isBookable: true),
-        Doctor(name: "Dr. Mike Ross", specialty: "Neurologist", rating: 4.8, reviewCount: 98, fee: 180, image: "person.fill", status: "Available Today", statusColor: .green, isBookable: true),
-        Doctor(name: "Dr. Emily Clark", specialty: "Dentist", rating: 4.7, reviewCount: 65, fee: 120, image: "person.fill", status: "Available Today", statusColor: .green, isBookable: true),
-        Doctor(name: "Dr. John Doe", specialty: "Cardiologist", rating: 4.9, reviewCount: 120, fee: 150, image: "person.fill", status: "Next: Tue", statusColor: .gray, isBookable: false)
+        Doctor(
+            name: "Dr. Sarah Jenkins",
+            specialty: "Cardiologist",
+            rating: 4.9,
+            reviewCount: 120,
+            fee: 150,
+            image: "doctor1",
+            status: "Available Today",
+            statusColor: .green,
+            isBookable: true
+        ),
+        Doctor(
+            name: "Dr. Mike Ross",
+            specialty: "Neurologist",
+            rating: 4.8,
+            reviewCount: 98,
+            fee: 180,
+            image: "doctor2",
+            status: "Available Today",
+            statusColor: .green,
+            isBookable: true
+        ),
+        Doctor(
+            name: "Dr. Emily Clark",
+            specialty: "Dentist",
+            rating: 4.7,
+            reviewCount: 65,
+            fee: 120,
+            image: "Image (2)",
+            status: "Available Today",
+            statusColor: .green,
+            isBookable: true
+        ),
+        Doctor(
+            name: "Dr. John Doe",
+            specialty: "Cardiologist",
+            rating: 4.9,
+            reviewCount: 120,
+            fee: 150,
+            image: "Image (3)",
+            status: "Next: Tue",
+            statusColor: .gray,
+            isBookable: false
+        )
     ]
     
     var body: some View {
@@ -49,7 +88,7 @@ struct FindDoctorView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 10)
                 
-                
+              
                 Picker("Category", selection: $selectedCategory) {
                     ForEach(categories, id: \.self) { category in
                         Text(category).tag(category)
@@ -89,19 +128,21 @@ struct DoctorRowItem: View {
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
             
-            // Avatar
+            // 🔴 UPDATED AVATAR LOGIC
             ZStack {
                 Circle()
                     .fill(Color(uiColor: .systemGray6))
                     .frame(width: 60, height: 60)
-                Image(systemName: doctor.image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 30, height: 30)
-                    .foregroundStyle(.gray)
+                
+                // We use Image(doctor.image) to load from Assets
+                Image(doctor.image)
+                    .resizable()        // Allow resizing
+                    .scaledToFill()     // Fill the circle properly
+                    .frame(width: 60, height: 60)
+                    .clipShape(Circle()) // Cut off corners to make it round
             }
             
-            // Info
+           
             VStack(alignment: .leading, spacing: 4) {
                 Text(doctor.name)
                     .font(.headline)
@@ -111,7 +152,7 @@ struct DoctorRowItem: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 
-                // Status Line
+               
                 HStack(spacing: 4) {
                     Image(systemName: "circle.fill")
                         .font(.system(size: 8))
@@ -130,7 +171,7 @@ struct DoctorRowItem: View {
             
             Spacer()
             
-            // Action Button
+            
             Button { } label: {
                 Text(doctor.isBookable ? "Book" : "Wait")
                     .font(.subheadline)
