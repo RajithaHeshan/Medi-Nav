@@ -141,7 +141,7 @@ struct DoctorServicesView: View {
     }
 }
 
-// MARK: - Reusable Components
+
 
 struct ServiceHeroCard: View {
     let card: ServiceHeroItem
@@ -234,4 +234,5 @@ struct ServiceGridItem: View {
 
 #Preview {
     DoctorServicesView()
+    CustomTabBar(selectedTab: .constant(.home))
 }
