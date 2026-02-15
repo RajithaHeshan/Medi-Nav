@@ -1,9 +1,8 @@
+
 import SwiftUI
 
 struct EmergencyView: View {
-    
     @Environment(\.dismiss) var dismiss
-    
     
     @State private var requestAmbulance = false
     @State private var requestWheelchair = false
@@ -12,13 +11,12 @@ struct EmergencyView: View {
     
     var body: some View {
         ZStack {
-            
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
             
             VStack(spacing: 24) {
                 
-                
+               
                 HStack {
                     Button {
                         dismiss()
@@ -37,7 +35,7 @@ struct EmergencyView: View {
                 }
                 .padding(.top, 10)
                 
-                
+              
                 Text("Select the type of assistance you need.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -51,7 +49,6 @@ struct EmergencyView: View {
                             print("SOS TRIGGERED")
                         } label: {
                             HStack(spacing: 16) {
-                                // SOS Icon Box
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 12)
                                         .fill(Color.white.opacity(0.2))
@@ -80,14 +77,21 @@ struct EmergencyView: View {
                             .shadow(color: .red.opacity(0.4), radius: 10, x: 0, y: 5)
                         }
                         
-                        
+                       
                         VStack(spacing: 16) {
+                            
+                           
                             EmergencyOptionRow(
                                 title: "Request Ambulance",
                                 subtitle: "External emergency transport",
                                 icon: "cross.case.fill",
                                 iconColor: .red,
-                                isOn: $requestAmbulance
+                                isOn: $requestAmbulance,
+                                
+                                actionText: "Track Ambulance",
+                                onActionTap: {
+                                    print("Navigate to Ambulance Tracking Map")
+                                }
                             )
                             
                             EmergencyOptionRow(
@@ -115,18 +119,16 @@ struct EmergencyView: View {
                             )
                         }
                     }
-                    
                     .padding(.bottom, 40)
                 }
             }
             .padding(.horizontal, 20)
         }
-        
         .navigationBarHidden(true)
     }
 }
 
-
+// MARK: - Reusable Option Row (Updated)
 struct EmergencyOptionRow: View {
     let title: String
     let subtitle: String
@@ -134,9 +136,13 @@ struct EmergencyOptionRow: View {
     let iconColor: Color
     @Binding var isOn: Bool
     
+    // NEW Optional Parameters for "Track" Action
+    var actionText: String? = nil
+    var onActionTap: (() -> Void)? = nil
+    
     var body: some View {
-        HStack(spacing: 16) {
-            
+        HStack(alignment: .center, spacing: 16) {
+            // Icon
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(iconColor.opacity(0.1))
@@ -146,13 +152,32 @@ struct EmergencyOptionRow: View {
                     .foregroundStyle(iconColor)
             }
             
-            VStack(alignment: .leading, spacing: 2) {
+            // Text Column
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)
                     .foregroundStyle(Color(uiColor: .label))
+                
                 Text(subtitle)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                
+                // 🔴 NEW: Conditional Action Text (Track Ambulance)
+                if isOn, let actionText = actionText {
+                    Button {
+                        onActionTap?()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(actionText)
+                            Image(systemName: "arrow.right")
+                        }
+                        .font(.caption) // Same size as Home Page
+                        .bold()
+                        .foregroundStyle(iconColor) // Matches the icon color (Red)
+                        .padding(.top, 2)
+                    }
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
             }
             
             Spacer()
@@ -164,12 +189,12 @@ struct EmergencyOptionRow: View {
         .padding(16)
         .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        // Animates the text appearing/disappearing
+        .animation(.spring(), value: isOn)
     }
 }
 
 #Preview {
     EmergencyView()
-    CustomTabBar(selectedTab: .constant(.home))
 }
