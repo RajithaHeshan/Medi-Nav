@@ -18,11 +18,13 @@ struct Doctor: Identifiable {
 struct FindDoctorView: View {
     @Environment(\.dismiss) var dismiss
     @State private var searchText = ""
+    
+  
     @State private var selectedCategory = "All"
     
     private let categories = ["All", "Cardiology", "Dentist", "Neurology"]
     
-
+   
     private let doctors = [
         Doctor(
             name: "Dr. Sarah Jenkins",
@@ -70,11 +72,30 @@ struct FindDoctorView: View {
         )
     ]
     
+ 
+    var filteredDoctors: [Doctor] {
+        if selectedCategory == "All" {
+            return doctors
+        } else {
+            return doctors.filter { doctor in
+               
+                if selectedCategory == "Cardiology" {
+                    return doctor.specialty == "Cardiologist"
+                } else if selectedCategory == "Neurology" {
+                    return doctor.specialty == "Neurologist"
+                } else {
+                   
+                    return doctor.specialty == selectedCategory
+                }
+            }
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 
-               
+                
                 HStack {
                     HStack(spacing: 8) {
                         Image(systemName: "magnifyingglass")
@@ -88,7 +109,7 @@ struct FindDoctorView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 10)
                 
-              
+                
                 Picker("Category", selection: $selectedCategory) {
                     ForEach(categories, id: \.self) { category in
                         Text(category).tag(category)
@@ -101,9 +122,21 @@ struct FindDoctorView: View {
                
                 ScrollView {
                     VStack(spacing: 0) {
-                        ForEach(doctors) { doctor in
+                        
+                        
+                        ForEach(filteredDoctors) { doctor in
                             DoctorRowItem(doctor: doctor)
                             Divider().padding(.leading, 80)
+                        }
+                        
+                       
+                        if filteredDoctors.isEmpty {
+                            ContentUnavailableView(
+                                "No Doctors Found",
+                                systemImage: "stethoscope",
+                                description: Text("No specialists available in \(selectedCategory).")
+                            )
+                            .padding(.top, 40)
                         }
                     }
                 }
@@ -117,6 +150,8 @@ struct FindDoctorView: View {
                     }
                 }
             }
+           
+            .animation(.easeInOut, value: selectedCategory)
         }
     }
 }
@@ -128,21 +163,21 @@ struct DoctorRowItem: View {
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
             
-            // 🔴 UPDATED AVATAR LOGIC
+            
             ZStack {
                 Circle()
                     .fill(Color(uiColor: .systemGray6))
                     .frame(width: 60, height: 60)
                 
-                // We use Image(doctor.image) to load from Assets
+               
                 Image(doctor.image)
-                    .resizable()        // Allow resizing
-                    .scaledToFill()     // Fill the circle properly
+                    .resizable()
+                    .scaledToFill()
                     .frame(width: 60, height: 60)
-                    .clipShape(Circle()) // Cut off corners to make it round
+                    .clipShape(Circle())
             }
             
-           
+            
             VStack(alignment: .leading, spacing: 4) {
                 Text(doctor.name)
                     .font(.headline)
@@ -152,7 +187,7 @@ struct DoctorRowItem: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 
-               
+                
                 HStack(spacing: 4) {
                     Image(systemName: "circle.fill")
                         .font(.system(size: 8))
@@ -191,4 +226,5 @@ struct DoctorRowItem: View {
 
 #Preview {
     FindDoctorView()
+    CustomTabBar(selectedTab: .constant(.home))
 }
