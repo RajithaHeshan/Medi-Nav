@@ -1,31 +1,36 @@
 
+
+
 import SwiftUI
 import CoreImage.CIFilterBuiltins
 
 struct LabSamplePickupView: View {
     @Environment(\.dismiss) var dismiss
     
-    
+    // Data passed in (Defaulting to Blood Sample as per request)
     var sampleType: String = "Blood Sample"
     var sampleID: String = "#BLD-992"
     var instructions: String = "Requires 8 hours fasting before collection."
     var iconName: String = "drop.fill"
     var iconColor: Color = .red
     
-   
+    // MARK: - Animation State
     @State private var scanOffset: CGFloat = -100
     @State private var showScanLine = true
+    
+    // 🔴 NAVIGATION STATE
+    @State private var navigateToSuccess = false
     
     var body: some View {
         VStack(spacing: 0) {
             
-        
+            // 1. Header
             headerView
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 32) {
                     
-                   
+                    // 2. Title Section
                     VStack(spacing: 8) {
                         Text("Sample Submission")
                             .font(.title2)
@@ -38,7 +43,7 @@ struct LabSamplePickupView: View {
                     }
                     .padding(.top, 20)
                     
-                    
+                    // 3. QR Code with Animation
                     qrCodeContainer
                     
                     // 4. Lab Sample Info Card
@@ -49,9 +54,9 @@ struct LabSamplePickupView: View {
                 .padding()
             }
             
-            // 5. Done Button
+            // 5. Manual Done Button (Optional Override)
             Button {
-                dismiss()
+                navigateToSuccess = true
             } label: {
                 Text("Done")
                     .font(.headline)
@@ -67,8 +72,47 @@ struct LabSamplePickupView: View {
         .background(Color(uiColor: .systemGroupedBackground))
         .navigationBarHidden(true)
         .onAppear {
-            startScanAnimation()
+            startScanLogic()
         }
+        // 🔴 6. NAVIGATION DESTINATION
+        .navigationDestination(isPresented: $navigateToSuccess) {
+            SampleCollectionSuccessView(
+                sampleType: sampleType,
+                sampleID: sampleID
+            )
+            .navigationBarBackButtonHidden(true)
+        }
+    }
+    
+    // MARK: - Logic & Helpers
+    
+    private func startScanLogic() {
+        // Run scan animation for 10 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+            
+            // Step A: Fade out the laser visuals
+            withAnimation(.easeOut(duration: 0.5)) {
+                self.showScanLine = false
+            }
+            
+            // Step B: Trigger Navigation (Safe Delay)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.navigateToSuccess = true
+            }
+        }
+    }
+    
+    func generateQRCode(from string: String) -> UIImage {
+        let context = CIContext()
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+        
+        if let outputImage = filter.outputImage {
+            if let cgimg = context.createCGImage(outputImage, from: outputImage.extent) {
+                return UIImage(cgImage: cgimg)
+            }
+        }
+        return UIImage(systemName: "xmark.circle") ?? UIImage()
     }
     
     // MARK: - Subviews
@@ -92,18 +136,16 @@ struct LabSamplePickupView: View {
     
     private var qrCodeContainer: some View {
         ZStack {
-            // White Card Background
+            // Backgrounds
             RoundedRectangle(cornerRadius: 24)
                 .fill(Color.white)
                 .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
                 .frame(width: 300, height: 300)
             
-            // Teal Background inside
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color.teal.opacity(0.8))
                 .frame(width: 260, height: 260)
             
-            // White Container for QR
             RoundedRectangle(cornerRadius: 30)
                 .fill(Color.white)
                 .frame(width: 180, height: 180)
@@ -143,7 +185,7 @@ struct LabSamplePickupView: View {
                     .offset(y: -80)
             }
             
-            // 🔴 CHANGED: Using the renamed 'LabScannerCorners'
+            // 🔴 Uses Renamed Shape
             LabScannerCorners()
                 .stroke(Color.blue, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                 .frame(width: 260, height: 260)
@@ -197,50 +239,30 @@ struct LabSamplePickupView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
-    
-    // MARK: - Logic & Helpers
-    
-    private func startScanAnimation() {
-        // Run scan animation for 10 seconds then stop the laser visual
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
-            withAnimation(.easeOut(duration: 0.5)) {
-                self.showScanLine = false
-            }
-        }
-    }
-    
-    func generateQRCode(from string: String) -> UIImage {
-        let context = CIContext()
-        let filter = CIFilter.qrCodeGenerator()
-        filter.message = Data(string.utf8)
-        
-        if let outputImage = filter.outputImage {
-            if let cgimg = context.createCGImage(outputImage, from: outputImage.extent) {
-                return UIImage(cgImage: cgimg)
-            }
-        }
-        return UIImage(systemName: "xmark.circle") ?? UIImage()
-    }
 }
 
-// 🔴 FIXED: Renamed this struct to avoid conflict with the one in MedicationPickupView
+// 🔴 RENAMED SHAPE STRUCT (Fixed Error)
 struct LabScannerCorners: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let length: CGFloat = 30
         
+        // Top Left
         path.move(to: CGPoint(x: rect.minX, y: rect.minY + length))
         path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.minX + length, y: rect.minY))
         
+        // Top Right
         path.move(to: CGPoint(x: rect.maxX - length, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + length))
         
+        // Bottom Left
         path.move(to: CGPoint(x: rect.minX, y: rect.maxY - length))
         path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.minX + length, y: rect.maxY))
         
+        // Bottom Right
         path.move(to: CGPoint(x: rect.maxX - length, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - length))
