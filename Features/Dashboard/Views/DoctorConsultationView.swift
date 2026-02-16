@@ -1,16 +1,16 @@
 import SwiftUI
 import Combine
 
-
+// MARK: - 1. Data Model for Consultation Steps
 struct ConsultationStepItem: Identifiable {
     let id = UUID()
-    let stepName: String        // "Next Step: Visit Pharmacy"
-    let personName: String      // "Mr. Wickrama (Chief Pharmacist)"
-    let locationInfo: String    // "3rd Floor, Room 13"
-    let currentPosition: String // "10"
-    let waitingTime: String     // "10 mins"
-    let status: String          // "In Progress"
-    let gradientColors: [Color] // Custom colors for each card
+    let stepName: String        // e.g. "Next Step: Pharmacy"
+    let personName: String      // e.g. "Mr. Wickrama"
+    let locationInfo: String    // e.g. "3rd Floor, Room 13"
+    let currentPosition: String // e.g. "05"
+    let waitingTime: String     // e.g. "15 mins"
+    let status: String          // e.g. "In Progress"
+    let gradientColors: [Color] // Card background gradient
 }
 
 struct DoctorConsultationView: View {
@@ -27,8 +27,8 @@ struct DoctorConsultationView: View {
             stepName: "Next Step: Pharmacy",
             personName: "Mr. Wickrama (Chief Pharmacist)",
             locationInfo: "3rd Floor, Room 13",
-            currentPosition: "10",
-            waitingTime: "10 mins",
+            currentPosition: "05",
+            waitingTime: "15 mins",
             status: "In Progress",
             gradientColors: [Color.teal, Color.green]
         ),
@@ -37,7 +37,7 @@ struct DoctorConsultationView: View {
             stepName: "Next Step: Laboratory",
             personName: "Ms. Perera (Senior Lab Tech)",
             locationInfo: "4th Floor, Room 12",
-            currentPosition: "10",
+            currentPosition: "03",
             waitingTime: "20 mins",
             status: "In Progress",
             gradientColors: [Color.purple, Color.blue]
@@ -57,19 +57,19 @@ struct DoctorConsultationView: View {
                         // 2. Doctor Info Card (Static)
                         doctorInfoCard
                         
-                        // 3. AUTO-SWIPING CAROUSEL (Pharmacy & Lab)
+                        // 3. AUTO-SWIPING CAROUSEL (New Design)
                         TabView(selection: $currentPage) {
                             ForEach(0..<consultationSteps.count, id: \.self) { index in
                                 ConsultationStatusCard(step: consultationSteps[index])
-                                    .padding(.horizontal, 4) // Tiny padding prevents clipping
+                                    .padding(.horizontal, 4)
                                     .tag(index)
                             }
                         }
                         .tabViewStyle(.page(indexDisplayMode: .always))
-                        .frame(height: 250) // Adjusted height for the new card layout
+                        .frame(height: 260) // Adjusted height for content
                         .indexViewStyle(.page(backgroundDisplayMode: .interactive))
                         .onAppear {
-                            UIPageControl.appearance().currentPageIndicatorTintColor = .systemTeal
+                            UIPageControl.appearance().currentPageIndicatorTintColor = .white
                             UIPageControl.appearance().pageIndicatorTintColor = .systemGray4
                         }
                         .onReceive(timer) { _ in
@@ -84,7 +84,7 @@ struct DoctorConsultationView: View {
                         // 5. Prescriptions
                         prescriptionsSection
                         
-                        // 6. Lab Reports
+                        // 6. Lab Reports (UPDATED TEXT)
                         labReportsSection
                         
                         Spacer(minLength: 40)
@@ -171,12 +171,14 @@ struct DoctorConsultationView: View {
         }
     }
     
+    // 🔴 UPDATED: Lab Reports Section
     private var labReportsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack { Text("Lab Reports").font(.headline); Spacer(); Button("ALL") { }.font(.caption).bold().foregroundStyle(.blue) }
             VStack(spacing: 12) {
-                prescriptionRow(icon: "microbe.fill", color: .purple, name: "Urinalysis Report", dosage: "Completed • View PDF")
-                prescriptionRow(icon: "drop.fill", color: .red, name: "Complete Blood Count", dosage: "Completed • View PDF")
+                // Changed text here
+                prescriptionRow(icon: "microbe.fill", color: .purple, name: "Urinalysis Report", dosage: "You should get report within two days")
+                prescriptionRow(icon: "drop.fill", color: .red, name: "Complete Blood Count", dosage: "You should get report within two days")
             }
             Button { } label: { Text("Pick up Report").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding().background(Color.blue).clipShape(RoundedRectangle(cornerRadius: 12)) }.padding(.top, 8)
         }
@@ -192,14 +194,14 @@ struct DoctorConsultationView: View {
     }
 }
 
-// MARK: - 4. THE NEW CARD COMPONENT (Matching the provided screenshot)
+// MARK: - 4. CARD COMPONENT (Pharmacy/Lab Carousel)
 struct ConsultationStatusCard: View {
     let step: ConsultationStepItem
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             
-            // Top Row: Title and Status
+            // Top Row: Title & Status
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(step.stepName)
@@ -207,55 +209,38 @@ struct ConsultationStatusCard: View {
                     Text(step.personName)
                         .font(.caption).foregroundStyle(.white.opacity(0.9))
                 }
-                
                 Spacer()
-                
                 // Status Badge
                 Text(step.status)
                     .font(.caption).fontWeight(.bold)
                     .foregroundStyle(.white.opacity(0.9))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, 12).padding(.vertical, 6)
                     .background(Color.white.opacity(0.2))
                     .clipShape(Capsule())
             }
             
-            // Location Row
+            // Location
             HStack(spacing: 6) {
-                Image(systemName: "mappin.and.ellipse")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.9))
-                Text(step.locationInfo)
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.9))
+                Image(systemName: "mappin.and.ellipse").font(.caption).foregroundStyle(.white.opacity(0.9))
+                Text(step.locationInfo).font(.subheadline).foregroundStyle(.white.opacity(0.9))
             }
             
-            // Prominent White Info Card
+            // White Info Card (Position & Time)
             HStack(spacing: 0) {
-                // Current Position
+                // Position
                 HStack(spacing: 12) {
-                    ZStack {
-                        Circle().fill(Color.teal.opacity(0.1)).frame(width: 44, height: 44)
-                        Image(systemName: "person.3.fill").font(.title3).foregroundStyle(.teal)
-                    }
-                    Text(step.currentPosition)
-                        .font(.title2).bold().foregroundStyle(Color(uiColor: .label))
+                    ZStack { Circle().fill(Color.teal.opacity(0.1)).frame(width: 44, height: 44); Image(systemName: "person.3.fill").font(.title3).foregroundStyle(.teal) }
+                    Text(step.currentPosition).font(.title2).bold().foregroundStyle(Color(uiColor: .label))
                 }
                 .frame(maxWidth: .infinity)
                 
                 // Divider
-                Rectangle()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(width: 1, height: 40)
+                Rectangle().fill(Color.gray.opacity(0.2)).frame(width: 1, height: 40)
                 
-                // Estimated Waiting Time
+                // Time
                 HStack(spacing: 12) {
-                    ZStack {
-                        Circle().fill(Color.orange.opacity(0.1)).frame(width: 44, height: 44)
-                        Image(systemName: "hourglass").font(.title3).foregroundStyle(.orange)
-                    }
-                    Text(step.waitingTime)
-                        .font(.title3).bold().foregroundStyle(Color(uiColor: .label))
+                    ZStack { Circle().fill(Color.orange.opacity(0.1)).frame(width: 44, height: 44); Image(systemName: "hourglass").font(.title3).foregroundStyle(.orange) }
+                    Text(step.waitingTime).font(.title3).bold().foregroundStyle(Color(uiColor: .label))
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -263,28 +248,19 @@ struct ConsultationStatusCard: View {
             .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             
-            // Bottom Row: Action
+            // Bottom Action
             HStack {
                 Text("Please proceed to waiting area")
                     .font(.caption).foregroundStyle(.white.opacity(0.9))
-                
                 Spacer()
-                
-                Button {
-                    // Action for Map
-                } label: {
-                    HStack(spacing: 4) {
-                        Text("View Map")
-                        Image(systemName: "arrow.right")
-                    }
-                    .font(.caption).fontWeight(.bold).foregroundStyle(.white)
+                Button { } label: {
+                    HStack(spacing: 4) { Text("View Map"); Image(systemName: "arrow.right") }
+                        .font(.caption).fontWeight(.bold).foregroundStyle(.white)
                 }
             }
         }
         .padding(20)
-        .background(
-            LinearGradient(colors: step.gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing)
-        )
+        .background(LinearGradient(colors: step.gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing))
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .shadow(color: step.gradientColors.first?.opacity(0.3) ?? .gray, radius: 10, x: 0, y: 5)
     }
