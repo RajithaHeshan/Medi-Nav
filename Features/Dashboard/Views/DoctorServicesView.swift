@@ -15,6 +15,8 @@ struct DoctorServicesView: View {
     
     
     @State private var showFindDoctor = false
+    @State private var showConsulting = false
+    @State private var showBookingHistory = false
     
    
     @State private var currentPage = 0
@@ -78,10 +80,10 @@ struct DoctorServicesView: View {
                                 
                               
                                 ServiceGridItem(title: "Booking History", icon: "clock.arrow.circlepath", color: .orange) {
-                                    print("Booking History Tapped")
+                                    showBookingHistory = true
                                 }
                                 ServiceGridItem(title: "Doctor Consulting", icon: "stethoscope", color: .teal) {
-                                    print("Consulting Tapped")
+                                    showConsulting = true
                                 }
                                 ServiceGridItem(title: "Consulting History", icon: "list.clipboard.fill", color: .purple) {
                                     print("History Tapped")
@@ -100,6 +102,16 @@ struct DoctorServicesView: View {
             .navigationDestination(isPresented: $showFindDoctor) {
                 FindDoctorView()
                     .navigationBarBackButtonHidden(true) // We use our custom back button
+                }
+            
+            .navigationDestination(isPresented: $showConsulting) {
+                DoctorConsultationView()
+                    .navigationBarBackButtonHidden(true)
+            }
+            
+            .navigationDestination(isPresented: $showBookingHistory) {
+                BookingHistoryView()
+                    .navigationBarBackButtonHidden(true)
             }
         }
     }
