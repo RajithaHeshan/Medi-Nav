@@ -81,7 +81,7 @@ struct PaymentView: View {
                         }
                     }
                     
-                    // 4. Security Banner
+                    
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: "info.circle.fill")
                             .font(.title3)
