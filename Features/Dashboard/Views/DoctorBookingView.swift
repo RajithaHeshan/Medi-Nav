@@ -250,5 +250,5 @@ struct DoctorBookingView: View {
 #Preview {
     DoctorBookingView(doctor: Doctor(name: "Dr. Sarah Jenkins", specialty: "Cardiologist", rating: 4.9, reviewCount: 120, fee: 150, image: "doctor1", status: "Available Today", statusColor: .green, isBookable: true))
     CustomTabBar(selectedTab: .constant(.home))
-    CustomTabBar(selectedTab: .constant(.home))
+    
 }
