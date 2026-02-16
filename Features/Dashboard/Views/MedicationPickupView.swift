@@ -4,25 +4,27 @@ import CoreImage.CIFilterBuiltins
 struct MedicationPickupView: View {
     @Environment(\.dismiss) var dismiss
     
-    // Data passed in
+   
     let medicineName: String = "Amoxicillin 500mg"
     let orderID: String = "#MED-7742"
     
-    // MARK: - Animation State
-    @State private var isScanning = false
-    @State private var scanOffset: CGFloat = -100 // Start position (Top)
-    @State private var showScanLine = true // Visibility of the line
+   
+    @State private var scanOffset: CGFloat = -100
+    @State private var showScanLine = true
+    
+   
+    @State private var navigateToPharmacy = false
     
     var body: some View {
         VStack(spacing: 0) {
             
-            // 1. Header
+            
             headerView
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 32) {
                     
-                    // 2. Title Section
+                    // Title
                     VStack(spacing: 8) {
                         Text("Medication Pickup")
                             .font(.title2)
@@ -35,10 +37,10 @@ struct MedicationPickupView: View {
                     }
                     .padding(.top, 20)
                     
-                    // 3. QR Code with Animation
+                    // QR Code
                     qrCodeContainer
                     
-                    // 4. Medication Info Card
+                    // Info Card
                     medicationInfoCard
                     
                     Spacer(minLength: 40)
@@ -46,9 +48,9 @@ struct MedicationPickupView: View {
                 .padding()
             }
             
-            // 5. Done Button
+            // Manual Done Button
             Button {
-                dismiss()
+                navigateToPharmacy = true
             } label: {
                 Text("Done")
                     .font(.headline)
@@ -64,20 +66,32 @@ struct MedicationPickupView: View {
         .background(Color(uiColor: .systemGroupedBackground))
         .navigationBarHidden(true)
         .onAppear {
-            startScanAnimation()
+            startScanLogic()
+        }
+        // 🔴 CRITICAL: Place this modifier at the very end
+        .navigationDestination(isPresented: $navigateToPharmacy) {
+            PharmacyView()
+                .navigationBarBackButtonHidden(true)
         }
     }
     
-    // MARK: - Animation Logic
-    private func startScanAnimation() {
-        // 1. Start the movement immediately
-        isScanning = true
+    // MARK: - Logic
+    private func startScanLogic() {
+        // 1. Start Animation Loop
+        // (The visual animation is handled in the .onAppear of the Rectangle below)
         
-        // 2. Stop after 10 seconds
+        // 2. Schedule the Navigation Trigger
         DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+            
+            // Step A: Fade out the laser (Visual only)
             withAnimation(.easeOut(duration: 0.5)) {
-                showScanLine = false // Fade out the laser
-                isScanning = false   // Stop logic
+                self.showScanLine = false
+            }
+            
+            // Step B: Trigger Navigation (SEPARATE from animation block)
+            // This ensures the navigation push is clean
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.navigateToPharmacy = true
             }
         }
     }
@@ -103,31 +117,29 @@ struct MedicationPickupView: View {
     
     private var qrCodeContainer: some View {
         ZStack {
-            // White Card Background
+            // Backgrounds
             RoundedRectangle(cornerRadius: 24)
                 .fill(Color.white)
                 .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
                 .frame(width: 300, height: 300)
             
-            // Teal Background inside
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color.teal.opacity(0.8))
                 .frame(width: 260, height: 260)
             
-            // White Container for QR
             RoundedRectangle(cornerRadius: 30)
                 .fill(Color.white)
                 .frame(width: 180, height: 180)
                 .shadow(color: .black.opacity(0.1), radius: 5)
             
-            // QR Code Image
+            // QR Image
             Image(uiImage: generateQRCode(from: "\(orderID)-\(medicineName)"))
                 .resizable()
                 .interpolation(.none)
                 .scaledToFit()
                 .frame(width: 140, height: 140)
             
-            // 🔴 THE SCANNING LASER ANIMATION
+            // Laser Animation
             if showScanLine {
                 Rectangle()
                     .fill(
@@ -137,18 +149,17 @@ struct MedicationPickupView: View {
                             endPoint: .trailing
                         )
                     )
-                    .frame(width: 240, height: 3) // Laser width
-                    .shadow(color: .blue.opacity(0.5), radius: 5, x: 0, y: 0) // Glow effect
+                    .frame(width: 240, height: 3)
+                    .shadow(color: .blue.opacity(0.5), radius: 5, x: 0, y: 0)
                     .offset(y: scanOffset)
                     .onAppear {
-                        // Animate from Top (-110) to Bottom (110)
+                        // Continuous Loop Animation
                         withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
                             scanOffset = 110
                         }
                     }
             }
             
-            // Text above QR
             VStack {
                 Text("Medication Ref:")
                     .font(.system(size: 8))
@@ -156,7 +167,6 @@ struct MedicationPickupView: View {
                     .offset(y: -80)
             }
             
-            // Blue Corner Brackets (Viewfinder)
             ScannerCorners()
                 .stroke(Color.blue, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                 .frame(width: 260, height: 260)
@@ -186,7 +196,7 @@ struct MedicationPickupView: View {
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
     
-    // MARK: - Helper Functions
+    // MARK: - Helpers
     func generateQRCode(from string: String) -> UIImage {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
@@ -200,28 +210,24 @@ struct MedicationPickupView: View {
     }
 }
 
-// Custom Shape for Corners
+// Custom Shape
 struct ScannerCorners: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let length: CGFloat = 30
         
-        // Top Left
         path.move(to: CGPoint(x: rect.minX, y: rect.minY + length))
         path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.minX + length, y: rect.minY))
         
-        // Top Right
         path.move(to: CGPoint(x: rect.maxX - length, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + length))
         
-        // Bottom Left
         path.move(to: CGPoint(x: rect.minX, y: rect.maxY - length))
         path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.minX + length, y: rect.maxY))
         
-        // Bottom Right
         path.move(to: CGPoint(x: rect.maxX - length, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - length))
