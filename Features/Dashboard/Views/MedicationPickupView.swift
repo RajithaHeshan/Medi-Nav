@@ -4,14 +4,19 @@ import CoreImage.CIFilterBuiltins
 struct MedicationPickupView: View {
     @Environment(\.dismiss) var dismiss
     
-  
+    // Data passed in
     let medicineName: String = "Amoxicillin 500mg"
     let orderID: String = "#MED-7742"
+    
+    // MARK: - Animation State
+    @State private var isScanning = false
+    @State private var scanOffset: CGFloat = -100 // Start position (Top)
+    @State private var showScanLine = true // Visibility of the line
     
     var body: some View {
         VStack(spacing: 0) {
             
-           
+            // 1. Header
             headerView
             
             ScrollView(showsIndicators: false) {
@@ -30,7 +35,7 @@ struct MedicationPickupView: View {
                     }
                     .padding(.top, 20)
                     
-                    // 3. QR Code Scanner Visual
+                    // 3. QR Code with Animation
                     qrCodeContainer
                     
                     // 4. Medication Info Card
@@ -56,11 +61,28 @@ struct MedicationPickupView: View {
             .padding()
             .padding(.bottom, 10)
         }
-        .background(Color(uiColor: .systemGroupedBackground)) // Light gray background
+        .background(Color(uiColor: .systemGroupedBackground))
         .navigationBarHidden(true)
+        .onAppear {
+            startScanAnimation()
+        }
     }
     
-   
+    // MARK: - Animation Logic
+    private func startScanAnimation() {
+        // 1. Start the movement immediately
+        isScanning = true
+        
+        // 2. Stop after 10 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+            withAnimation(.easeOut(duration: 0.5)) {
+                showScanLine = false // Fade out the laser
+                isScanning = false   // Stop logic
+            }
+        }
+    }
+    
+    // MARK: - Subviews
     
     private var headerView: some View {
         HStack {
@@ -69,17 +91,10 @@ struct MedicationPickupView: View {
                     Image(systemName: "chevron.left")
                     Text("Back")
                 }
-                .font(.body)
-                .foregroundStyle(.blue)
+                .font(.body).foregroundStyle(.blue)
             }
-            
             Spacer()
-            
-            Text("Medication")
-                .font(.headline)
-                .bold()
-                .padding(.trailing, 40)
-            
+            Text("Medication").font(.headline).bold().padding(.trailing, 40)
             Spacer()
         }
         .padding()
@@ -96,25 +111,46 @@ struct MedicationPickupView: View {
             
             // Teal Background inside
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.teal.opacity(0.8)) // Matching the teal in screenshot
+                .fill(Color.teal.opacity(0.8))
                 .frame(width: 260, height: 260)
             
-            // White Organic Shape / Container for QR
-            RoundedRectangle(cornerRadius: 30) // Using high corner radius for "blob" look
+            // White Container for QR
+            RoundedRectangle(cornerRadius: 30)
                 .fill(Color.white)
                 .frame(width: 180, height: 180)
                 .shadow(color: .black.opacity(0.1), radius: 5)
             
-            // Actual Generated QR Code
+            // QR Code Image
             Image(uiImage: generateQRCode(from: "\(orderID)-\(medicineName)"))
                 .resizable()
                 .interpolation(.none)
                 .scaledToFit()
                 .frame(width: 140, height: 140)
             
-            // Text above QR (Tiny detail from screenshot)
+            // 🔴 THE SCANNING LASER ANIMATION
+            if showScanLine {
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.blue.opacity(0), .blue, .blue.opacity(0)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: 240, height: 3) // Laser width
+                    .shadow(color: .blue.opacity(0.5), radius: 5, x: 0, y: 0) // Glow effect
+                    .offset(y: scanOffset)
+                    .onAppear {
+                        // Animate from Top (-110) to Bottom (110)
+                        withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                            scanOffset = 110
+                        }
+                    }
+            }
+            
+            // Text above QR
             VStack {
-                Text("Medication Catural:")
+                Text("Medication Ref:")
                     .font(.system(size: 8))
                     .foregroundStyle(.secondary)
                     .offset(y: -80)
@@ -129,42 +165,18 @@ struct MedicationPickupView: View {
     
     private var medicationInfoCard: some View {
         HStack(spacing: 16) {
-            // Icon
             ZStack {
-                Circle()
-                    .fill(Color.blue.opacity(0.1))
-                    .frame(width: 50, height: 50)
-                
-                Image(systemName: "flask.fill")
-                    .font(.title3)
-                    .foregroundStyle(.blue)
+                Circle().fill(Color.blue.opacity(0.1)).frame(width: 50, height: 50)
+                Image(systemName: "flask.fill").font(.title3).foregroundStyle(.blue)
             }
-            
-            // Info
             VStack(alignment: .leading, spacing: 4) {
-                Text(medicineName)
-                    .font(.headline)
-                    .foregroundStyle(Color(uiColor: .label))
-                
-                Text("2 Refills Remaining")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                
-                Divider()
-                    .padding(.vertical, 4)
-                
+                Text(medicineName).font(.headline).foregroundStyle(Color(uiColor: .label))
+                Text("2 Refills Remaining").font(.caption).foregroundStyle(.secondary)
+                Divider().padding(.vertical, 4)
                 HStack {
-                    Text("ORDER ID")
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.gray.opacity(0.6))
-                    
+                    Text("ORDER ID").font(.caption2).fontWeight(.bold).foregroundStyle(.gray.opacity(0.6))
                     Spacer()
-                    
-                    Text(orderID)
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                        .foregroundStyle(Color(uiColor: .label))
+                    Text(orderID).font(.caption2).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
                 }
             }
         }
@@ -175,13 +187,10 @@ struct MedicationPickupView: View {
     }
     
     // MARK: - Helper Functions
-    
-    // Generates a real QR code from a string
     func generateQRCode(from string: String) -> UIImage {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(string.utf8)
-        
         if let outputImage = filter.outputImage {
             if let cgimg = context.createCGImage(outputImage, from: outputImage.extent) {
                 return UIImage(cgImage: cgimg)
@@ -191,28 +200,28 @@ struct MedicationPickupView: View {
     }
 }
 
-
+// Custom Shape for Corners
 struct ScannerCorners: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let length: CGFloat = 30
         
-       
+        // Top Left
         path.move(to: CGPoint(x: rect.minX, y: rect.minY + length))
         path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.minX + length, y: rect.minY))
         
-       
+        // Top Right
         path.move(to: CGPoint(x: rect.maxX - length, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + length))
         
-        
+        // Bottom Left
         path.move(to: CGPoint(x: rect.minX, y: rect.maxY - length))
         path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.minX + length, y: rect.maxY))
         
-      
+        // Bottom Right
         path.move(to: CGPoint(x: rect.maxX - length, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - length))
