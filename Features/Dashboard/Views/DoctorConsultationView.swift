@@ -1,28 +1,32 @@
+
 import SwiftUI
 import Combine
 
-// MARK: - 1. Data Model for Consultation Steps
+
 struct ConsultationStepItem: Identifiable {
     let id = UUID()
-    let stepName: String        // e.g. "Next Step: Pharmacy"
-    let personName: String      // e.g. "Mr. Wickrama"
-    let locationInfo: String    // e.g. "3rd Floor, Room 13"
-    let currentPosition: String // e.g. "05"
-    let waitingTime: String     // e.g. "15 mins"
-    let status: String          // e.g. "In Progress"
-    let gradientColors: [Color] // Card background gradient
+    let stepName: String
+    let personName: String
+    let locationInfo: String
+    let currentPosition: String
+    let waitingTime: String
+    let status: String
+    let gradientColors: [Color]
 }
 
 struct DoctorConsultationView: View {
     @Environment(\.dismiss) var dismiss
     
-    // MARK: - Carousel State
+   
+    @State private var showMedicationPickup = false
+    
+   
     @State private var currentPage = 0
     private let timer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
     
-    // MARK: - The Data (Pharmacy & Laboratory)
+   
     private let consultationSteps = [
-        // Card 1: Pharmacy
+     
         ConsultationStepItem(
             stepName: "Next Step: Pharmacy",
             personName: "Mr. Wickrama (Chief Pharmacist)",
@@ -32,7 +36,7 @@ struct DoctorConsultationView: View {
             status: "In Progress",
             gradientColors: [Color.teal, Color.green]
         ),
-        // Card 2: Laboratory
+        
         ConsultationStepItem(
             stepName: "Next Step: Laboratory",
             personName: "Ms. Perera (Senior Lab Tech)",
@@ -54,10 +58,10 @@ struct DoctorConsultationView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         
-                        // 2. Doctor Info Card (Static)
+                        
                         doctorInfoCard
                         
-                        // 3. AUTO-SWIPING CAROUSEL (New Design)
+                        // 3. AUTO-SWIPING CAROUSEL
                         TabView(selection: $currentPage) {
                             ForEach(0..<consultationSteps.count, id: \.self) { index in
                                 ConsultationStatusCard(step: consultationSteps[index])
@@ -66,7 +70,7 @@ struct DoctorConsultationView: View {
                             }
                         }
                         .tabViewStyle(.page(indexDisplayMode: .always))
-                        .frame(height: 260) // Adjusted height for content
+                        .frame(height: 260) // Height fits new card layout
                         .indexViewStyle(.page(backgroundDisplayMode: .interactive))
                         .onAppear {
                             UIPageControl.appearance().currentPageIndicatorTintColor = .white
@@ -81,10 +85,10 @@ struct DoctorConsultationView: View {
                         // 4. Vitals
                         vitalsSection
                         
-                        // 5. Prescriptions
+                        // 5. Prescriptions (Contains Navigation Button)
                         prescriptionsSection
                         
-                        // 6. Lab Reports (UPDATED TEXT)
+                        // 6. Lab Reports (Updated Text)
                         labReportsSection
                         
                         Spacer(minLength: 40)
@@ -94,10 +98,16 @@ struct DoctorConsultationView: View {
             }
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationBarHidden(true)
+            
+            // 🔴 NAVIGATION DESTINATION
+            .navigationDestination(isPresented: $showMedicationPickup) {
+                MedicationPickupView()
+                    .navigationBarBackButtonHidden(true)
+            }
         }
     }
     
-    // MARK: - Subviews
+    
     
     private var headerView: some View {
         HStack {
@@ -119,7 +129,7 @@ struct DoctorConsultationView: View {
     
     private var doctorInfoCard: some View {
         HStack(spacing: 16) {
-            Image("doctor1") // Ensure asset exists
+            Image("doctor1") // Ensure asset name matches your Assets
                 .resizable().scaledToFill()
                 .frame(width: 50, height: 50).clipShape(Circle())
             
@@ -167,16 +177,29 @@ struct DoctorConsultationView: View {
                 prescriptionRow(icon: "pills.fill", color: .blue, name: "Amoxicillin 500mg", dosage: "Take 1 tablet twice daily")
                 prescriptionRow(icon: "pills.fill", color: .blue, name: "Paracetamol", dosage: "Take 1 tablet twice daily")
             }
-            Button { } label: { HStack { Text("Pick up medicine"); Image(systemName: "qrcode") }.font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding().background(Color.blue).clipShape(RoundedRectangle(cornerRadius: 12)) }.padding(.top, 8)
+            
+          
+            Button {
+                showMedicationPickup = true // Triggers navigation
+            } label: {
+                HStack {
+                    Text("Pick up medicine")
+                    Image(systemName: "qrcode")
+                }
+                .font(.headline).foregroundStyle(.white)
+                .frame(maxWidth: .infinity).padding()
+                .background(Color.blue)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .padding(.top, 8)
         }
     }
     
-    // 🔴 UPDATED: Lab Reports Section
     private var labReportsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack { Text("Lab Reports").font(.headline); Spacer(); Button("ALL") { }.font(.caption).bold().foregroundStyle(.blue) }
             VStack(spacing: 12) {
-                // Changed text here
+                // 🔴 UPDATED TEXT
                 prescriptionRow(icon: "microbe.fill", color: .purple, name: "Urinalysis Report", dosage: "You should get report within two days")
                 prescriptionRow(icon: "drop.fill", color: .red, name: "Complete Blood Count", dosage: "You should get report within two days")
             }
@@ -194,7 +217,7 @@ struct DoctorConsultationView: View {
     }
 }
 
-// MARK: - 4. CARD COMPONENT (Pharmacy/Lab Carousel)
+// MARK: - 4. CARD COMPONENT (Pharmacy/Lab)
 struct ConsultationStatusCard: View {
     let step: ConsultationStepItem
     
@@ -219,13 +242,13 @@ struct ConsultationStatusCard: View {
                     .clipShape(Capsule())
             }
             
-            // Location
+            // Location Info
             HStack(spacing: 6) {
                 Image(systemName: "mappin.and.ellipse").font(.caption).foregroundStyle(.white.opacity(0.9))
                 Text(step.locationInfo).font(.subheadline).foregroundStyle(.white.opacity(0.9))
             }
             
-            // White Info Card (Position & Time)
+           
             HStack(spacing: 0) {
                 // Position
                 HStack(spacing: 12) {
@@ -234,10 +257,10 @@ struct ConsultationStatusCard: View {
                 }
                 .frame(maxWidth: .infinity)
                 
-                // Divider
+               
                 Rectangle().fill(Color.gray.opacity(0.2)).frame(width: 1, height: 40)
                 
-                // Time
+                
                 HStack(spacing: 12) {
                     ZStack { Circle().fill(Color.orange.opacity(0.1)).frame(width: 44, height: 44); Image(systemName: "hourglass").font(.title3).foregroundStyle(.orange) }
                     Text(step.waitingTime).font(.title3).bold().foregroundStyle(Color(uiColor: .label))
@@ -248,7 +271,7 @@ struct ConsultationStatusCard: View {
             .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             
-            // Bottom Action
+            
             HStack {
                 Text("Please proceed to waiting area")
                     .font(.caption).foregroundStyle(.white.opacity(0.9))
