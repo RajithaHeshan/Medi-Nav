@@ -5,20 +5,28 @@ struct MyPrescriptionView: View {
     @Environment(\.dismiss) var dismiss
     @State private var searchText = ""
     
-    // MARK: - Navigation State
-    @State private var selectedMedicine: String? // Triggers navigation
+    // MARK: - Navigation States
+    @State private var selectedMedicine: String? // For Detail View
+    @State private var navigateToPharmacy = false // For Quick Refill
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Header
+                // 1. Header
                 headerView
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
+                        
+                        // 2. Search
                         searchBar
+                        
+                        // 3. Needs Refill (Contains the Action Button)
                         needsRefillSection
+                        
+                        // 4. Active List
                         activeSection
+                        
                         Spacer(minLength: 40)
                     }
                     .padding()
@@ -27,15 +35,22 @@ struct MyPrescriptionView: View {
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationBarHidden(true)
             
-            // MARK: - Destination
+            // MARK: - Destinations
+            
+            // 1. Navigate to Details (When Card is Tapped)
             .navigationDestination(item: $selectedMedicine) { medicineName in
-                // Navigate to Details with data
                 PrescriptionDetailView(
                     medicineName: medicineName,
                     status: medicineName.contains("Lisinopril") ? "Critical Stock" : "Active",
                     statusColor: medicineName.contains("Lisinopril") ? .red : .blue
                 )
                 .navigationBarBackButtonHidden(true)
+            }
+            
+            // 2. Navigate to Pharmacy (When Quick Refill is Tapped)
+            .navigationDestination(isPresented: $navigateToPharmacy) {
+                PharmacyView()
+                    .navigationBarBackButtonHidden(true)
             }
         }
     }
@@ -74,7 +89,7 @@ struct MyPrescriptionView: View {
             
             // Card 1: Lisinopril
             PrescriptionCard {
-                // Trigger Navigation when clicked
+                // Card Tap -> Details
                 selectedMedicine = "Lisinopril 10mg"
             } content: {
                 VStack(spacing: 16) {
@@ -93,18 +108,25 @@ struct MyPrescriptionView: View {
                             .padding(.top, 2)
                         }
                         Spacer()
-                        // 🔴 VECTOR ICON (Chevron)
-                        Image(systemName: "chevron.right")
-                            .font(.body)
-                            .foregroundStyle(.gray.opacity(0.5))
+                        Image(systemName: "chevron.right").font(.body).foregroundStyle(.gray.opacity(0.5))
                     }
                     
-                    Button { /* Quick Refill Logic */ } label: {
-                        HStack { Text("Quick Refill"); Image(systemName: "arrow.clockwise") }
-                            .font(.subheadline).fontWeight(.semibold).foregroundStyle(.white)
-                            .frame(maxWidth: .infinity).padding(.vertical, 12)
-                            .background(Color.blue).clipShape(RoundedRectangle(cornerRadius: 12))
+                    // 🔴 ACTION BUTTON: Quick Refill -> Pharmacy
+                    Button {
+                        navigateToPharmacy = true
+                    } label: {
+                        HStack {
+                            Text("Quick Refill")
+                            Image(systemName: "arrow.clockwise")
+                        }
+                        .font(.subheadline).fontWeight(.semibold).foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.blue)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
+                    // This ensures the button tap doesn't bubble up to the card tap
+                    .buttonStyle(BorderedButtonStyle())
                 }
             }
             
@@ -128,10 +150,7 @@ struct MyPrescriptionView: View {
                             .padding(.top, 2)
                         }
                         Spacer()
-                        // 🔴 VECTOR ICON
-                        Image(systemName: "chevron.right")
-                            .font(.body)
-                            .foregroundStyle(.gray.opacity(0.5))
+                        Image(systemName: "chevron.right").font(.body).foregroundStyle(.gray.opacity(0.5))
                     }
                     
                     Button {} label: {
@@ -170,7 +189,6 @@ struct MyPrescriptionView: View {
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 2) {
-                            // 🔴 VECTOR ICON
                             Image(systemName: "chevron.right").font(.body).foregroundStyle(.gray.opacity(0.5)).padding(.bottom, 8)
                             
                             Text("Quantity").font(.caption2).foregroundStyle(.secondary)
@@ -189,7 +207,7 @@ struct MyPrescriptionView: View {
     }
 }
 
-// MARK: - Updated Helper Card
+// MARK: - Helper Card
 struct PrescriptionCard<Content: View>: View {
     let action: () -> Void
     let content: Content
@@ -200,6 +218,7 @@ struct PrescriptionCard<Content: View>: View {
     }
     
     var body: some View {
+        // The outer button handles the Card Tap (Details)
         Button(action: action) {
             content
                 .padding(16)
@@ -208,7 +227,7 @@ struct PrescriptionCard<Content: View>: View {
                 .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
                 .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.05), lineWidth: 1))
         }
-        .buttonStyle(PlainButtonStyle()) // Keeps standard button press behavior
+        .buttonStyle(PlainButtonStyle()) // Important: Lets inner buttons work independently
     }
 }
 
