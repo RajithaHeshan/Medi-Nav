@@ -1,7 +1,8 @@
+
 import SwiftUI
 
 // Local Data Model
-struct ConsultationRecord: Identifiable {
+struct ConsultationRecord: Identifiable, Hashable {
     let id = UUID()
     let doctorName: String
     let specialty: String
@@ -9,14 +10,20 @@ struct ConsultationRecord: Identifiable {
     let diagnosis: String
     let image: String
     let status: String
+    
+    // Hashable conformance for Navigation
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 struct DoctorConsultationHistoryView: View {
-    // No need for @Environment(\.dismiss) anymore, system handles it!
-    
-    // MARK: - State
+  
     @State private var searchText = ""
     @State private var selectedTab = "Completed"
+    
+    
+    @State private var selectedRecord: ConsultationRecord?
     
     // MARK: - Mock Data
     private let historyRecords = [
@@ -51,11 +58,9 @@ struct DoctorConsultationHistoryView: View {
     }
     
     var body: some View {
-        // NOTE: In the parent view, ensure this is wrapped in NavigationStack
-        // If this is a destination, we just use the content here.
         VStack(spacing: 0) {
             
-            // 1. Search Bar (Native Header removed)
+            // 1. Search Bar
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.gray)
@@ -65,10 +70,10 @@ struct DoctorConsultationHistoryView: View {
             .background(Color(uiColor: .systemGray6))
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .padding(.horizontal)
-            .padding(.top, 10) // Small top padding since header is gone
+            .padding(.top, 10)
             .padding(.bottom, 16)
             
-            // 2. Custom Segmented Control
+            // 2. Tabs
             HStack(spacing: 0) {
                 tabButton(title: "Cancelled")
                 tabButton(title: "Completed")
@@ -81,18 +86,32 @@ struct DoctorConsultationHistoryView: View {
             
             // 3. List of Cards
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) { // Increased spacing between cards
+                VStack(spacing: 24) {
                     ForEach(filteredRecords) { record in
-                        ConsultationHistoryCard(record: record)
+                        ConsultationHistoryCard(record: record) {
+                            // 🔴 2. TRIGGER NAVIGATION
+                            // When "View Summary" is tapped, we set the selected record
+                            selectedRecord = record
+                        }
                     }
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 20)
             }
         }
-        // 🔴 NATIVE NAVIGATION
         .navigationTitle("Consultation History")
         .navigationBarTitleDisplayMode(.inline)
+        
+        
+        .navigationDestination(item: $selectedRecord) { record in
+            ConsultationDetailView(
+                doctorName: record.doctorName,
+                specialty: record.specialty,
+                date: record.date,
+                image: record.image
+            )
+            .navigationBarBackButtonHidden(true) // We use our custom header in DetailView
+        }
     }
     
     // MARK: - Subviews
@@ -116,12 +135,13 @@ struct DoctorConsultationHistoryView: View {
     }
 }
 
-// MARK: - Polished History Card
+
 struct ConsultationHistoryCard: View {
     let record: ConsultationRecord
+    // Closure to handle the button tap
+    var onViewSummary: () -> Void
     
     var body: some View {
-        // 🟢 Increased internal spacing to 20
         VStack(alignment: .leading, spacing: 20) {
             
             // Top Row
@@ -149,7 +169,7 @@ struct ConsultationHistoryCard: View {
                     .foregroundStyle(.secondary)
             }
             
-            // 🟢 FLATTENED Diagnosis Box
+            // Diagnosis Box
             VStack(alignment: .leading, spacing: 8) {
                 Text("Primary Diagnosis")
                     .font(.caption)
@@ -160,11 +180,10 @@ struct ConsultationHistoryCard: View {
                     .font(.subheadline)
                     .foregroundStyle(Color(uiColor: .label))
                     .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(4) // Better readability
+                    .lineSpacing(4)
             }
-            .padding(16) // Generous internal padding
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            // Lighter, flatter background
             .background(Color.gray.opacity(0.05))
             .clipShape(RoundedRectangle(cornerRadius: 12))
             
@@ -184,23 +203,25 @@ struct ConsultationHistoryCard: View {
                 
                 Spacer()
                 
-                Button {} label: {
+               
+                Button {
+                    onViewSummary() // Call the closure
+                } label: {
                     Text("View Summary")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(.blue)
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 10) // Slightly taller button
+                        .padding(.vertical, 10)
                         .background(Color.blue.opacity(0.08))
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
             }
         }
-        // 🟢 Increased Card Padding to 20
         .padding(20)
         .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 20)) // Softer corners
-        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4) // Softer shadow
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
 }
 
