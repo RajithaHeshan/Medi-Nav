@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - 1. Data Models
+
 struct ActionCardItem: Identifiable {
     let id = UUID()
     let name: String
@@ -118,7 +118,7 @@ struct HomeView: View {
                     .padding(.top)
                 }
                 
-                // F. Smart Emergency Button
+              
                 SmartEmergencyButton {
                     // 🔴 2. TRIGGER: When tapped, change state to true
                     showEmergencyScreen = true

@@ -74,7 +74,7 @@ struct LabSamplePickupView: View {
         .onAppear {
             startScanLogic()
         }
-        // 🔴 6. NAVIGATION DESTINATION
+       
         .navigationDestination(isPresented: $navigateToSuccess) {
             SampleCollectionSuccessView(
                 sampleType: sampleType,
@@ -84,7 +84,7 @@ struct LabSamplePickupView: View {
         }
     }
     
-    // MARK: - Logic & Helpers
+ 
     
     private func startScanLogic() {
         // Run scan animation for 10 seconds

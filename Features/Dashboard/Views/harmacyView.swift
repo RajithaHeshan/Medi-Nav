@@ -7,13 +7,13 @@ struct PharmacyView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            // 1. Header
+            
             headerView
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     
-                    // 2. Search Bar
+                   
                     HStack(spacing: 8) {
                         Image(systemName: "magnifyingglass")
                             .foregroundStyle(.gray)
@@ -23,8 +23,7 @@ struct PharmacyView: View {
                     .background(Color(uiColor: .systemGray6))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     
-                    // 3. Hero Card (Reusing the "Laboratory" style from DoctorConsultationView)
-                    // Note: I hardcoded the Lab data here as per your screenshot/request
+                    
                     PharmacyHeroCard(
                         stepName: "Next Step: Laboratory",
                         personName: "Ms. Perera (Senior Lab Tech)",
@@ -35,10 +34,10 @@ struct PharmacyView: View {
                         gradientColors: [Color.purple, Color.blue]
                     )
                     
-                    // 4. Pharmacist Info Card
+                    
                     pharmacistInfoCard
                     
-                    // 5. Medication Lists
+                  
                     VStack(alignment: .leading, spacing: 20) {
                         
                         // Pending
@@ -245,7 +244,7 @@ struct PharmacyHeroCard: View {
                     .font(.subheadline).foregroundStyle(.white.opacity(0.9))
             }
             
-            // White Info Strip
+        
             HStack(spacing: 0) {
                 // Position
                 HStack(spacing: 12) {
@@ -258,10 +257,10 @@ struct PharmacyHeroCard: View {
                 }
                 .frame(maxWidth: .infinity)
                 
-                // Divider
+                
                 Rectangle().fill(Color.gray.opacity(0.2)).frame(width: 1, height: 40)
                 
-                // Time
+               
                 HStack(spacing: 12) {
                     ZStack {
                         Circle().fill(Color.blue.opacity(0.1)).frame(width: 44, height: 44)
@@ -276,7 +275,7 @@ struct PharmacyHeroCard: View {
             .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             
-            // Bottom Action
+           
             HStack {
                 Text("Please proceed to waiting area")
                     .font(.caption).foregroundStyle(.white.opacity(0.9))

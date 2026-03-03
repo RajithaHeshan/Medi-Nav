@@ -10,14 +10,13 @@ struct LaboratorySampleSubmissionView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            // 1. Header
+           
             headerView
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     
-                    // 2. Hero Card (High-Fidelity Style as requested)
-                    // Showing "Next Step: Visit Pharmacy" based on your screenshot
+                   
                     LabHeroCard(
                         stepName: "Next Step: Visit Pharmacy",
                         personName: "Mr. Wickrama (Chief Pharmacist)",

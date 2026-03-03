@@ -20,13 +20,13 @@ struct LabReportHistoryView: View {
                 VStack(spacing: 16) {
                     searchBar
                     
-                    // 🟢 SCROLLABLE CHIPS (HIG Compliant)
+                   
                     filterBar
                 }
                 .padding(.bottom, 16)
                 .background(Color(uiColor: .systemBackground))
                 
-                // 3. History List
+               
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         
@@ -47,7 +47,7 @@ struct LabReportHistoryView: View {
                             }
                             
                             if showItem(type: "Blood") {
-                                // Add divider if previous item exists (logic simplified for demo)
+                               
                                 Divider().padding(.leading, 72)
                                 
                                 HistoryReportRow(

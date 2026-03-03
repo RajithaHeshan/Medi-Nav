@@ -91,10 +91,9 @@ struct SampleCollectionSuccessView: View {
             
             Spacer()
             
-            // 3. Bottom Button
+           
             Button {
-                // Action: Navigate to Lab Reports or Dashboard
-                // For now, we can dismiss all the way back or just print
+               
                 print("Move to Lab Reports tapped")
                 // In a real app, you might use a Binding to pop to root
             } label: {

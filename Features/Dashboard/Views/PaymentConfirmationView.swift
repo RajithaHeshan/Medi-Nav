@@ -169,14 +169,14 @@ struct PaymentConfirmationView: View {
                         .fontWeight(.semibold)
                         .foregroundStyle(.secondary)
                     
-                    // Formatting the date nicely
+                  
                     Text("\(selectedDate.formatted(date: .complete, time: .omitted)) | \(selectedTime)")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                 }
             }
             
-            // Location Row (Hardcoded based on design since model lacks location)
+          
             HStack(alignment: .top, spacing: 16) {
                 Image(systemName: "mappin.and.ellipse")
                     .font(.title3)

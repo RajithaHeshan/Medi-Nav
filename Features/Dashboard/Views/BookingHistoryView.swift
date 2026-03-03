@@ -10,7 +10,7 @@ struct AppointmentHistory: Identifiable {
 struct BookingHistoryView: View {
     @Environment(\.dismiss) var dismiss
     @State private var searchText = ""
-    @State private var selectedTab = "Completed" // Default to Completed per screenshot
+    @State private var selectedTab = "Completed"
     
    
     @State private var doctorToRebook: Doctor?
@@ -42,10 +42,10 @@ struct BookingHistoryView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 
-                // 1. Header
+                
                 headerView
                 
-                // 2. Search Bar
+              
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
                         .foregroundStyle(.gray)
@@ -57,7 +57,7 @@ struct BookingHistoryView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 16)
                 
-                // 3. Custom Segmented Control (Pills)
+              
                 HStack(spacing: 0) {
                     tabButton(title: "Upcoming")
                     tabButton(title: "Completed")
