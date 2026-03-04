@@ -1,293 +1,728 @@
+//import SwiftUI
+//import PhotosUI
+//import UniformTypeIdentifiers
+//
+//struct DoctorConsultationView: View {
+//    @Environment(\.dismiss) var dismiss
+//    
+//    // Bottom Sheet States
+//    @State private var showPrescriptionSheet = false
+//    @State private var showAttachModal = false
+//    
+//    // Hardware/Device Access States
+//    @State private var showCamera = false
+//    @State private var showFilePicker = false
+//    @State private var selectedPhotoItem: PhotosPickerItem?
+//    @State private var selectedImage: UIImage?
+//    @State private var attachedFileName: String?
+//    
+//    var body: some View {
+//        VStack(spacing: 0) {
+//            
+//            headerView
+//            
+//            ScrollView(showsIndicators: false) {
+//                VStack(spacing: 24) {
+//                    doctorProfileCard
+//                    nextStepPharmacyCard
+//                    vitalsOverviewSection
+//                    prescriptionsSection
+//                    labReportsSection
+//                    
+//                    Spacer(minLength: 16)
+//                    provideSampleButton
+//                    Spacer(minLength: 40)
+//                }
+//                .padding(.horizontal, 16)
+//                .padding(.top, 16)
+//            }
+//        }
+//        .background(Color(uiColor: .systemGroupedBackground))
+//        .navigationBarHidden(true)
+//        
+//        // 1. Main Bottom Sheet
+//        .sheet(isPresented: $showPrescriptionSheet) {
+//            PrescriptionDetailsSheet(showAttachModal: $showAttachModal)
+//                .presentationDetents([.fraction(0.85), .large])
+//                .presentationDragIndicator(.visible)
+//        }
+//        
+//        // 2. The Custom Attachment Menu Modal
+//        .sheet(isPresented: $showAttachModal) {
+//            CustomAttachMenuSheet(
+//                selectedPhotoItem: $selectedPhotoItem,
+//                onCameraTapped: {
+//                    showCamera = true
+//                },
+//                onFileTapped: {
+//                    showFilePicker = true
+//                }
+//            )
+//            .presentationDetents([.height(350)])
+//            .presentationDragIndicator(.visible)
+//        }
+//        
+//        // 🔴 3. NATIVE CAMERA PRESENTATION (Using the renamed component)
+//        .fullScreenCover(isPresented: $showCamera) {
+//            CameraCaptureView(image: $selectedImage)
+//                .ignoresSafeArea()
+//        }
+//        
+//        // 4. NATIVE FILE MANAGER PRESENTATION
+//        .fileImporter(
+//            isPresented: $showFilePicker,
+//            allowedContentTypes: [.pdf, .image, .plainText],
+//            allowsMultipleSelection: false
+//        ) { result in
+//            switch result {
+//            case .success(let urls):
+//                if let selectedFile = urls.first {
+//                    let gotAccess = selectedFile.startAccessingSecurityScopedResource()
+//                    if gotAccess {
+//                        attachedFileName = selectedFile.lastPathComponent
+//                        print("Successfully attached file: \(attachedFileName ?? "")")
+//                        selectedFile.stopAccessingSecurityScopedResource()
+//                    }
+//                }
+//            case .failure(let error):
+//                print("Failed to select file: \(error.localizedDescription)")
+//            }
+//        }
+//        
+//        // Listen for when a user picks a photo from the Photo Library
+//        .onChange(of: selectedPhotoItem) { _ in
+//            if selectedPhotoItem != nil {
+//                print("Successfully attached a photo from Library")
+//            }
+//        }
+//    }
+//    
+//    // MARK: - Subviews
+//    
+//    private var headerView: some View {
+//        HStack(spacing: 16) {
+//            Button { dismiss() } label: { Image(systemName: "chevron.left").font(.title3).fontWeight(.semibold).foregroundStyle(Color(uiColor: .systemBlue)) }
+//            Text("Doctor Consultation").font(.headline).fontWeight(.bold)
+//            Spacer()
+//        }
+//        .padding()
+//        .background(Color(uiColor: .systemBackground))
+//    }
+//    
+//    private var doctorProfileCard: some View {
+//        HStack(spacing: 16) {
+//            Image("sara jenkins").resizable().scaledToFill().frame(width: 56, height: 56).background(Color(uiColor: .systemGray5)).clipShape(Circle()).overlay(Circle().stroke(Color.gray.opacity(0.1), lineWidth: 1))
+//            VStack(alignment: .leading, spacing: 4) {
+//                Text("Dr. Sarah Jenkins").font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
+//                Text("General Practitioner").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+//                Text("Visit Date: Oct 24, 2023").font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel))
+//            }
+//            Spacer()
+//            Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(Color(uiColor: .systemGray3))
+//        }
+//        .padding(16).background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.1), lineWidth: 1))
+//    }
+//    
+//    private var nextStepPharmacyCard: some View {
+//        VStack(alignment: .leading, spacing: 16) {
+//            Text("Next Step: Visit Pharmacy").font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
+//            VStack(alignment: .leading, spacing: 10) {
+//                HStack(spacing: 8) { Image(systemName: "person.fill").foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 20); Text("DR. Wickrama").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel)) }
+//                HStack(spacing: 8) { Image(systemName: "mappin.and.ellipse").foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 20); Text("2nd Floor, West Wing").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel)) }
+//            }
+//            
+//            if let fileName = attachedFileName {
+//                HStack {
+//                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+//                    Text("Attached: \(fileName)").font(.caption).fontWeight(.semibold).lineLimit(1)
+//                }
+//                .padding(.top, 4)
+//            }
+//            
+//            Button { showPrescriptionSheet = true } label: {
+//                HStack(spacing: 8) { Text("Check In to Pharmacy").fontWeight(.semibold); Image(systemName: "qrcode.viewfinder") }
+//                .font(.subheadline).foregroundStyle(.white).padding(.horizontal, 20).padding(.vertical, 12).background(Color(uiColor: .systemBlue)).clipShape(RoundedRectangle(cornerRadius: 12))
+//            }.padding(.top, 4)
+//            HStack { Text("Please proceed immediately").font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel)); Spacer(); Button { } label: { Text("View Map").font(.caption).fontWeight(.bold).foregroundStyle(Color(uiColor: .systemBlue)) } }
+//        }
+//        .padding(20).background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 20)).shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+//    }
+//    
+//    private var vitalsOverviewSection: some View {
+//        VStack(alignment: .leading, spacing: 16) {
+//            SectionHeader(title: "Vitals Overview", actionText: "ALL")
+//            HStack(spacing: 16) {
+//                VitalsCard(statusIcon: "checkmark.circle.fill", statusColor: Color(uiColor: .systemGreen), statusText: "Normal", title: "Blood Pressure", value: "120/80", unit: "mmHg", progress: 0.6)
+//                VitalsCard(statusIcon: "checkmark.circle.fill", statusColor: Color(uiColor: .systemGreen), statusText: "Normal", title: "Heart Rate", value: "72", unit: "BPM", progress: 0.4)
+//            }
+//        }
+//    }
+//    
+//    private var prescriptionsSection: some View {
+//        VStack(alignment: .leading, spacing: 16) {
+//            SectionHeader(title: "Prescriptions", actionText: "ALL")
+//            VStack(spacing: 12) {
+//                ConsultationItemRow(icon: "pills.fill", iconColor: Color(uiColor: .systemBlue), iconBgColor: Color(uiColor: .systemBlue).opacity(0.1), title: "Amoxicillin 500mg", subtitle: "Take 1 tablet twice daily")
+//                ConsultationItemRow(icon: "cross.vial.fill", iconColor: Color(uiColor: .systemBlue), iconBgColor: Color(uiColor: .systemBlue).opacity(0.1), title: "Paracetamol", subtitle: "Take 1 tablet twice daily")
+//            }
+//        }
+//    }
+//    
+//    private var labReportsSection: some View {
+//        VStack(alignment: .leading, spacing: 16) {
+//            SectionHeader(title: "Lab Reports", actionText: "ALL")
+//            VStack(spacing: 12) {
+//                ConsultationItemRow(icon: "testtube.2", iconColor: Color(uiColor: .systemPurple), iconBgColor: Color(uiColor: .systemPurple).opacity(0.1), title: "Amoxicillin 500mg", subtitle: "Take 1 tablet twice daily")
+//                ConsultationItemRow(icon: "drop.fill", iconColor: Color(uiColor: .systemRed), iconBgColor: Color(uiColor: .systemRed).opacity(0.1), title: "Paracetamol", subtitle: "Take 1 tablet twice daily")
+//            }
+//        }
+//    }
+//    
+//    private var provideSampleButton: some View {
+//        Button { } label: {
+//            Text("Provide Sample").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 16).background(Color(uiColor: .systemBlue)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color(uiColor: .systemBlue).opacity(0.3), radius: 8, x: 0, y: 4)
+//        }
+//    }
+//}
+//
+//// MARK: - The Prescription Details Sheet
+//struct PrescriptionDetailsSheet: View {
+//    @Environment(\.dismiss) var dismiss
+//    @Binding var showAttachModal: Bool
+//    
+//    var body: some View {
+//        VStack(spacing: 0) {
+//            HStack {
+//                Text("Prescription Details").font(.title3).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
+//                Spacer()
+//                Button { dismiss() } label: { Image(systemName: "xmark").font(.body.bold()).foregroundStyle(Color(uiColor: .secondaryLabel)).padding(8) }
+//            }
+//            .padding(.horizontal, 20).padding(.top, 24).padding(.bottom, 16)
+//            
+//            ScrollView(showsIndicators: false) {
+//                VStack(alignment: .leading, spacing: 24) {
+//                    VStack(alignment: .leading, spacing: 16) {
+//                        Text("Medications Prescribed (2)").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+//                        PrescribedMedicationRow(icon: "pills.fill", iconColor: Color(uiColor: .systemBlue), title: "Amoxicillin", badgeText: "ANTIBIOTIC", badgeColor: Color(uiColor: .systemBlue), dosageInfo: "500mg • 20 Capsules", instructions: "Take 1 tablet every 12 hours after food")
+//                        PrescribedMedicationRow(icon: "cross.vial.fill", iconColor: Color(uiColor: .systemBlue), title: "Paracetamol", badgeText: "PAIN RELIEF", badgeColor: Color(uiColor: .systemGreen), dosageInfo: "500mg • 10 Tablets", instructions: "Take 1 tablet every 6 hours if needed")
+//                    }
+//                    
+//                    VStack(spacing: 16) {
+//                        PharmacyRoutingButton(title: "Get at Clinic Pharmacy", subtitle: "Generate QR code & join internal queue", icon: "qrcode.viewfinder", isPrimary: true) { dismiss() }
+//                        PharmacyRoutingButton(title: "Get at Outside Pharmacy", subtitle: "Attach prescription file or photo", icon: "link", isPrimary: false) {
+//                            dismiss()
+//                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+//                                showAttachModal = true
+//                            }
+//                        }
+//                    }.padding(.top, 8)
+//                }.padding(.horizontal, 20).padding(.bottom, 40)
+//            }
+//        }.background(Color(uiColor: .systemBackground))
+//    }
+//}
+//
+//// MARK: - Custom Bottom Modal View with Access Hooks
+//struct CustomAttachMenuSheet: View {
+//    @Environment(\.dismiss) var dismiss
+//    @Binding var selectedPhotoItem: PhotosPickerItem?
+//    var onCameraTapped: () -> Void
+//    var onFileTapped: () -> Void
+//    
+//    var body: some View {
+//        VStack(spacing: 16) {
+//            VStack(spacing: 6) {
+//                Text("Select Photo").font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
+//                Text("Choose how you'd like to add a photo").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel)).multilineTextAlignment(.center)
+//            }
+//            .padding(.top, 24).padding(.bottom, 8)
+//            
+//            VStack(spacing: 0) {
+//                ModalMenuButton(title: "Camera", icon: "camera.fill") {
+//                    dismiss()
+//                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { onCameraTapped() }
+//                }
+//                
+//                Divider()
+//                
+//                PhotosPicker(selection: $selectedPhotoItem, matching: .images, photoLibrary: .shared()) {
+//                    HStack(spacing: 16) {
+//                        Image(systemName: "photo.fill").font(.title3).foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 24)
+//                        Text("Photo Library").font(.headline).foregroundStyle(Color(uiColor: .label))
+//                        Spacer()
+//                        Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(Color(uiColor: .systemGray3))
+//                    }
+//                    .padding().background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
+//                }
+//                .onChange(of: selectedPhotoItem) { _ in dismiss() }
+//                
+//                Divider()
+//                
+//                ModalMenuButton(title: "File Manager", icon: "folder.fill") {
+//                    dismiss()
+//                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { onFileTapped() }
+//                }
+//            }
+//            .background(Color(uiColor: .secondarySystemGroupedBackground))
+//            .clipShape(RoundedRectangle(cornerRadius: 16))
+//            
+//            Button(role: .cancel) { dismiss() } label: {
+//                Text("Cancel").font(.title3).fontWeight(.bold).foregroundStyle(Color(uiColor: .systemBlue)).frame(maxWidth: .infinity).padding(.vertical, 16).background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16))
+//            }
+//            Spacer()
+//        }
+//        .padding(.horizontal, 16)
+//        .background(Color(uiColor: .systemGroupedBackground))
+//    }
+//}
+//
+//// 🔴 THE FIX: Renamed from 'ImagePicker' to 'CameraCaptureView' to avoid your project's naming collision
+//struct CameraCaptureView: UIViewControllerRepresentable {
+//    @Binding var image: UIImage?
+//    @Environment(\.presentationMode) var presentationMode
+//
+//    func makeUIViewController(context: Context) -> UIImagePickerController {
+//        let picker = UIImagePickerController()
+//        picker.delegate = context.coordinator
+//        picker.sourceType = .camera
+//        return picker
+//    }
+//
+//    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+//
+//    func makeCoordinator() -> Coordinator {
+//        Coordinator(self)
+//    }
+//
+//    class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+//        let parent: CameraCaptureView
+//
+//        init(_ parent: CameraCaptureView) {
+//            self.parent = parent
+//        }
+//
+//        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+//            if let uiImage = info[.originalImage] as? UIImage {
+//                parent.image = uiImage
+//            }
+//            parent.presentationMode.wrappedValue.dismiss()
+//        }
+//    }
+//}
+//
+//// MARK: - Reusable Sheet Components & Layout
+//struct ModalMenuButton: View {
+//    let title: String; let icon: String; let action: () -> Void
+//    var body: some View {
+//        Button(action: action) {
+//            HStack(spacing: 16) {
+//                Image(systemName: icon).font(.title3).foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 24)
+//                Text(title).font(.headline).foregroundStyle(Color(uiColor: .label))
+//                Spacer(); Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(Color(uiColor: .systemGray3))
+//            }.padding().background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
+//        }
+//    }
+//}
+//
+//struct PrescribedMedicationRow: View {
+//    let icon: String; let iconColor: Color; let title: String; let badgeText: String; let badgeColor: Color; let dosageInfo: String; let instructions: String
+//    var body: some View {
+//        HStack(alignment: .top, spacing: 16) {
+//            ZStack { RoundedRectangle(cornerRadius: 12).fill(Color(uiColor: .secondarySystemGroupedBackground)).frame(width: 48, height: 48).shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2); Image(systemName: icon).font(.title3).foregroundStyle(iconColor) }
+//            VStack(alignment: .leading, spacing: 8) {
+//                HStack { Text(title).font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Spacer(); Text(badgeText).font(.system(size: 10, weight: .bold)).foregroundStyle(badgeColor).padding(.horizontal, 8).padding(.vertical, 4).background(badgeColor.opacity(0.1)).clipShape(Capsule()) }
+//                Text(dosageInfo).font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+//                HStack(spacing: 8) { Image(systemName: "clock").foregroundStyle(Color(uiColor: .tertiaryLabel)); Text(instructions).foregroundStyle(Color(uiColor: .secondaryLabel)) }.font(.caption).padding(.horizontal, 12).padding(.vertical, 8).frame(maxWidth: .infinity, alignment: .leading).background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 8))
+//            }
+//        }
+//    }
+//}
+//
+//struct PharmacyRoutingButton: View {
+//    let title: String; let subtitle: String; let icon: String; let isPrimary: Bool; let action: () -> Void
+//    var body: some View {
+//        Button(action: action) {
+//            HStack(spacing: 16) {
+//                Image(systemName: icon).font(.title2).foregroundStyle(isPrimary ? .white : Color(uiColor: .systemBlue)).frame(width: 30)
+//                VStack(alignment: .leading, spacing: 2) { Text(title).font(.subheadline).fontWeight(.bold).foregroundStyle(isPrimary ? .white : Color(uiColor: .label)); Text(subtitle).font(.caption).foregroundStyle(isPrimary ? .white.opacity(0.8) : Color(uiColor: .secondaryLabel)) }
+//                Spacer(); Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(isPrimary ? .white : Color(uiColor: .systemGray3))
+//            }.padding().background(isPrimary ? Color(uiColor: .systemBlue) : Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: isPrimary ? Color(uiColor: .systemBlue).opacity(0.3) : Color.clear, radius: 8, x: 0, y: 4)
+//        }.buttonStyle(PlainButtonStyle())
+//    }
+//}
+//
+//struct SectionHeader: View { let title: String; let actionText: String; var body: some View { HStack { Text(title).font(.title3).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Spacer(); Button(actionText) { }.font(.subheadline).fontWeight(.semibold).foregroundStyle(Color(uiColor: .systemBlue)) } } }
+//
+//struct VitalsCard: View { let statusIcon: String; let statusColor: Color; let statusText: String; let title: String; let value: String; let unit: String; let progress: Double; var body: some View { VStack(alignment: .leading, spacing: 12) { HStack { ZStack { Circle().fill(statusColor.opacity(0.1)).frame(width: 28, height: 28); Image(systemName: statusIcon).font(.caption).foregroundStyle(statusColor) }; Spacer(); Text(statusText).font(.caption2).fontWeight(.semibold).foregroundStyle(Color(uiColor: .secondaryLabel)) }; VStack(alignment: .leading, spacing: 4) { Text(title).font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel)); HStack(alignment: .firstTextBaseline, spacing: 2) { Text(value).font(.title2).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Text(unit).font(.caption2).foregroundStyle(Color(uiColor: .tertiaryLabel)) } }; GeometryReader { geometry in ZStack(alignment: .leading) { Capsule().fill(Color(uiColor: .systemGray5)).frame(height: 4); Capsule().fill(statusColor).frame(width: geometry.size.width * progress, height: 4) } }.frame(height: 4) }.padding(16).frame(maxWidth: .infinity).background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.02), radius: 5, x: 0, y: 2).overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.1), lineWidth: 1)) } }
+//
+//struct ConsultationItemRow: View { let icon: String; let iconColor: Color; let iconBgColor: Color; let title: String; let subtitle: String; var body: some View { HStack(spacing: 16) { ZStack { RoundedRectangle(cornerRadius: 12).fill(iconBgColor).frame(width: 48, height: 48); Image(systemName: icon).font(.title3).foregroundStyle(iconColor) }; VStack(alignment: .leading, spacing: 4) { Text(title).font(.subheadline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Text(subtitle).font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel)) }; Spacer() }.padding(12).background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.02), radius: 5, x: 0, y: 2) } }
+//
+//#Preview {
+//    DoctorConsultationView()
+//}
+
 
 import SwiftUI
-import Combine
-
-
-struct ConsultationStepItem: Identifiable {
-    let id = UUID()
-    let stepName: String
-    let personName: String
-    let locationInfo: String
-    let currentPosition: String
-    let waitingTime: String
-    let status: String
-    let gradientColors: [Color]
-}
+import PhotosUI
+import UniformTypeIdentifiers
 
 struct DoctorConsultationView: View {
     @Environment(\.dismiss) var dismiss
     
-   
-    @State private var showMedicationPickup = false
+    // Bottom Sheet States
+    @State private var showPrescriptionSheet = false
+    @State private var showAttachModal = false
     
-   
-    @State private var currentPage = 0
-    private let timer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
-    
-   
-    private let consultationSteps = [
-     
-        ConsultationStepItem(
-            stepName: "Next Step: Pharmacy",
-            personName: "Mr. Wickrama (Chief Pharmacist)",
-            locationInfo: "3rd Floor, Room 13",
-            currentPosition: "05",
-            waitingTime: "15 mins",
-            status: "In Progress",
-            gradientColors: [Color.teal, Color.green]
-        ),
-        
-        ConsultationStepItem(
-            stepName: "Next Step: Laboratory",
-            personName: "Ms. Perera (Senior Lab Tech)",
-            locationInfo: "4th Floor, Room 12",
-            currentPosition: "03",
-            waitingTime: "20 mins",
-            status: "In Progress",
-            gradientColors: [Color.purple, Color.blue]
-        )
-    ]
+    // Hardware/Device Access States
+    @State private var showCamera = false
+    @State private var showFilePicker = false
+    @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var selectedImage: UIImage?
+    @State private var attachedFileName: String?
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                
-                // 1. Header
-                headerView
-                
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 24) {
-                        
-                        
-                        doctorInfoCard
-                        
-                        // 3. AUTO-SWIPING CAROUSEL
-                        TabView(selection: $currentPage) {
-                            ForEach(0..<consultationSteps.count, id: \.self) { index in
-                                ConsultationStatusCard(step: consultationSteps[index])
-                                    .padding(.horizontal, 4)
-                                    .tag(index)
-                            }
-                        }
-                        .tabViewStyle(.page(indexDisplayMode: .always))
-                        .frame(height: 260) // Height fits new card layout
-                        .indexViewStyle(.page(backgroundDisplayMode: .interactive))
-                        .onAppear {
-                            UIPageControl.appearance().currentPageIndicatorTintColor = .white
-                            UIPageControl.appearance().pageIndicatorTintColor = .systemGray4
-                        }
-                        .onReceive(timer) { _ in
-                            withAnimation(.spring()) {
-                                currentPage = (currentPage + 1) % consultationSteps.count
-                            }
-                        }
-                        
-                        // 4. Vitals
-                        vitalsSection
-                        
-                        // 5. Prescriptions (Contains Navigation Button)
-                        prescriptionsSection
-                        
-                        // 6. Lab Reports (Updated Text)
-                        labReportsSection
-                        
-                        Spacer(minLength: 40)
-                    }
-                    .padding()
-                }
-            }
-            .background(Color(uiColor: .systemGroupedBackground))
-            .navigationBarHidden(true)
+        VStack(spacing: 0) {
             
-            // 🔴 NAVIGATION DESTINATION
-            .navigationDestination(isPresented: $showMedicationPickup) {
-                MedicationPickupView()
-                    .navigationBarBackButtonHidden(true)
+            headerView
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    doctorProfileCard
+                    nextStepPharmacyCard
+                    vitalsOverviewSection
+                    prescriptionsSection
+                    labReportsSection
+                    
+                    Spacer(minLength: 16)
+                    provideSampleButton
+                    Spacer(minLength: 40)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+            }
+        }
+        .background(Color(uiColor: .systemGroupedBackground))
+        .navigationBarHidden(true)
+        
+        // 1. Main Bottom Sheet
+        .sheet(isPresented: $showPrescriptionSheet) {
+            PrescriptionDetailsSheet(showAttachModal: $showAttachModal)
+                .presentationDetents([.fraction(0.85), .large])
+                .presentationDragIndicator(.visible)
+        }
+        
+        // 2. The Custom Attachment Menu Modal
+        .sheet(isPresented: $showAttachModal) {
+            CustomAttachMenuSheet(
+                selectedPhotoItem: $selectedPhotoItem,
+                onCameraTapped: {
+                    showCamera = true
+                },
+                onFileTapped: {
+                    showFilePicker = true
+                }
+            )
+            .presentationDetents([.height(350)])
+            .presentationDragIndicator(.visible)
+        }
+        
+        // 🔴 3. NATIVE CAMERA PRESENTATION (Using the renamed component)
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraCaptureView(image: $selectedImage)
+                .ignoresSafeArea()
+        }
+        
+        // 4. NATIVE FILE MANAGER PRESENTATION
+        .fileImporter(
+            isPresented: $showFilePicker,
+            allowedContentTypes: [.pdf, .image, .plainText],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                if let selectedFile = urls.first {
+                    let gotAccess = selectedFile.startAccessingSecurityScopedResource()
+                    if gotAccess {
+                        attachedFileName = selectedFile.lastPathComponent
+                        print("Successfully attached file: \(attachedFileName ?? "")")
+                        selectedFile.stopAccessingSecurityScopedResource()
+                    }
+                }
+            case .failure(let error):
+                print("Failed to select file: \(error.localizedDescription)")
+            }
+        }
+        
+        // Listen for when a user picks a photo from the Photo Library
+        .onChange(of: selectedPhotoItem) { _ in
+            if selectedPhotoItem != nil {
+                print("Successfully attached a photo from Library")
             }
         }
     }
     
-    
+    // MARK: - Subviews
     
     private var headerView: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3).bold()
-                    .foregroundStyle(.black)
-            }
+        HStack(spacing: 16) {
+            Button { dismiss() } label: { Image(systemName: "chevron.left").font(.title3).fontWeight(.semibold).foregroundStyle(Color(uiColor: .systemBlue)) }
+            Text("Doctor Consultation").font(.headline).fontWeight(.bold)
             Spacer()
-            Text("Doctor Consultation")
-                .font(.headline)
-                .bold()
-            Spacer()
-            Image(systemName: "chevron.left").font(.title3).opacity(0)
         }
         .padding()
         .background(Color(uiColor: .systemBackground))
     }
     
-    private var doctorInfoCard: some View {
+    private var doctorProfileCard: some View {
         HStack(spacing: 16) {
-            Image("doctor1") // Ensure asset name matches your Assets
-                .resizable().scaledToFill()
-                .frame(width: 50, height: 50).clipShape(Circle())
-            
+            Image("sara jenkins").resizable().scaledToFill().frame(width: 56, height: 56).background(Color(uiColor: .systemGray5)).clipShape(Circle()).overlay(Circle().stroke(Color.gray.opacity(0.1), lineWidth: 1))
             VStack(alignment: .leading, spacing: 4) {
-                Text("Dr. Sarah Jenkins").font(.headline).foregroundStyle(Color(uiColor: .label))
-                Text("General Practitioner").font(.caption).foregroundStyle(.secondary)
-                Text("Visit Date: Oct 24, 2023").font(.caption2).foregroundStyle(.secondary)
+                Text("Dr. Sarah Jenkins").font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
+                Text("General Practitioner").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                Text("Visit Date: Oct 24, 2023").font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel))
             }
             Spacer()
-            Image(systemName: "chevron.right").font(.caption).foregroundStyle(.gray.opacity(0.5))
+            Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(Color(uiColor: .systemGray3))
         }
-        .padding(16)
-        .background(Color(uiColor: .systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.2), lineWidth: 1))
+        .padding(16).background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.1), lineWidth: 1))
     }
     
-    private var vitalsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack { Text("Vitals Overview").font(.headline); Spacer(); Button("ALL") { }.font(.caption).bold().foregroundStyle(.blue) }
-            HStack(spacing: 12) {
-                vitalCard(title: "Blood Pressure", value: "120/80", unit: "mmHg", status: "Normal", color: .green, progress: 0.7)
-                vitalCard(title: "Heart Rate", value: "72", unit: "BPM", status: "Normal", color: .green, progress: 0.5)
+    private var nextStepPharmacyCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Next Step: Visit Pharmacy").font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) { Image(systemName: "person.fill").foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 20); Text("DR. Wickrama").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel)) }
+                HStack(spacing: 8) { Image(systemName: "mappin.and.ellipse").foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 20); Text("2nd Floor, West Wing").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel)) }
             }
+            
+            if let fileName = attachedFileName {
+                HStack {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                    Text("Attached: \(fileName)").font(.caption).fontWeight(.semibold).lineLimit(1)
+                }
+                .padding(.top, 4)
+            }
+            
+            Button { showPrescriptionSheet = true } label: {
+                HStack(spacing: 8) { Text("Check In to Pharmacy").fontWeight(.semibold); Image(systemName: "qrcode.viewfinder") }
+                .font(.subheadline).foregroundStyle(.white).padding(.horizontal, 20).padding(.vertical, 12).background(Color(uiColor: .systemBlue)).clipShape(RoundedRectangle(cornerRadius: 12))
+            }.padding(.top, 4)
+            HStack { Text("Please proceed immediately").font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel)); Spacer(); Button { } label: { Text("View Map").font(.caption).fontWeight(.bold).foregroundStyle(Color(uiColor: .systemBlue)) } }
         }
+        .padding(20).background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 20)).shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
     
-    private func vitalCard(title: String, value: String, unit: String, status: String, color: Color, progress: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack { Image(systemName: "checkmark.circle.fill").foregroundStyle(color); Spacer(); Text(status).font(.caption2).foregroundStyle(color) }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.caption).foregroundStyle(.secondary)
-                HStack(alignment: .lastTextBaseline, spacing: 2) { Text(value).font(.title3).bold(); Text(unit).font(.caption2).foregroundStyle(.secondary) }
+    private var vitalsOverviewSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            SectionHeader(title: "Vitals Overview", actionText: "ALL")
+            HStack(spacing: 16) {
+                VitalsCard(statusIcon: "checkmark.circle.fill", statusColor: Color(uiColor: .systemGreen), statusText: "Normal", title: "Blood Pressure", value: "120/80", unit: "mmHg", progress: 0.6)
+                VitalsCard(statusIcon: "checkmark.circle.fill", statusColor: Color(uiColor: .systemGreen), statusText: "Normal", title: "Heart Rate", value: "72", unit: "BPM", progress: 0.4)
             }
-            Capsule().frame(height: 4).foregroundStyle(Color.gray.opacity(0.2))
-                .overlay(GeometryReader { geo in Capsule().fill(color).frame(width: geo.size.width * progress) }, alignment: .leading)
         }
-        .padding(12).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 12)).shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
     }
     
     private var prescriptionsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack { Text("Prescriptions").font(.headline); Spacer(); Button("ALL") { }.font(.caption).bold().foregroundStyle(.blue) }
+        VStack(alignment: .leading, spacing: 16) {
+            SectionHeader(title: "Prescriptions", actionText: "ALL")
             VStack(spacing: 12) {
-                prescriptionRow(icon: "pills.fill", color: .blue, name: "Amoxicillin 500mg", dosage: "Take 1 tablet twice daily")
-                prescriptionRow(icon: "pills.fill", color: .blue, name: "Paracetamol", dosage: "Take 1 tablet twice daily")
+                ConsultationItemRow(icon: "pills.fill", iconColor: Color(uiColor: .systemBlue), iconBgColor: Color(uiColor: .systemBlue).opacity(0.1), title: "Amoxicillin 500mg", subtitle: "Take 1 tablet twice daily")
+                ConsultationItemRow(icon: "cross.vial.fill", iconColor: Color(uiColor: .systemBlue), iconBgColor: Color(uiColor: .systemBlue).opacity(0.1), title: "Paracetamol", subtitle: "Take 1 tablet twice daily")
             }
-            
-          
-            Button {
-                showMedicationPickup = true // Triggers navigation
-            } label: {
-                HStack {
-                    Text("Pick up medicine")
-                    Image(systemName: "qrcode")
-                }
-                .font(.headline).foregroundStyle(.white)
-                .frame(maxWidth: .infinity).padding()
-                .background(Color.blue)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-            .padding(.top, 8)
         }
     }
     
     private var labReportsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack { Text("Lab Reports").font(.headline); Spacer(); Button("ALL") { }.font(.caption).bold().foregroundStyle(.blue) }
+        VStack(alignment: .leading, spacing: 16) {
+            SectionHeader(title: "Lab Reports", actionText: "ALL")
             VStack(spacing: 12) {
-                // 🔴 UPDATED TEXT
-                prescriptionRow(icon: "microbe.fill", color: .purple, name: "Urinalysis Report", dosage: "You should get report within two days")
-                prescriptionRow(icon: "drop.fill", color: .red, name: "Complete Blood Count", dosage: "You should get report within two days")
+                ConsultationItemRow(icon: "testtube.2", iconColor: Color(uiColor: .systemPurple), iconBgColor: Color(uiColor: .systemPurple).opacity(0.1), title: "Amoxicillin 500mg", subtitle: "Take 1 tablet twice daily")
+                ConsultationItemRow(icon: "drop.fill", iconColor: Color(uiColor: .systemRed), iconBgColor: Color(uiColor: .systemRed).opacity(0.1), title: "Paracetamol", subtitle: "Take 1 tablet twice daily")
             }
-            Button { } label: { Text("Pick up Report").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding().background(Color.blue).clipShape(RoundedRectangle(cornerRadius: 12)) }.padding(.top, 8)
         }
     }
     
-    private func prescriptionRow(icon: String, color: Color, name: String, dosage: String) -> some View {
-        HStack(spacing: 16) {
-            ZStack { RoundedRectangle(cornerRadius: 10).fill(color.opacity(0.1)).frame(width: 48, height: 48); Image(systemName: icon).font(.title3).foregroundStyle(color) }
-            VStack(alignment: .leading, spacing: 4) { Text(name).font(.subheadline).fontWeight(.semibold).foregroundStyle(Color(uiColor: .label)); Text(dosage).font(.caption).foregroundStyle(.secondary) }
-            Spacer()
+    private var provideSampleButton: some View {
+        Button { } label: {
+            Text("Provide Sample").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 16).background(Color(uiColor: .systemBlue)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color(uiColor: .systemBlue).opacity(0.3), radius: 8, x: 0, y: 4)
         }
-        .padding(12).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
-// MARK: - 4. CARD COMPONENT (Pharmacy/Lab)
-struct ConsultationStatusCard: View {
-    let step: ConsultationStepItem
+// MARK: - The Prescription Details Sheet
+struct PrescriptionDetailsSheet: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var showAttachModal: Bool
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            
-            // Top Row: Title & Status
+        VStack(spacing: 0) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(step.stepName)
-                        .font(.title3).bold().foregroundStyle(.white)
-                    Text(step.personName)
-                        .font(.caption).foregroundStyle(.white.opacity(0.9))
-                }
+                Text("Prescription Details").font(.title3).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
                 Spacer()
-                // Status Badge
-                Text(step.status)
-                    .font(.caption).fontWeight(.bold)
-                    .foregroundStyle(.white.opacity(0.9))
-                    .padding(.horizontal, 12).padding(.vertical, 6)
-                    .background(Color.white.opacity(0.2))
-                    .clipShape(Capsule())
+                Button { dismiss() } label: { Image(systemName: "xmark").font(.body.bold()).foregroundStyle(Color(uiColor: .secondaryLabel)).padding(8) }
             }
+            .padding(.horizontal, 20).padding(.top, 24).padding(.bottom, 16)
             
-            // Location Info
-            HStack(spacing: 6) {
-                Image(systemName: "mappin.and.ellipse").font(.caption).foregroundStyle(.white.opacity(0.9))
-                Text(step.locationInfo).font(.subheadline).foregroundStyle(.white.opacity(0.9))
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Medications Prescribed (2)").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                        PrescribedMedicationRow(icon: "pills.fill", iconColor: Color(uiColor: .systemBlue), title: "Amoxicillin", badgeText: "ANTIBIOTIC", badgeColor: Color(uiColor: .systemBlue), dosageInfo: "500mg • 20 Capsules", instructions: "Take 1 tablet every 12 hours after food")
+                        PrescribedMedicationRow(icon: "cross.vial.fill", iconColor: Color(uiColor: .systemBlue), title: "Paracetamol", badgeText: "PAIN RELIEF", badgeColor: Color(uiColor: .systemGreen), dosageInfo: "500mg • 10 Tablets", instructions: "Take 1 tablet every 6 hours if needed")
+                    }
+                    
+                    VStack(spacing: 16) {
+                        PharmacyRoutingButton(title: "Get at Clinic Pharmacy", subtitle: "Generate QR code & join internal queue", icon: "qrcode.viewfinder", isPrimary: true) { dismiss() }
+                        PharmacyRoutingButton(title: "Get at Outside Pharmacy", subtitle: "Attach prescription file or photo", icon: "link", isPrimary: false) {
+                            dismiss()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                showAttachModal = true
+                            }
+                        }
+                    }.padding(.top, 8)
+                }.padding(.horizontal, 20).padding(.bottom, 40)
             }
-            
-           
-            HStack(spacing: 0) {
-                // Position
-                HStack(spacing: 12) {
-                    ZStack { Circle().fill(Color.teal.opacity(0.1)).frame(width: 44, height: 44); Image(systemName: "person.3.fill").font(.title3).foregroundStyle(.teal) }
-                    Text(step.currentPosition).font(.title2).bold().foregroundStyle(Color(uiColor: .label))
-                }
-                .frame(maxWidth: .infinity)
-                
-               
-                Rectangle().fill(Color.gray.opacity(0.2)).frame(width: 1, height: 40)
-                
-                
-                HStack(spacing: 12) {
-                    ZStack { Circle().fill(Color.orange.opacity(0.1)).frame(width: 44, height: 44); Image(systemName: "hourglass").font(.title3).foregroundStyle(.orange) }
-                    Text(step.waitingTime).font(.title3).bold().foregroundStyle(Color(uiColor: .label))
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .padding(16)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            
-            
-            HStack {
-                Text("Please proceed to waiting area")
-                    .font(.caption).foregroundStyle(.white.opacity(0.9))
-                Spacer()
-                Button { } label: {
-                    HStack(spacing: 4) { Text("View Map"); Image(systemName: "arrow.right") }
-                        .font(.caption).fontWeight(.bold).foregroundStyle(.white)
-                }
-            }
-        }
-        .padding(20)
-        .background(LinearGradient(colors: step.gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing))
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: step.gradientColors.first?.opacity(0.3) ?? .gray, radius: 10, x: 0, y: 5)
+        }.background(Color(uiColor: .systemBackground))
     }
 }
+
+// MARK: - Custom Bottom Modal View with Access Hooks
+struct CustomAttachMenuSheet: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var selectedPhotoItem: PhotosPickerItem?
+    var onCameraTapped: () -> Void
+    var onFileTapped: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            VStack(spacing: 6) {
+                Text("Select Photo").font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
+                Text("Choose how you'd like to add a photo").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel)).multilineTextAlignment(.center)
+            }
+            .padding(.top, 24).padding(.bottom, 8)
+            
+            VStack(spacing: 0) {
+                // 1. Camera Trigger
+                ModalMenuButton(title: "Camera", icon: "camera.fill") {
+                    dismiss()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { onCameraTapped() }
+                }
+                
+                Divider()
+                
+                // 2. Native PhotosPicker Trigger
+                PhotosPicker(selection: $selectedPhotoItem, matching: .images, photoLibrary: .shared()) {
+                    HStack(spacing: 16) {
+                        Image(systemName: "photo.fill").font(.title3).foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 24)
+                        Text("Photo Library").font(.headline).foregroundStyle(Color(uiColor: .label))
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(Color(uiColor: .systemGray3))
+                    }
+                    .padding().background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
+                }
+                .onChange(of: selectedPhotoItem) { _ in dismiss() } // 
+                
+                Divider()
+                
+                // 3. File Manager Trigger
+                ModalMenuButton(title: "File Manager", icon: "folder.fill") {
+                    dismiss()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { onFileTapped() }
+                }
+            }
+            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            
+            Button(role: .cancel) { dismiss() } label: {
+                Text("Cancel").font(.title3).fontWeight(.bold).foregroundStyle(Color(uiColor: .systemBlue)).frame(maxWidth: .infinity).padding(.vertical, 16).background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16))
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .background(Color(uiColor: .systemGroupedBackground))
+    }
+}
+
+// 🔴 THE NATIVE CAMERA WRAPPER
+struct CameraCaptureView: UIViewControllerRepresentable {
+    @Binding var image: UIImage?
+    @Environment(\.presentationMode) var presentationMode
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.delegate = context.coordinator
+        picker.sourceType = .camera // Triggers the device camera
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+        let parent: CameraCaptureView
+
+        init(_ parent: CameraCaptureView) {
+            self.parent = parent
+        }
+
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            if let uiImage = info[.originalImage] as? UIImage {
+                parent.image = uiImage
+            }
+            parent.presentationMode.wrappedValue.dismiss()
+        }
+    }
+}
+
+// MARK: - Reusable Sheet Components & Layout
+struct ModalMenuButton: View {
+    let title: String; let icon: String; let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                Image(systemName: icon).font(.title3).foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 24)
+                Text(title).font(.headline).foregroundStyle(Color(uiColor: .label))
+                Spacer(); Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(Color(uiColor: .systemGray3))
+            }.padding().background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
+        }
+    }
+}
+
+struct PrescribedMedicationRow: View {
+    let icon: String; let iconColor: Color; let title: String; let badgeText: String; let badgeColor: Color; let dosageInfo: String; let instructions: String
+    var body: some View {
+        HStack(alignment: .top, spacing: 16) {
+            ZStack { RoundedRectangle(cornerRadius: 12).fill(Color(uiColor: .secondarySystemGroupedBackground)).frame(width: 48, height: 48).shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2); Image(systemName: icon).font(.title3).foregroundStyle(iconColor) }
+            VStack(alignment: .leading, spacing: 8) {
+                HStack { Text(title).font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Spacer(); Text(badgeText).font(.system(size: 10, weight: .bold)).foregroundStyle(badgeColor).padding(.horizontal, 8).padding(.vertical, 4).background(badgeColor.opacity(0.1)).clipShape(Capsule()) }
+                Text(dosageInfo).font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                HStack(spacing: 8) { Image(systemName: "clock").foregroundStyle(Color(uiColor: .tertiaryLabel)); Text(instructions).foregroundStyle(Color(uiColor: .secondaryLabel)) }.font(.caption).padding(.horizontal, 12).padding(.vertical, 8).frame(maxWidth: .infinity, alignment: .leading).background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+        }
+    }
+}
+
+struct PharmacyRoutingButton: View {
+    let title: String; let subtitle: String; let icon: String; let isPrimary: Bool; let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                Image(systemName: icon).font(.title2).foregroundStyle(isPrimary ? .white : Color(uiColor: .systemBlue)).frame(width: 30)
+                VStack(alignment: .leading, spacing: 2) { Text(title).font(.subheadline).fontWeight(.bold).foregroundStyle(isPrimary ? .white : Color(uiColor: .label)); Text(subtitle).font(.caption).foregroundStyle(isPrimary ? .white.opacity(0.8) : Color(uiColor: .secondaryLabel)) }
+                Spacer(); Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(isPrimary ? .white : Color(uiColor: .systemGray3))
+            }.padding().background(isPrimary ? Color(uiColor: .systemBlue) : Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: isPrimary ? Color(uiColor: .systemBlue).opacity(0.3) : Color.clear, radius: 8, x: 0, y: 4)
+        }.buttonStyle(PlainButtonStyle())
+    }
+}
+
+struct SectionHeader: View { let title: String; let actionText: String; var body: some View { HStack { Text(title).font(.title3).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Spacer(); Button(actionText) { }.font(.subheadline).fontWeight(.semibold).foregroundStyle(Color(uiColor: .systemBlue)) } } }
+
+struct VitalsCard: View { let statusIcon: String; let statusColor: Color; let statusText: String; let title: String; let value: String; let unit: String; let progress: Double; var body: some View { VStack(alignment: .leading, spacing: 12) { HStack { ZStack { Circle().fill(statusColor.opacity(0.1)).frame(width: 28, height: 28); Image(systemName: statusIcon).font(.caption).foregroundStyle(statusColor) }; Spacer(); Text(statusText).font(.caption2).fontWeight(.semibold).foregroundStyle(Color(uiColor: .secondaryLabel)) }; VStack(alignment: .leading, spacing: 4) { Text(title).font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel)); HStack(alignment: .firstTextBaseline, spacing: 2) { Text(value).font(.title2).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Text(unit).font(.caption2).foregroundStyle(Color(uiColor: .tertiaryLabel)) } }; GeometryReader { geometry in ZStack(alignment: .leading) { Capsule().fill(Color(uiColor: .systemGray5)).frame(height: 4); Capsule().fill(statusColor).frame(width: geometry.size.width * progress, height: 4) } }.frame(height: 4) }.padding(16).frame(maxWidth: .infinity).background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.02), radius: 5, x: 0, y: 2).overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.1), lineWidth: 1)) } }
+
+struct ConsultationItemRow: View { let icon: String; let iconColor: Color; let iconBgColor: Color; let title: String; let subtitle: String; var body: some View { HStack(spacing: 16) { ZStack { RoundedRectangle(cornerRadius: 12).fill(iconBgColor).frame(width: 48, height: 48); Image(systemName: icon).font(.title3).foregroundStyle(iconColor) }; VStack(alignment: .leading, spacing: 4) { Text(title).font(.subheadline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Text(subtitle).font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel)) }; Spacer() }.padding(12).background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.02), radius: 5, x: 0, y: 2) } }
 
 #Preview {
     DoctorConsultationView()
