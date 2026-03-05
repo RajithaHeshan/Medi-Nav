@@ -9,7 +9,7 @@ struct ClinicMapView: View {
     
    
     @State private var routePath: [CGPoint] = []
-    @State private var currentDotPosition: CGPoint = CGPoint(x: 0.05, y: 0.52) // Default at Entrance
+    @State private var currentDotPosition: CGPoint = CGPoint(x: 0.05, y: 0.52)
     @State private var isNavigating = false
     @State private var selectedDestinationName: String? = nil
     
@@ -19,7 +19,7 @@ struct ClinicMapView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            // 1. Header & Search Bar
+           
             VStack(spacing: 16) {
                 HStack {
                     Button { dismiss() } label: { Image(systemName: "chevron.left").font(.title2).bold().foregroundStyle(.black) }
@@ -120,8 +120,7 @@ struct ClinicMapView: View {
                     }
                 }
                 
-                // 3. Search Results Dropdown List
-                // 🔴 FIXED: Reliably shows up when typing
+               
                 if isSearchFocused && !searchText.isEmpty {
                     ScrollView {
                         VStack(spacing: 0) {

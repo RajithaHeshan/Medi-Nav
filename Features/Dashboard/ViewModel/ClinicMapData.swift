@@ -13,11 +13,11 @@ class ClinicMapData {
     
     let nodes: [String: MapNode] = [
         
-       
+        
+        
         "entrance_left": MapNode(
             id: "entrance_left",
             name: "Main Entrance",
-            // Adjusted X to start perfectly at the left door
             position: CGPoint(x: 0.08, y: 0.53),
             connectedEdges: ["hall_reception"],
             isDestination: true
@@ -26,7 +26,8 @@ class ClinicMapData {
         "reception": MapNode(
             id: "reception",
             name: "Reception",
-            position: CGPoint(x: 0.23, y: 0.44),
+            // Aligned perfectly above its hallway intersection
+            position: CGPoint(x: 0.21, y: 0.44),
             connectedEdges: ["hall_reception"],
             isDestination: true
         ),
@@ -34,7 +35,8 @@ class ClinicMapData {
         "wash_room": MapNode(
             id: "wash_room",
             name: "Wash Room",
-            position: CGPoint(x: 0.35, y: 0.68),
+            // 🔴 FIXED: Pulled Left to match the actual image
+            position: CGPoint(x: 0.29, y: 0.66),
             connectedEdges: ["hall_washroom"],
             isDestination: true
         ),
@@ -42,8 +44,7 @@ class ClinicMapData {
         "dr_room_3": MapNode(
             id: "dr_room_3",
             name: "Doctor Room 3",
-            // Adjusted to sit right next to the middle vertical hallway
-            position: CGPoint(x: 0.64, y: 0.53),
+            position: CGPoint(x: 0.62, y: 0.53),
             connectedEdges: ["hall_middle_cross"],
             isDestination: true
         ),
@@ -51,8 +52,7 @@ class ClinicMapData {
         "pharmacy": MapNode(
             id: "pharmacy",
             name: "Pharmacy",
-            // Adjusted to perfectly hit the orange box
-            position: CGPoint(x: 0.65, y: 0.73),
+            position: CGPoint(x: 0.60, y: 0.73),
             connectedEdges: ["hall_pharmacy"],
             isDestination: true
         ),
@@ -64,7 +64,7 @@ class ClinicMapData {
         "hall_reception": MapNode(
             id: "hall_reception",
             name: "Hallway (Reception)",
-            position: CGPoint(x: 0.23, y: 0.53),
+            position: CGPoint(x: 0.21, y: 0.53),
             connectedEdges: ["entrance_left", "reception", "hall_washroom"],
             isDestination: false
         ),
@@ -72,7 +72,8 @@ class ClinicMapData {
         "hall_washroom": MapNode(
             id: "hall_washroom",
             name: "Hallway (Washroom)",
-            position: CGPoint(x: 0.35, y: 0.53),
+            // 🔴 FIXED: Intersects perfectly above the Wash Room now
+            position: CGPoint(x: 0.29, y: 0.53),
             connectedEdges: ["hall_reception", "wash_room", "hall_middle_cross"],
             isDestination: false
         ),
@@ -80,8 +81,8 @@ class ClinicMapData {
         "hall_middle_cross": MapNode(
             id: "hall_middle_cross",
             name: "Main Middle Intersection",
-            // Pulled left to align with the thick middle hallway
-            position: CGPoint(x: 0.56, y: 0.53),
+            // The exact center where the thick vertical and horizontal lines meet
+            position: CGPoint(x: 0.50, y: 0.53),
             connectedEdges: ["hall_washroom", "dr_room_3", "hall_pharmacy"],
             isDestination: false
         ),
@@ -89,8 +90,8 @@ class ClinicMapData {
         "hall_pharmacy": MapNode(
             id: "hall_pharmacy",
             name: "Hallway (Pharmacy)",
-            // Pulled left to align with the thick middle hallway
-            position: CGPoint(x: 0.56, y: 0.73),
+            // Travels straight down the thick vertical line
+            position: CGPoint(x: 0.50, y: 0.73),
             connectedEdges: ["hall_middle_cross", "pharmacy"],
             isDestination: false
         )
