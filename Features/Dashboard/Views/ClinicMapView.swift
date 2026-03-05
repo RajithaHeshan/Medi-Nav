@@ -3,23 +3,27 @@ import SwiftUI
 struct ClinicMapView: View {
     @Environment(\.dismiss) var dismiss
     
-    
+    // Search State
     @State private var searchText = ""
     @FocusState private var isSearchFocused: Bool
     
-   
+    // Navigation State (Kept exactly as it was)
     @State private var routePath: [CGPoint] = []
     @State private var currentDotPosition: CGPoint = CGPoint(x: 0.05, y: 0.52)
     @State private var isNavigating = false
     @State private var selectedDestinationName: String? = nil
     
-    // Assuming the user always starts at the Main Entrance for this example
+    // 🔴 NEW: Map Tapping & Details State
+    @State private var tappedNode: MapNode? = nil
+    @State private var showDetailsSheet = false
+    @State private var pulseAnimation = false
+    
     let startingLocationID = "entrance_left"
     
     var body: some View {
         VStack(spacing: 0) {
             
-           
+            // 1. Header & Search Bar (Untouched)
             VStack(spacing: 16) {
                 HStack {
                     Button { dismiss() } label: { Image(systemName: "chevron.left").font(.title2).bold().foregroundStyle(.black) }
@@ -29,32 +33,21 @@ struct ClinicMapView: View {
                     Image(systemName: "chevron.left").font(.title2).opacity(0)
                 }
                 
-                // Search Bar Overlay
                 HStack {
                     Image(systemName: "magnifyingglass").foregroundStyle(.gray)
                     TextField("Search for a room or department...", text: $searchText)
-                        .focused($isSearchFocused) // 🔴 FIXED: Binds the keyboard focus
+                        .focused($isSearchFocused)
                         .onSubmit {
-                            // 🔴 FIXED: If user presses "Return" on keyboard, pick the best match automatically
-                            if let bestMatch = searchResults.first {
-                                selectDestination(node: bestMatch)
-                            }
+                            if let bestMatch = searchResults.first { selectDestination(node: bestMatch) }
                         }
                     
                     if !searchText.isEmpty || isSearchFocused {
-                        Button(action: resetSearch) {
-                            Image(systemName: "xmark.circle.fill").foregroundStyle(.gray)
-                        }
+                        Button(action: resetSearch) { Image(systemName: "xmark.circle.fill").foregroundStyle(.gray) }
                     }
                 }
-                .padding(12)
-                .background(Color(uiColor: .systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(12).background(Color(uiColor: .systemGray6)).clipShape(RoundedRectangle(cornerRadius: 12))
             }
-            .padding()
-            .background(Color(uiColor: .systemBackground))
-            .shadow(color: Color.black.opacity(0.05), radius: 5, y: 5)
-            .zIndex(10) // Ensures the search bar shadow stays on top
+            .padding().background(Color(uiColor: .systemBackground)).shadow(color: Color.black.opacity(0.05), radius: 5, y: 5).zIndex(10)
             
             ZStack(alignment: .top) {
                 
@@ -72,7 +65,13 @@ struct ClinicMapView: View {
                             GeometryReader { geometry in
                                 ZStack(alignment: .topLeading) {
                                     
-                                    // A. Draw the dynamic dashed route line
+                                    // 🔴 NEW: Invisible tappable layer covering the whole map
+                                    Color.black.opacity(0.001)
+                                        .onTapGesture { location in
+                                            handleMapTap(at: location, in: geometry.size)
+                                        }
+                                    
+                                    // A. Draw the dashed route line (Untouched)
                                     Path { path in
                                         guard let first = routePath.first else { return }
                                         path.move(to: convert(point: first, in: geometry.size))
@@ -82,14 +81,38 @@ struct ClinicMapView: View {
                                     }
                                     .stroke(Color.blue.opacity(0.6), style: StrokeStyle(lineWidth: 5, dash: [8, 6]))
                                     
-                                    // B. The Animated Navigation Dot (Only shows if a route exists)
+                                    // B. The Animated Navigation Dot (Untouched)
                                     if !routePath.isEmpty {
                                         Circle()
-                                            .fill(Color.blue)
-                                            .frame(width: 18, height: 18)
+                                            .fill(Color.blue).frame(width: 18, height: 18)
                                             .overlay(Circle().stroke(Color.white, lineWidth: 3))
                                             .shadow(color: .blue.opacity(0.5), radius: 5, x: 0, y: 0)
                                             .position(convert(point: currentDotPosition, in: geometry.size))
+                                    }
+                                    
+                                    // 🔴 NEW: The Tapped Location Pin (Like your Campus Map screenshot)
+                                    if let tapped = tappedNode {
+                                        ZStack {
+                                            // Pulsing Halo
+                                            Circle()
+                                                .fill(Color.red.opacity(0.3))
+                                                .frame(width: 50, height: 50)
+                                                .scaleEffect(pulseAnimation ? 1.2 : 0.8)
+                                                .opacity(pulseAnimation ? 0 : 1)
+                                            
+                                            // Core Pin
+                                            Circle()
+                                                .fill(Color.red)
+                                                .frame(width: 16, height: 16)
+                                                .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                                                .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                                        }
+                                        .position(convert(point: tapped.position, in: geometry.size))
+                                        .onAppear {
+                                            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false)) {
+                                                pulseAnimation = true
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -97,12 +120,10 @@ struct ClinicMapView: View {
                     
                     Spacer()
                     
-                    // Route Info Footer (Appears when a room is selected)
-                    if let destName = selectedDestinationName {
+                    // Route Info Footer (Untouched)
+                    if let destName = selectedDestinationName, tappedNode == nil {
                         VStack(spacing: 12) {
-                            Text("Navigating to: \(destName)")
-                                .font(.headline)
-                            
+                            Text("Navigating to: \(destName)").font(.headline)
                             Button(action: startNavigationAnimation) {
                                 HStack {
                                     Image(systemName: isNavigating ? "figure.walk" : "play.fill")
@@ -113,112 +134,264 @@ struct ClinicMapView: View {
                             }
                             .disabled(isNavigating)
                         }
-                        .padding(20)
-                        .background(Color(uiColor: .systemBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                        .shadow(color: Color.black.opacity(0.08), radius: 10, y: -5)
+                        .padding(20).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 24)).shadow(color: Color.black.opacity(0.08), radius: 10, y: -5)
                     }
                 }
                 
-               
+                // 3. Search Results Dropdown List (Untouched)
                 if isSearchFocused && !searchText.isEmpty {
                     ScrollView {
                         VStack(spacing: 0) {
                             ForEach(searchResults, id: \.id) { node in
-                                Button {
-                                    selectDestination(node: node)
-                                } label: {
+                                Button { selectDestination(node: node) } label: {
                                     HStack {
                                         Image(systemName: "mappin.and.ellipse").foregroundStyle(Color.blue)
                                         Text(node.name).font(.body).foregroundStyle(Color(uiColor: .label))
                                         Spacer()
                                         Image(systemName: "chevron.right").font(.caption).foregroundStyle(.gray)
-                                    }
-                                    .padding()
-                                    .background(Color(uiColor: .systemBackground))
+                                    }.padding().background(Color(uiColor: .systemBackground))
                                 }
                                 Divider().padding(.leading, 40)
                             }
                         }
-                        .background(Color(uiColor: .systemBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .shadow(color: Color.black.opacity(0.1), radius: 10, y: 5)
-                        .padding(.horizontal)
-                        .padding(.top, 8)
+                        .background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 12)).shadow(color: Color.black.opacity(0.1), radius: 10, y: 5).padding(.horizontal).padding(.top, 8)
                     }
+                }
+                
+                // 🔴 NEW: Interactive Bottom Card for Map Taps
+                if let tapped = tappedNode {
+                    VStack {
+                        Spacer()
+                        LocationPopupCard(node: tapped) {
+                            showDetailsSheet = true
+                        } onClose: {
+                            withAnimation { tappedNode = nil; pulseAnimation = false }
+                        }
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .zIndex(5) // Ensures it pops over the map
                 }
             }
         }
         .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         .navigationBarHidden(true)
+        
+        // 🔴 NEW: The Full Details Sheet
+        .sheet(isPresented: $showDetailsSheet) {
+            if let node = tappedNode {
+                RoomDetailsView(node: node)
+            }
+        }
     }
     
     // MARK: - Logic & Computed Properties
     
-    // Filters the searchable rooms based on what the user types
     var searchResults: [MapNode] {
         let allDestinations = ClinicMapData.shared.searchableDestinations
-        if searchText.isEmpty {
-            return allDestinations
-        } else {
-            return allDestinations.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
-        }
+        if searchText.isEmpty { return allDestinations } else { return allDestinations.filter { $0.name.localizedCaseInsensitiveContains(searchText) } }
     }
     
-    // Converts relative 0.0-1.0 coordinates to actual screen pixels
     private func convert(point: CGPoint, in size: CGSize) -> CGPoint {
         return CGPoint(x: point.x * size.width, y: point.y * size.height)
     }
     
-    // Called when user taps a room in the search list OR hits return
     private func selectDestination(node: MapNode) {
-        // 1. Hide keyboard
         isSearchFocused = false
-        
-        // 2. Set the UI states
         selectedDestinationName = node.name
         searchText = node.name
-        
-        // 3. MAGIC HAPPENS HERE: Calculate the path using the Engine!
+        tappedNode = nil // Clear tap if they search
         routePath = NavigationEngine.findPath(from: startingLocationID, to: node.id)
-        
-        // 4. Snap the dot to the starting point
-        if let firstPoint = routePath.first {
-            currentDotPosition = firstPoint
-        }
+        if let firstPoint = routePath.first { currentDotPosition = firstPoint }
     }
     
-    // Clears everything out
     private func resetSearch() {
         withAnimation {
-            searchText = ""
-            isSearchFocused = false
-            routePath = []
-            selectedDestinationName = nil
-            isNavigating = false
+            searchText = ""; isSearchFocused = false; routePath = []; selectedDestinationName = nil; isNavigating = false; tappedNode = nil
         }
     }
     
-    // Animates the dot along the calculated path
+    // 🔴 NEW: Detects if the user's tap was close enough to a room
+    private func handleMapTap(at location: CGPoint, in size: CGSize) {
+        // Convert screen pixels back to our 0.0 - 1.0 grid
+        let relativeTap = CGPoint(x: location.x / size.width, y: location.y / size.height)
+        
+        var closestNode: MapNode? = nil
+        var minDistance: CGFloat = 0.05 // Tolerance limit (approx 5% of screen width)
+        
+        // Check all searchable rooms
+        for node in ClinicMapData.shared.searchableDestinations {
+            let dx = relativeTap.x - node.position.x
+            let dy = relativeTap.y - node.position.y
+            let distance = sqrt(dx*dx + dy*dy) // Pythagorean theorem to find distance
+            
+            if distance < minDistance {
+                minDistance = distance
+                closestNode = node
+            }
+        }
+        
+        // Update the UI
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            // Clear search paths if they tap a new room directly
+            routePath = []
+            selectedDestinationName = nil
+            searchText = ""
+            
+            tappedNode = closestNode
+            pulseAnimation = false // Reset animation state
+        }
+    }
+    
     private func startNavigationAnimation() {
         guard !routePath.isEmpty else { return }
         isNavigating = true
-        
         Task {
             for point in routePath {
-                await MainActor.run {
-                    withAnimation(.linear(duration: 1.0)) {
-                        currentDotPosition = point
-                    }
-                }
-                // Wait 1 second before moving to the next point
+                await MainActor.run { withAnimation(.linear(duration: 1.0)) { currentDotPosition = point } }
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
             }
+            await MainActor.run { isNavigating = false }
+        }
+    }
+}
+
+// MARK: - 🔴 NEW: Custom UI Components
+
+// 1. The small card that pops up on the map (Matching your Campus Map design)
+struct LocationPopupCard: View {
+    let node: MapNode
+    let onDetailsTapped: () -> Void
+    let onClose: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            // Drag Handle
+            Capsule().fill(Color.gray.opacity(0.3)).frame(width: 40, height: 4)
             
-            await MainActor.run {
-                isNavigating = false
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(node.name)
+                        .font(.title2).fontWeight(.bold)
+                    HStack(spacing: 6) {
+                        Image(systemName: "building.2").foregroundStyle(.gray)
+                        Text("Ground Floor").foregroundStyle(.secondary)
+                    }
+                    .font(.subheadline)
+                }
+                Spacer()
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.gray)
+                        .padding(8)
+                        .background(Color(uiColor: .systemGray6))
+                        .clipShape(Circle())
+                }
+            }
+            
+            Button(action: onDetailsTapped) {
+                Text("Details")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.blue)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
+        .padding(20)
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .shadow(color: Color.black.opacity(0.15), radius: 20, y: 10)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 20)
+    }
+}
+
+// 2. The Full Screen Details Sheet (Matching your Lecture Hall 01 screenshot)
+struct RoomDetailsView: View {
+    @Environment(\.dismiss) var dismiss
+    let node: MapNode
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    
+                    // Title Header
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(node.name).font(.largeTitle).fontWeight(.bold)
+                        HStack {
+                            Image(systemName: "building.2").foregroundStyle(.gray)
+                            Text("Ground Floor").foregroundStyle(.secondary)
+                        }
+                    }
+                    
+                    Divider()
+                    
+                    // Information Section
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text("Room Information").font(.headline).fontWeight(.bold)
+                        
+                        DetailRow(icon: "number", title: "Room ID", value: "RM-\(node.id.suffix(4).uppercased())")
+                        DetailRow(icon: "building.2", title: "Floor", value: "Ground Floor")
+                        DetailRow(icon: "location", title: "Position", value: "(\(String(format: "%.2f", node.position.x)), \(String(format: "%.2f", node.position.y)))")
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Image(systemName: "magnifyingglass").foregroundStyle(.gray)
+                                Text("Search Terms").font(.subheadline).fontWeight(.medium)
+                            }
+                            
+                            // Mock Search Tags
+                            HStack {
+                                SearchTag(text: node.name.lowercased())
+                                SearchTag(text: "clinic")
+                                SearchTag(text: "room")
+                            }
+                        }
+                    }
+                }
+                .padding(24)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .fontWeight(.semibold)
+                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .background(Color(uiColor: .systemGray6))
+                        .clipShape(Capsule())
+                }
+            }
+        }
+    }
+}
+
+// Helpers for the Details View
+struct DetailRow: View {
+    let icon: String
+    let title: String
+    let value: String
+    var body: some View {
+        HStack {
+            Image(systemName: icon).frame(width: 24).foregroundStyle(.gray)
+            Text(title).fontWeight(.medium)
+            Spacer()
+            Text(value).foregroundStyle(.secondary)
+        }
+        .font(.subheadline)
+    }
+}
+
+struct SearchTag: View {
+    let text: String
+    var body: some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(.blue)
+            .padding(.horizontal, 12).padding(.vertical, 6)
+            .background(Color.blue.opacity(0.1))
+            .clipShape(Capsule())
     }
 }
 
