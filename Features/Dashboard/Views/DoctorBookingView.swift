@@ -4,18 +4,14 @@ import SwiftUI
 struct DoctorBookingView: View {
     @Environment(\.dismiss) var dismiss
     
-    
     let doctor: Doctor
     
- 
     @State private var selectedDate: Date = Date()
     @State private var calendarDays: [Date] = []
     @State private var selectedTime: String = "10:30 AM"
     @State private var medicationText: String = ""
     
-   
     @State private var showPayment = false
-    
     
     @State private var showAttachmentMenu = false
     @State private var showImagePicker = false
@@ -23,7 +19,6 @@ struct DoctorBookingView: View {
     @State private var uploadedImages: [UIImage] = []
     @State private var tempImage: UIImage?
 
-   
     let morningSlots = ["09:00 AM", "09:30 AM", "10:30 AM", "11:00 AM", "11:30 AM"]
     let afternoonSlots = ["02:00 PM", "03:30 PM", "04:00 PM"]
     
@@ -59,7 +54,6 @@ struct DoctorBookingView: View {
         }
         .onAppear { generateDates() }
         
-        
         .confirmationDialog("Select Photo", isPresented: $showAttachmentMenu, titleVisibility: .visible) {
             Button("Camera") { self.imageSource = .camera; self.showImagePicker = true }
             Button("Photo Library") { self.imageSource = .photoLibrary; self.showImagePicker = true }
@@ -72,18 +66,18 @@ struct DoctorBookingView: View {
                 .ignoresSafeArea()
         }
         
-       
+        // 🔴 UPDATED: Added the flowType so PaymentView knows this is a Doctor Booking
         .navigationDestination(isPresented: $showPayment) {
             PaymentView(
                 doctor: doctor,
                 selectedDate: selectedDate,
-                selectedTime: selectedTime
+                selectedTime: selectedTime,
+                flowType: .doctorBooking // <--- CRITICAL FIX HERE
             )
             .navigationBarBackButtonHidden(true)
         }
     }
     
-   
     private func generateDates() {
         let calendar = Calendar.current
         let today = Date()
@@ -98,8 +92,6 @@ struct DoctorBookingView: View {
     private func isSameDay(date1: Date, date2: Date) -> Bool {
         return Calendar.current.isDate(date1, inSameDayAs: date2)
     }
-    
-  
     
     private var headerView: some View {
         HStack {
@@ -228,9 +220,8 @@ struct DoctorBookingView: View {
                 }
             }
             
-           
             Button {
-                showPayment = true 
+                showPayment = true
             } label: {
                 Text("Confirm Booking")
                     .font(.headline).foregroundStyle(.white)
@@ -246,7 +237,7 @@ struct DoctorBookingView: View {
 }
 
 #Preview {
-    DoctorBookingView(doctor: Doctor(name: "Dr. Sarah Jenkins", specialty: "Cardiologist", rating: 4.9, reviewCount: 120, fee: 150, image: "doctor1", status: "Available Today", statusColor: .green, isBookable: true))
-    CustomTabBar(selectedTab: .constant(.home))
-
+    NavigationStack {
+        DoctorBookingView(doctor: Doctor(name: "Dr. Sarah Jenkins", specialty: "Cardiologist", rating: 4.9, reviewCount: 120, fee: 150, image: "Image (2)", status: "Available Today", statusColor: .green, isBookable: true))
+    }
 }
