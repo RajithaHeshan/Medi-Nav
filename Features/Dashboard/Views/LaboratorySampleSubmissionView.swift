@@ -1,85 +1,51 @@
+
 import SwiftUI
 
 struct LaboratorySampleSubmissionView: View {
     @Environment(\.dismiss) var dismiss
     
-    
-    @State private var showScanner = false
-    @State private var selectedSampleType = ""
+    // 🔴 NEW: Navigation States
+    @State private var navigateToPharmacy = false
+    @State private var navigateToLabSamplePickup = false
     
     var body: some View {
         VStack(spacing: 0) {
             
-           
+            // 1. Navigation Header
             headerView
             
+            // 2. Scrollable Content
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
+                VStack(spacing: 16) {
                     
-                   
-                    LabHeroCard(
-                        stepName: "Next Step: Visit Pharmacy",
-                        personName: "Mr. Wickrama (Chief Pharmacist)",
-                        locationInfo: "2nd Floor, West Wing",
-                        currentPosition: "05",
-                        waitingTime: "15 mins",
-                        gradientColors: [Color.teal, Color.green]
-                    )
+                    visitLaboratoryCard
                     
-                    // 3. Lab Technician Info
-                    labStaffCard
+                    nextStepPharmacyCard
                     
-                    // 4. Sample Tasks List
-                    VStack(spacing: 20) {
-                        
-                        // Blood Sample Card
-                        SampleTaskCard(
-                            title: "Provide Blood Sample",
-                            description: "Requires 8 hours fasting before collection.",
-                            icon: "drop.fill",
-                            iconColor: .red
-                        ) {
-                            selectedSampleType = "Blood Sample #BLD-992"
-                            showScanner = true
-                        }
-                        
-                        // Urine Sample Card 1
-                        SampleTaskCard(
-                            title: "Provide Urine Sample",
-                            description: "Standard collection container provided at desk.",
-                            icon: "flask.fill",
-                            iconColor: .blue
-                        ) {
-                            selectedSampleType = "Urine Sample #URN-112"
-                            showScanner = true
-                        }
-                        
-                        // Urine Sample Card 2 (Duplicate from screenshot logic)
-                        SampleTaskCard(
-                            title: "Provide Stool Sample",
-                            description: "Sterile container required. Submit within 2 hours.",
-                            icon: "microbe.fill",
-                            iconColor: .orange
-                        ) {
-                            selectedSampleType = "Stool Sample #STL-884"
-                            showScanner = true
-                        }
-                    }
+                    personnelCard
                     
-                    Spacer(minLength: 40)
+                    bloodSampleCard
+                    
+                    urineSampleCard
+                    
+                    Spacer(minLength: 20)
                 }
-                .padding()
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 40)
             }
+            .background(Color(uiColor: .systemGroupedBackground))
         }
-        .background(Color(uiColor: .systemGroupedBackground))
         .navigationBarHidden(true)
         
-        // Navigation to QR View (Reusing MedicationPickupView with generic data)
-        .navigationDestination(isPresented: $showScanner) {
-            // In a real app, you might create a generic 'QRCodeView',
-            // but here we reuse the one we built.
-            MedicationPickupView()
-                .navigationBarBackButtonHidden(true)
+        // 🔴 NEW: Navigation to Pharmacy View
+        .navigationDestination(isPresented: $navigateToPharmacy) {
+            PharmacyView()
+        }
+        
+        // 🔴 NEW: Navigation to Lab Sample Pickup View (QR Code)
+        .navigationDestination(isPresented: $navigateToLabSamplePickup) {
+            LabSamplePickupView()
         }
     }
     
@@ -87,194 +53,338 @@ struct LaboratorySampleSubmissionView: View {
     
     private var headerView: some View {
         HStack {
-            Button { dismiss() } label: {
+            Button {
+                dismiss()
+            } label: {
                 Image(systemName: "chevron.left")
-                    .font(.title3).bold()
-                    .foregroundStyle(.black)
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color(uiColor: .systemBlue))
             }
+            
             Spacer()
+            
             Text("Laboratory Sample Submission")
                 .font(.headline)
-                .bold()
+                .fontWeight(.bold)
+                .foregroundStyle(Color(uiColor: .label))
+            
             Spacer()
-            // Placeholder to balance center title
-            Image(systemName: "chevron.left").font(.title3).opacity(0)
+            
+            // Invisible placeholder to keep the title centered
+            Image(systemName: "chevron.left")
+                .font(.title2)
+                .opacity(0)
         }
         .padding()
         .background(Color(uiColor: .systemBackground))
     }
     
-    private var labStaffCard: some View {
-        VStack(spacing: 0) {
-            // Row 1: Technician
-            HStack(spacing: 16) {
-                ZStack {
-                    Circle().fill(Color.blue.opacity(0.1)).frame(width: 40, height: 40)
-                    Image(systemName: "microscope.fill").foregroundStyle(.blue)
-                }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Lab Technician").font(.caption).foregroundStyle(.secondary)
-                    Text("Jackson").font(.subheadline).fontWeight(.semibold)
-                }
+    private var visitLaboratoryCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Header Row
+            HStack {
+                Text("Visit Laboratory")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color(uiColor: .label))
+                
                 Spacer()
+                
+                // Time Badge
+                Text("10:30 AM")
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color(uiColor: .systemBlue))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color(uiColor: .systemBlue).opacity(0.1))
+                    .clipShape(Capsule())
             }
-            .padding(16)
             
-            Divider().padding(.leading, 72)
+            // Location Info
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 12) {
+                    Image(systemName: "person.fill")
+                        .foregroundStyle(Color(uiColor: .systemBlue))
+                        .frame(width: 20)
+                    Text("DR. Wickrama")
+                        .font(.subheadline)
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                }
+                
+                HStack(spacing: 12) {
+                    Image(systemName: "mappin.and.ellipse")
+                        .foregroundStyle(Color(uiColor: .systemBlue))
+                        .frame(width: 20)
+                    Text("2nd Floor, West Wing")
+                        .font(.subheadline)
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                }
+            }
             
-            // Row 2: Assigned Doctor
-            HStack(spacing: 16) {
-                ZStack {
-                    Circle().fill(Color.gray.opacity(0.1)).frame(width: 40, height: 40)
-                    Image(systemName: "cross.case.fill").foregroundStyle(.gray)
+            // Queue Status Box
+            HStack {
+                HStack(spacing: 8) {
+                    Image(systemName: "person.2.fill")
+                        .font(.title3)
+                        .foregroundStyle(Color(uiColor: .systemBlue))
+                    Text("5 Queue")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color(uiColor: .label))
                 }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Prescription Assigned").font(.caption).foregroundStyle(.secondary)
-                    Text("Dr. Sarah Jenkins, PharmD").font(.subheadline).fontWeight(.semibold)
-                }
+                
                 Spacer()
+                
+                HStack(spacing: 8) {
+                    Image(systemName: "hourglass")
+                        .font(.title3)
+                        .foregroundStyle(.brown)
+                    Text("15 mins")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color(uiColor: .label))
+                }
             }
-            .padding(16)
+            .padding()
+            .background(Color(uiColor: .secondarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            
+            // Footer
+            HStack {
+                Text("Please proceed immediately")
+                    .font(.caption)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                Spacer()
+                Button {
+                    // View Map Action
+                } label: {
+                    Text("View Map")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color(uiColor: .systemBlue))
+                }
+            }
         }
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: Color.black.opacity(0.03), radius: 5, y: 2)
+        .padding(20)
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+    }
+    
+    private var nextStepPharmacyCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Next Step: Visit Pharmacy")
+                .font(.headline)
+                .fontWeight(.bold)
+                .foregroundStyle(Color(uiColor: .label))
+            
+            // Location Info
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 12) {
+                    Image(systemName: "person.fill")
+                        .foregroundStyle(Color(uiColor: .systemBlue))
+                        .frame(width: 20)
+                    Text("DR. Wickrama")
+                        .font(.subheadline)
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                }
+                
+                HStack(spacing: 12) {
+                    Image(systemName: "mappin.and.ellipse")
+                        .foregroundStyle(Color(uiColor: .systemBlue))
+                        .frame(width: 20)
+                    Text("2nd Floor, West Wing")
+                        .font(.subheadline)
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                }
+            }
+            
+            // 🔴 UPDATED: Fixed Button Alignment, Sizing, and Navigation
+            Button {
+                navigateToPharmacy = true
+            } label: {
+                HStack(spacing: 8) {
+                    Text("Check In to Pharmacy")
+                        .fontWeight(.semibold)
+                    Image(systemName: "qrcode.viewfinder")
+                }
+                .font(.subheadline)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(Color(uiColor: .systemBlue))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            
+            // Footer
+            HStack {
+                Text("Please proceed immediately")
+                    .font(.caption)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                Spacer()
+                Button {
+                    // View Map Action
+                } label: {
+                    Text("View Map")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color(uiColor: .systemBlue))
+                }
+            }
+        }
+        .padding(20)
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+    }
+    
+    private var personnelCard: some View {
+        VStack(spacing: 16) {
+            // Lab Technician
+            HStack(spacing: 16) {
+                // 🔴 UPDATED: Added your requested asset image for Lab Technician
+                Image("images (2)")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 48, height: 48)
+                    .clipShape(Circle())
+                    .background(Circle().fill(Color(uiColor: .systemGray5)))
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Lab Technician")
+                        .font(.caption)
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    Text("Jackson")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color(uiColor: .label))
+                }
+                Spacer()
+            }
+            
+            Divider()
+            
+            // Pharmacist / Doctor
+            HStack(spacing: 16) {
+                // 🔴 UPDATED: Added your requested asset image for Doctor
+                Image("Image (2)")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 48, height: 48)
+                    .clipShape(Circle())
+                    .background(Circle().fill(Color(uiColor: .systemGray5)))
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Prescription Assigned")
+                        .font(.caption)
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    Text("Dr. Sarah Jenkins, PharmD")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color(uiColor: .label))
+                }
+                Spacer()
+            }
+        }
+        .padding(20)
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+    }
+    
+    private var bloodSampleCard: some View {
+        SampleTaskCard(
+            title: "Provide Blood Sample",
+            description: "Requires 8 hours fasting before collection.",
+            icon: "drop.fill",
+            iconColor: Color(uiColor: .systemRed),
+            iconBackground: Color(uiColor: .systemRed).opacity(0.1),
+            buttonAction: {
+                // 🔴 UPDATED: Navigates to the QR code view
+                navigateToLabSamplePickup = true
+            }
+        )
+    }
+    
+    private var urineSampleCard: some View {
+        SampleTaskCard(
+            title: "Provide Urine Sample",
+            description: "Standard collection container provided at desk.",
+            icon: "flask.fill",
+            iconColor: .orange,
+            iconBackground: Color.orange.opacity(0.1),
+            buttonAction: {
+                // 🔴 UPDATED: Navigates to the QR code view
+                navigateToLabSamplePickup = true
+            }
+        )
     }
 }
 
-// MARK: - Components
+// MARK: - Reusable View Components
 
-// 1. Actionable Sample Card
 struct SampleTaskCard: View {
     let title: String
     let description: String
     let icon: String
     let iconColor: Color
-    let action: () -> Void
+    let iconBackground: Color
+    let buttonAction: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 16) {
+        VStack(spacing: 16) {
+            HStack(alignment: .top, spacing: 16) {
                 // Icon Box
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(iconColor.opacity(0.1))
-                        .frame(width: 50, height: 50)
+                        .fill(iconBackground)
+                        .frame(width: 48, height: 48)
                     
                     Image(systemName: icon)
                         .font(.title3)
                         .foregroundStyle(iconColor)
                 }
                 
-                // Texts
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.headline)
+                        .fontWeight(.bold)
                         .foregroundStyle(Color(uiColor: .label))
                     
                     Text(description)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .lineSpacing(2)
                 }
                 Spacer()
             }
             
-            // Blue Action Button
-            Button(action: action) {
-                HStack {
+            // Scan Button
+            Button(action: buttonAction) {
+                HStack(spacing: 8) {
                     Text("Scan at Lab")
-                    Image(systemName: "qrcode")
+                        .fontWeight(.bold)
+                    Image(systemName: "qrcode.viewfinder")
                 }
                 .font(.headline)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color.blue)
+                .background(Color(uiColor: .systemBlue))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
-        .padding(16)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        // Border Stroke
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-        )
-    }
-}
-
-// 2. High-Fidelity Hero Card (Reused Logic)
-struct LabHeroCard: View {
-    let stepName: String
-    let personName: String
-    let locationInfo: String
-    let currentPosition: String
-    let waitingTime: String
-    let gradientColors: [Color]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            
-            // Header
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(stepName).font(.title3).bold().foregroundStyle(.white)
-                    Text(personName).font(.caption).foregroundStyle(.white.opacity(0.9))
-                }
-                Spacer()
-                ZStack {
-                    Circle().fill(Color.white.opacity(0.2)).frame(width: 40, height: 40)
-                    Image(systemName: "figure.walk").font(.headline).foregroundStyle(.white)
-                }
-            }
-            
-            // Location Text
-            HStack(spacing: 6) {
-                Image(systemName: "mappin.and.ellipse").font(.caption).foregroundStyle(.white.opacity(0.9))
-                Text(locationInfo).font(.subheadline).foregroundStyle(.white.opacity(0.9))
-            }
-            
-            // Info Bar
-            HStack(spacing: 0) {
-                // Position
-                HStack(spacing: 12) {
-                    ZStack { Circle().fill(Color.teal.opacity(0.1)).frame(width: 44, height: 44); Image(systemName: "person.3.fill").font(.title3).foregroundStyle(.teal) }
-                    Text(currentPosition).font(.title2).bold().foregroundStyle(Color(uiColor: .label))
-                }
-                .frame(maxWidth: .infinity)
-                
-                Rectangle().fill(Color.gray.opacity(0.2)).frame(width: 1, height: 40)
-                
-                // Time
-                HStack(spacing: 12) {
-                    ZStack { Circle().fill(Color.orange.opacity(0.1)).frame(width: 44, height: 44); Image(systemName: "hourglass").font(.title3).foregroundStyle(.orange) }
-                    Text(waitingTime).font(.title3).bold().foregroundStyle(Color(uiColor: .label))
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .padding(16)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            
-            // Footer Action
-            HStack {
-                Text("Please proceed immediately").font(.caption).foregroundStyle(.white.opacity(0.9))
-                Spacer()
-                Button { } label: {
-                    HStack(spacing: 4) { Text("View Map"); Image(systemName: "arrow.right") }
-                        .font(.caption).fontWeight(.bold).foregroundStyle(.white)
-                }
-            }
-        }
         .padding(20)
-        .background(LinearGradient(colors: gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing))
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: gradientColors.first?.opacity(0.3) ?? .gray, radius: 10, x: 0, y: 5)
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
 }
 
 #Preview {
-    LaboratorySampleSubmissionView()
+    NavigationStack {
+        LaboratorySampleSubmissionView()
+    }
 }

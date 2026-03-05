@@ -3,15 +3,16 @@ import SwiftUI
 struct PaymentConfirmationView: View {
     @Environment(\.dismiss) var dismiss
     
-   
     let doctor: Doctor
     let selectedDate: Date
     let selectedTime: String
     let fee: Int
     
+    // 🔴 NEW: Navigation State
+    @State private var navigateToBookingHistory = false
+    
     var body: some View {
         VStack(spacing: 0) {
-            
             
             headerView
             
@@ -20,7 +21,6 @@ struct PaymentConfirmationView: View {
                     
                     Spacer().frame(height: 10)
                     
-                   
                     VStack(spacing: 16) {
                         
                         ZStack {
@@ -89,17 +89,15 @@ struct PaymentConfirmationView: View {
             
             // 5. Bottom Button
             Button {
-                // In a real app, this might go to "My Bookings"
-                // For now, we pop to root or dismiss
-                dismiss()
+                // 🔴 UPDATED: Trigger navigation to history
+                navigateToBookingHistory = true
             } label: {
                 Text("Booking Details")
                     .font(.headline)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.blue.opacity(0.1)) // Light blue background from screenshot
-                    .background(Color.blue) // Fallback or main color
+                    .background(Color.blue)
                     .clipShape(Capsule())
             }
             .padding()
@@ -107,6 +105,11 @@ struct PaymentConfirmationView: View {
         }
         .background(Color(uiColor: .systemBackground))
         .navigationBarHidden(true)
+        
+        // 🔴 NEW: Push to BookingHistoryView
+        .navigationDestination(isPresented: $navigateToBookingHistory) {
+            BookingHistoryView()
+        }
     }
     
     // MARK: - Subviews
@@ -169,14 +172,14 @@ struct PaymentConfirmationView: View {
                         .fontWeight(.semibold)
                         .foregroundStyle(.secondary)
                     
-                  
+                    
                     Text("\(selectedDate.formatted(date: .complete, time: .omitted)) | \(selectedTime)")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                 }
             }
             
-          
+            
             HStack(alignment: .top, spacing: 16) {
                 Image(systemName: "mappin.and.ellipse")
                     .font(.title3)
@@ -198,21 +201,22 @@ struct PaymentConfirmationView: View {
         .padding(20)
         .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        // The Border Stroke
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Color(uiColor: .systemGray6), lineWidth: 1)
         )
-        // The Shadow
         .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
     }
 }
 
 #Preview {
-    PaymentConfirmationView(
-        doctor: Doctor(name: "Dr. Sarah Jenkins", specialty: "Cardiologist", rating: 4.9, reviewCount: 120, fee: 150, image: "doctor1", status: "Available", statusColor: .green, isBookable: true),
-        selectedDate: Date(),
-        selectedTime: "10:30 AM",
-        fee: 150
-    )
+    NavigationStack {
+        PaymentConfirmationView(
+            doctor: Doctor(name: "Dr. Sarah Jenkins", specialty: "Cardiologist", rating: 4.9, reviewCount: 120, fee: 150, image: "Image (2)", status: "Available", statusColor: .green, isBookable: true),
+            selectedDate: Date(),
+            selectedTime: "10:30 AM",
+            fee: 150
+        )
+    }
 }
+
