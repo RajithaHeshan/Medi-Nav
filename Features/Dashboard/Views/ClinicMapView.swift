@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct ClinicMapView: View {
@@ -14,10 +13,16 @@ struct ClinicMapView: View {
     @State private var isNavigating = false
     @State private var selectedDestinationName: String? = nil
     
-    // Map Tapping & Details State
+    // Map Tapping State
     @State private var tappedNode: MapNode? = nil
     @State private var showDetailsSheet = false
     @State private var pulseAnimation = false
+    
+    // Zoom & Pan States
+    @State private var scale: CGFloat = 1.0
+    @State private var lastScale: CGFloat = 1.0
+    @State private var offset: CGSize = .zero
+    @State private var lastOffset: CGSize = .zero
     
     let startingLocationID = "entrance_left"
     
@@ -34,7 +39,7 @@ struct ClinicMapView: View {
                     Image(systemName: "chevron.left").font(.title2).opacity(0)
                 }
                 
-                // 🔴 UPDATED: Search Bar with HIG-compliant Microphone
+                // Search Bar with HIG Microphone
                 HStack {
                     Image(systemName: "magnifyingglass").foregroundStyle(.gray)
                     
@@ -44,14 +49,10 @@ struct ClinicMapView: View {
                             if let bestMatch = searchResults.first { selectDestination(node: bestMatch) }
                         }
                     
-                    // HIG Behavior: Show 'X' if typing, show 'Mic' if empty
                     if !searchText.isEmpty {
-                        Button(action: resetSearch) {
-                            Image(systemName: "xmark.circle.fill").foregroundStyle(.gray)
-                        }
+                        Button(action: resetSearch) { Image(systemName: "xmark.circle.fill").foregroundStyle(.gray) }
                     } else {
                         Button {
-                            // Action to trigger voice dictation would go here
                             print("Microphone tapped")
                         } label: {
                             Image(systemName: "mic.fill").foregroundStyle(.gray)
@@ -62,27 +63,25 @@ struct ClinicMapView: View {
             }
             .padding().background(Color(uiColor: .systemBackground)).shadow(color: Color.black.opacity(0.05), radius: 5, y: 5).zIndex(10)
             
+            // 2. The Map Area (Now Edge-to-Edge)
             ZStack(alignment: .top) {
                 
-                // 2. The Map Area
-                VStack {
-                    Spacer()
-                    
+                Color(uiColor: .systemGroupedBackground) // Fills the empty space cleanly
+                    .ignoresSafeArea()
+                
+                // 🔴 UPDATED: Map Layer (Fills all available space)
+                ZStack {
                     Image("ClinicMapImage")
                         .resizable()
                         .scaledToFit()
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 8) // Gives just a tiny bit of breathing room on the sides
                         .overlay(
                             GeometryReader { geometry in
                                 ZStack(alignment: .topLeading) {
                                     
-                                    // Invisible tappable layer covering the whole map
                                     Color.black.opacity(0.001)
                                         .onTapGesture { location in handleMapTap(at: location, in: geometry.size) }
                                     
-                                    // A. Draw the dashed route line
                                     Path { path in
                                         guard let first = routePath.first else { return }
                                         path.move(to: convert(point: first, in: geometry.size))
@@ -92,7 +91,6 @@ struct ClinicMapView: View {
                                     }
                                     .stroke(Color.blue.opacity(0.6), style: StrokeStyle(lineWidth: 5, dash: [8, 6]))
                                     
-                                    // B. The Animated Navigation Dot
                                     if !routePath.isEmpty {
                                         Circle()
                                             .fill(Color.blue).frame(width: 18, height: 18)
@@ -101,7 +99,6 @@ struct ClinicMapView: View {
                                             .position(convert(point: currentDotPosition, in: geometry.size))
                                     }
                                     
-                                    // C. The Tapped Location Pin
                                     if let tapped = tappedNode {
                                         ZStack {
                                             Circle()
@@ -122,10 +119,46 @@ struct ClinicMapView: View {
                                 }
                             }
                         )
-                    Spacer()
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .scaleEffect(scale)
+                .offset(offset)
+                .gesture(magnification.simultaneously(with: drag))
+                .clipped() // Prevents the map from spilling out when zoomed in
                 
-                // 3. Search Results Dropdown List
+                // 3. 🔴 FIXED: Floating Zoom Controls (Strict HIG Compliance)
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 0) {
+                            Button(action: zoomIn) {
+                                Image(systemName: "plus")
+                                    .font(.title2)
+                                    .frame(width: 44, height: 44) // Strict 44x44 touch target
+                                    .foregroundStyle(Color(uiColor: .label))
+                            }
+                            
+                            Divider().frame(width: 44) // Locked divider width
+                            
+                            Button(action: zoomOut) {
+                                Image(systemName: "minus")
+                                    .font(.title2)
+                                    .frame(width: 44, height: 44) // Strict 44x44 touch target
+                                    .foregroundStyle(Color(uiColor: .label))
+                            }
+                        }
+                        .frame(width: 44) // Locked container width
+                        .background(.ultraThinMaterial) // Modern iOS blur effect
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                        .padding(.trailing, 16)
+                        .padding(.bottom, 140) // Keeps it safely above the bottom buttons
+                    }
+                }
+                .zIndex(4)
+                
+                // 4. Search Results Dropdown List
                 if isSearchFocused && !searchText.isEmpty {
                     ScrollView {
                         VStack(spacing: 0) {
@@ -143,14 +176,14 @@ struct ClinicMapView: View {
                         }
                         .background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 12)).shadow(color: Color.black.opacity(0.1), radius: 10, y: 5).padding(.horizontal).padding(.top, 8)
                     }
+                    .zIndex(6)
                 }
                 
-                // 4. Unified Bottom Action Area
+                // 5. Unified Bottom Action Area
                 VStack {
                     Spacer()
                     
                     if let tapped = tappedNode {
-                        // Action A: Location Details Card
                         LocationPopupCard(node: tapped) {
                             showDetailsSheet = true
                         } onClose: {
@@ -159,7 +192,6 @@ struct ClinicMapView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         
                     } else if let destName = selectedDestinationName {
-                        // Action B: Start Route Footer
                         VStack(spacing: 12) {
                             Text("Navigating to: \(destName)").font(.headline)
                             Button(action: startNavigationAnimation) {
@@ -178,28 +210,17 @@ struct ClinicMapView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         
                     } else {
-                        // Action C: 🔴 UPDATED: Concisely named Google Maps button
+                        // Concisely named Google Maps button
                         Button {
-                            if let url = URL(string: "https://www.google.com/maps/dir//Mega+Channel+Center,+Ruwanwella/@6.209918,79.6494733,8.86z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3ae30637e030ab43:0xbb0a357b62a655a0!2m2!1d80.2546875!2d7.0434375?entry=ttu&g_ep=EgoyMDI2MDMwMi4wIKXMDSoASAFQAw%3D%3D") {
-                                UIApplication.shared.open(url)
-                            }
+                            if let url = URL(string: "https://www.google.com/maps/dir//Mega+Channel+Center,+Ruwanwella/@6.209918,79.6494733,8.86z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3ae30637e030ab43:0xbb0a357b62a655a0!2m2!1d80.2546875!2d7.0434375?entry=ttu&g_ep=EgoyMDI2MDMwMi4wIKXMDSoASAFQAw%3D%3D") { UIApplication.shared.open(url) }
                         } label: {
                             HStack(spacing: 8) {
-                                Image(systemName: "map.fill")
-                                    .font(.title3)
-                                Text("Mega Clinic Location")
-                                    .fontWeight(.medium)
+                                Image(systemName: "map.fill").font(.title3)
+                                Text("Mega Clinic Location").fontWeight(.medium)
                             }
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.blue)
-                            .clipShape(Capsule())
-                            .shadow(color: Color.blue.opacity(0.3), radius: 10, y: 5)
+                            .font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 16).background(Color.blue).clipShape(Capsule()).shadow(color: Color.blue.opacity(0.3), radius: 10, y: 5)
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 20)
+                        .padding(.horizontal, 20).padding(.bottom, 20)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
                 }
@@ -214,6 +235,38 @@ struct ClinicMapView: View {
     }
     
     // MARK: - Logic & Computed Properties
+    
+    var magnification: some Gesture {
+        MagnificationGesture()
+            .onChanged { value in
+                let delta = value / lastScale
+                lastScale = value
+                scale = min(max(scale * delta, 1), 4) // Max 4x zoom
+            }
+            .onEnded { _ in
+                lastScale = 1.0
+                if scale <= 1.0 { withAnimation { offset = .zero; lastOffset = .zero } }
+            }
+    }
+    
+    var drag: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                if scale > 1.0 {
+                    offset = CGSize(width: lastOffset.width + value.translation.width, height: lastOffset.height + value.translation.height)
+                }
+            }
+            .onEnded { _ in lastOffset = offset }
+    }
+    
+    private func zoomIn() { withAnimation { scale = min(scale + 0.5, 4.0) } }
+    
+    private func zoomOut() {
+        withAnimation {
+            scale = max(scale - 0.5, 1.0)
+            if scale == 1.0 { offset = .zero; lastOffset = .zero }
+        }
+    }
     
     var searchResults: [MapNode] {
         let allDestinations = ClinicMapData.shared.searchableDestinations
@@ -232,12 +285,14 @@ struct ClinicMapView: View {
         withAnimation {
             routePath = NavigationEngine.findPath(from: startingLocationID, to: node.id)
             if let firstPoint = routePath.first { currentDotPosition = firstPoint }
+            scale = 1.0; offset = .zero; lastOffset = .zero
         }
     }
     
     private func resetSearch() {
         withAnimation {
             searchText = ""; isSearchFocused = false; routePath = []; selectedDestinationName = nil; isNavigating = false; tappedNode = nil
+            scale = 1.0; offset = .zero; lastOffset = .zero
         }
     }
     
