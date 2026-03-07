@@ -4,11 +4,11 @@ import SwiftUI
 struct ClinicMapView: View {
     @Environment(\.dismiss) var dismiss
     
-    // Search State
+  
     @State private var searchText = ""
     @FocusState private var isSearchFocused: Bool
     
-    // Navigation State
+   
     @State private var routePath: [CGPoint] = []
     @State private var currentDotPosition: CGPoint = CGPoint(x: 0.05, y: 0.52)
     @State private var isNavigating = false
@@ -294,7 +294,7 @@ struct ClinicMapView: View {
         
         let relativeTap = CGPoint(x: location.x / size.width, y: location.y / size.height)
         var closestNode: MapNode? = nil
-        var minDistance: CGFloat = 0.10 // 🔴 Hit radius expanded to 0.10 here
+        var minDistance: CGFloat = 0.10
         
         for node in ClinicMapData.shared.searchableDestinations {
             let dx = relativeTap.x - node.position.x
@@ -341,6 +341,13 @@ struct LocationPopupCard: View {
     let onDetailsTapped: () -> Void
     let onClose: () -> Void
     
+    // 🔴 NEW: Computed property to determine availability.
+    // You can connect this to real backend data later.
+    var isAvailable: Bool {
+        // Just as an example, making "Doctor Room 6" unavailable so you can see the red UI
+        return node.id != "dr_room_6"
+    }
+    
     var body: some View {
         VStack(spacing: 16) {
             Capsule().fill(Color.gray.opacity(0.3)).frame(width: 40, height: 4)
@@ -348,19 +355,45 @@ struct LocationPopupCard: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(node.name).font(.title2).fontWeight(.bold)
+                    
                     HStack(spacing: 6) {
                         Image(systemName: "building.2").foregroundStyle(.gray)
                         Text("Ground Floor").foregroundStyle(.secondary)
-                    }.font(.subheadline)
+                    }
+                    .font(.subheadline)
+                    
+                    // 🔴 NEW: Availability Status underneath the floor text
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(isAvailable ? Color.green : Color.red)
+                            .frame(width: 8, height: 8)
+                        Text(isAvailable ? "Available" : "Unavailable")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundStyle(isAvailable ? .green : .red)
+                    }
+                    .padding(.top, 2)
                 }
                 Spacer()
+                
                 Button(action: onClose) {
-                    Image(systemName: "xmark").font(.system(size: 14, weight: .bold)).foregroundStyle(.gray).padding(8).background(Color(uiColor: .systemGray6)).clipShape(Circle())
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.gray)
+                        .padding(8)
+                        .background(Color(uiColor: .systemGray6))
+                        .clipShape(Circle())
                 }
             }
             
             Button(action: onDetailsTapped) {
-                Text("Details").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(Color.blue).clipShape(RoundedRectangle(cornerRadius: 12))
+                Text("Details")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.blue)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
         .padding(20).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 24)).shadow(color: Color.black.opacity(0.15), radius: 20, y: 10).padding(.horizontal, 16).padding(.bottom, 20)
@@ -370,6 +403,9 @@ struct LocationPopupCard: View {
 struct RoomDetailsView: View {
     @Environment(\.dismiss) var dismiss
     let node: MapNode
+    
+    // Using the exact same mock logic so the full details sheet matches
+    var isAvailable: Bool { return node.id != "dr_room_6" }
     
     var body: some View {
         NavigationStack {
@@ -387,6 +423,9 @@ struct RoomDetailsView: View {
                     
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Room Information").font(.headline).fontWeight(.bold)
+                        
+                        // 🔴 Added the status line here too so it matches!
+                        DetailRow(icon: "circle.fill", title: "Status", value: isAvailable ? "Available" : "Unavailable", valueColor: isAvailable ? .green : .red)
                         DetailRow(icon: "number", title: "Room ID", value: "RM-\(node.id.suffix(4).uppercased())")
                         DetailRow(icon: "building.2", title: "Floor", value: "Ground Floor")
                         DetailRow(icon: "location", title: "Position", value: "(\(String(format: "%.2f", node.position.x)), \(String(format: "%.2f", node.position.y)))")
@@ -419,8 +458,10 @@ struct DetailRow: View {
     let icon: String
     let title: String
     let value: String
+    var valueColor: Color = .secondary // 🔴 Added a quick color modifier for the new status text
+    
     var body: some View {
-        HStack { Image(systemName: icon).frame(width: 24).foregroundStyle(.gray); Text(title).fontWeight(.medium); Spacer(); Text(value).foregroundStyle(.secondary) }.font(.subheadline)
+        HStack { Image(systemName: icon).frame(width: 24).foregroundStyle(.gray); Text(title).fontWeight(.medium); Spacer(); Text(value).foregroundStyle(valueColor) }.font(.subheadline)
     }
 }
 
