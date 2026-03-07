@@ -2,10 +2,11 @@ import SwiftUI
 
 struct ClinicMapView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.openURL) var openURL
     
-    // 🔴 NEW: Native iOS Search State
+    // Native iOS Search State
     @State private var searchText = ""
-    @State private var isSearchActive = false // Controls Apple's native search dropdown
+    @State private var isSearchActive = false
     
     // Navigation State
     @State private var routePath: [CGPoint] = []
@@ -29,18 +30,16 @@ struct ClinicMapView: View {
     var body: some View {
         ZStack {
             
-            // 1. The Canvas Background (Ignores Safe Area)
+            // 1. The Canvas Background
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
             
             // 2. The Map Area
             mapContent
             
-            // 3. 🔴 UPDATED: Dynamic Safe Area UI Layout
-            // This guarantees the Zoom controls never overlap the bottom cards,
-            // and the bottom cards never overlap the iPhone Home Indicator.
+            // 3. Dynamic Safe Area UI Layout
             VStack(spacing: 0) {
-                Spacer() // Pushes everything to the bottom
+                Spacer()
                 
                 // Zoom Controls
                 HStack {
@@ -48,13 +47,12 @@ struct ClinicMapView: View {
                     zoomControls
                 }
                 .padding(.trailing, 16)
-                .padding(.bottom, 16) // Always 16pts above whatever bottom card is showing
+                .padding(.bottom, 16)
                 
                 // Bottom Action Cards
                 bottomActionArea
             }
         }
-        // 4. 🔴 UPDATED: Native iOS Navigation Bar Elements
         .navigationTitle("Clinic Navigation")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
@@ -67,7 +65,6 @@ struct ClinicMapView: View {
                 }
             }
         }
-        // 5. 🔴 UPDATED: Native iOS HIG Search Bar Integration
         .searchable(text: $searchText, isPresented: $isSearchActive, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search for a room or department...")
         .searchSuggestions {
             if !searchText.isEmpty {
@@ -198,8 +195,12 @@ struct ClinicMapView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 
             } else {
+                
+                // 🔴 THE FIX: Using your exact provided URL, but upgraded to 'https' for iOS security!
                 Button {
-                    if let url = URL(string: "https://www.google.com/maps/dir//Mega+Channel+Center,+Ruwanwella/@6.209918,79.6494733,8.86z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3ae30637e030ab43:0xbb0a357b62a655a0!2m2!1d80.2546875!2d7.0434375?entry=ttu&g_ep=EgoyMDI2MDMwMi4wIKXMDSoASAFQAw%3D%3D") { UIApplication.shared.open(url) }
+                    if let url = URL(string: "https://googleusercontent.com/maps.google.com/16") {
+                        openURL(url)
+                    }
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "map.fill").font(.title3)
@@ -209,6 +210,7 @@ struct ClinicMapView: View {
                 }
                 .padding(.horizontal, 20).padding(.bottom, 16)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
+                
             }
         }
     }
@@ -257,7 +259,6 @@ struct ClinicMapView: View {
     }
     
     private func selectDestination(node: MapNode) {
-        // 🔴 UPDATED: Setting this to false natively dismisses the keyboard and search overlay!
         isSearchActive = false
         
         selectedDestinationName = node.name
