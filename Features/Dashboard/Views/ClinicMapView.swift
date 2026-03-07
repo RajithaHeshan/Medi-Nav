@@ -1,14 +1,13 @@
-
 import SwiftUI
 
 struct ClinicMapView: View {
     @Environment(\.dismiss) var dismiss
     
-  
+    // 🔴 NEW: Native iOS Search State
     @State private var searchText = ""
-    @FocusState private var isSearchFocused: Bool
+    @State private var isSearchActive = false // Controls Apple's native search dropdown
     
-   
+    // Navigation State
     @State private var routePath: [CGPoint] = []
     @State private var currentDotPosition: CGPoint = CGPoint(x: 0.05, y: 0.52)
     @State private var isNavigating = false
@@ -28,202 +27,189 @@ struct ClinicMapView: View {
     let startingLocationID = "entrance_left"
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack {
             
-            // 1. Header & Search Bar
-            VStack(spacing: 16) {
-                HStack {
-                    Button { dismiss() } label: { Image(systemName: "chevron.left").font(.title2).bold().foregroundStyle(.black) }
-                    Spacer()
-                    Text("Clinic Navigation").font(.headline).bold()
-                    Spacer()
-                    Image(systemName: "chevron.left").font(.title2).opacity(0)
-                }
-                
-                HStack {
-                    Image(systemName: "magnifyingglass").foregroundStyle(.gray)
-                    
-                    TextField("Search for a room or department...", text: $searchText)
-                        .focused($isSearchFocused)
-                        .onSubmit {
-                            if let bestMatch = searchResults.first { selectDestination(node: bestMatch) }
-                        }
-                    
-                    if !searchText.isEmpty {
-                        Button(action: resetSearch) { Image(systemName: "xmark.circle.fill").foregroundStyle(.gray) }
-                    } else {
-                        Button {
-                            print("Microphone tapped")
-                        } label: {
-                            Image(systemName: "mic.fill").foregroundStyle(.gray)
-                        }
-                    }
-                }
-                .padding(12).background(Color(uiColor: .systemGray6)).clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-            .padding().background(Color(uiColor: .systemBackground)).shadow(color: Color.black.opacity(0.05), radius: 5, y: 5).zIndex(10)
+            // 1. The Canvas Background (Ignores Safe Area)
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
             
-            ZStack(alignment: .top) {
+            // 2. The Map Area
+            mapContent
+            
+            // 3. 🔴 UPDATED: Dynamic Safe Area UI Layout
+            // This guarantees the Zoom controls never overlap the bottom cards,
+            // and the bottom cards never overlap the iPhone Home Indicator.
+            VStack(spacing: 0) {
+                Spacer() // Pushes everything to the bottom
                 
-                Color(uiColor: .systemGroupedBackground)
-                    .ignoresSafeArea()
-                
-                // 2. The Map Area
-                ZStack {
-                    Image("ClinicMapImage")
-                        .resizable()
-                        .scaledToFit()
-                        .padding(.horizontal, 8)
-                        .overlay(
-                            GeometryReader { geometry in
-                                ZStack(alignment: .topLeading) {
-                                    
-                                    Color.clear
-                                        .contentShape(Rectangle())
-                                        .onTapGesture { location in
-                                            handleMapTap(at: location, in: geometry.size)
-                                        }
-                                    
-                                    Path { path in
-                                        guard let first = routePath.first else { return }
-                                        path.move(to: convert(point: first, in: geometry.size))
-                                        for point in routePath.dropFirst() {
-                                            path.addLine(to: convert(point: point, in: geometry.size))
-                                        }
-                                    }
-                                    .stroke(Color.blue.opacity(0.6), style: StrokeStyle(lineWidth: 5, dash: [8, 6]))
-                                    
-                                    if !routePath.isEmpty {
-                                        Circle()
-                                            .fill(Color.blue).frame(width: 18, height: 18)
-                                            .overlay(Circle().stroke(Color.white, lineWidth: 3))
-                                            .shadow(color: .blue.opacity(0.5), radius: 5, x: 0, y: 0)
-                                            .position(convert(point: currentDotPosition, in: geometry.size))
-                                    }
-                                    
-                                    if let tapped = tappedNode {
-                                        ZStack {
-                                            Circle()
-                                                .fill(Color.red.opacity(0.3)).frame(width: 50, height: 50)
-                                                .scaleEffect(pulseAnimation ? 1.2 : 0.8)
-                                                .opacity(pulseAnimation ? 0 : 1)
-                                            
-                                            Circle()
-                                                .fill(Color.red).frame(width: 16, height: 16)
-                                                .overlay(Circle().stroke(Color.white, lineWidth: 3))
-                                                .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
-                                        }
-                                        .position(convert(point: tapped.position, in: geometry.size))
-                                        .onAppear {
-                                            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false)) { pulseAnimation = true }
-                                        }
-                                    }
-                                }
-                            }
-                        )
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .scaleEffect(scale)
-                .offset(offset)
-                .gesture(magnification.simultaneously(with: drag))
-                .clipped()
-                
-                // 3. Floating Zoom Controls
-                VStack {
+                // Zoom Controls
+                HStack {
                     Spacer()
-                    HStack {
-                        Spacer()
-                        VStack(spacing: 0) {
-                            Button(action: zoomIn) {
-                                Image(systemName: "plus").font(.title2).frame(width: 44, height: 44).foregroundStyle(Color(uiColor: .label))
-                            }
-                            Divider().frame(width: 44)
-                            Button(action: zoomOut) {
-                                Image(systemName: "minus").font(.title2).frame(width: 44, height: 44).foregroundStyle(Color(uiColor: .label))
-                            }
-                        }
-                        .frame(width: 44)
-                        .background(.ultraThinMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
-                        .padding(.trailing, 16)
-                        .padding(.bottom, 140)
-                    }
+                    zoomControls
                 }
-                .zIndex(4)
+                .padding(.trailing, 16)
+                .padding(.bottom, 16) // Always 16pts above whatever bottom card is showing
                 
-                // 4. Search Results Dropdown List
-                if isSearchFocused && !searchText.isEmpty {
-                    ScrollView {
-                        VStack(spacing: 0) {
-                            ForEach(searchResults, id: \.id) { node in
-                                Button { selectDestination(node: node) } label: {
-                                    HStack {
-                                        Image(systemName: "mappin.and.ellipse").foregroundStyle(Color.blue)
-                                        Text(node.name).font(.body).foregroundStyle(Color(uiColor: .label))
-                                        Spacer()
-                                        Image(systemName: "chevron.right").font(.caption).foregroundStyle(.gray)
-                                    }.padding().background(Color(uiColor: .systemBackground))
-                                }
-                                Divider().padding(.leading, 40)
-                            }
-                        }
-                        .background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 12)).shadow(color: Color.black.opacity(0.1), radius: 10, y: 5).padding(.horizontal).padding(.top, 8)
-                    }
-                    .zIndex(6)
-                }
-                
-                // 5. Unified Bottom Action Area
-                VStack {
-                    Spacer()
-                    
-                    if let tapped = tappedNode {
-                        LocationPopupCard(node: tapped) {
-                            showDetailsSheet = true
-                        } onClose: {
-                            withAnimation { tappedNode = nil; pulseAnimation = false }
-                        }
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                        
-                    } else if let destName = selectedDestinationName {
-                        VStack(spacing: 12) {
-                            Text("Navigating to: \(destName)").font(.headline)
-                            Button(action: startNavigationAnimation) {
-                                HStack {
-                                    Image(systemName: isNavigating ? "figure.walk" : "play.fill")
-                                    Text(isNavigating ? "Navigating..." : "Start Route")
-                                }
-                                .font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding()
-                                .background(isNavigating ? Color.gray : Color.blue).clipShape(RoundedRectangle(cornerRadius: 12))
-                            }
-                            .disabled(isNavigating)
-                        }
-                        .padding(20).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 24))
-                        .shadow(color: Color.black.opacity(0.08), radius: 10, y: -5)
-                        .padding(.horizontal, 16).padding(.bottom, 20)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                        
-                    } else {
-                        Button {
-                            if let url = URL(string: "https://www.google.com/maps/dir//Mega+Channel+Center,+Ruwanwella/@6.209918,79.6494733,8.86z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3ae30637e030ab43:0xbb0a357b62a655a0!2m2!1d80.2546875!2d7.0434375?entry=ttu&g_ep=EgoyMDI2MDMwMi4wIKXMDSoASAFQAw%3D%3D") { UIApplication.shared.open(url) }
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "map.fill").font(.title3)
-                                Text("Mega Clinic Location").fontWeight(.medium)
-                            }
-                            .font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 16).background(Color.blue).clipShape(Capsule()).shadow(color: Color.blue.opacity(0.3), radius: 10, y: 5)
-                        }
-                        .padding(.horizontal, 20).padding(.bottom, 20)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                    }
-                }
-                .zIndex(5)
+                // Bottom Action Cards
+                bottomActionArea
             }
         }
-        .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-        .navigationBarHidden(true)
+        // 4. 🔴 UPDATED: Native iOS Navigation Bar Elements
+        .navigationTitle("Clinic Navigation")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Color(uiColor: .label))
+                }
+            }
+        }
+        // 5. 🔴 UPDATED: Native iOS HIG Search Bar Integration
+        .searchable(text: $searchText, isPresented: $isSearchActive, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search for a room or department...")
+        .searchSuggestions {
+            if !searchText.isEmpty {
+                ForEach(searchResults, id: \.id) { node in
+                    Button {
+                        selectDestination(node: node)
+                    } label: {
+                        HStack {
+                            Image(systemName: "mappin.and.ellipse").foregroundStyle(Color.blue)
+                            Text(node.name).font(.body).foregroundStyle(Color(uiColor: .label))
+                        }
+                    }
+                }
+            }
+        }
+        .onSubmit(of: .search) {
+            if let bestMatch = searchResults.first { selectDestination(node: bestMatch) }
+        }
         .sheet(isPresented: $showDetailsSheet) {
             if let node = tappedNode { RoomDetailsView(node: node) }
+        }
+    }
+    
+    // MARK: - Extracted UI Views
+    
+    private var mapContent: some View {
+        Image("ClinicMapImage")
+            .resizable()
+            .scaledToFit()
+            .padding(.horizontal, 8)
+            .overlay(
+                GeometryReader { geometry in
+                    ZStack(alignment: .topLeading) {
+                        
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .onTapGesture { location in
+                                handleMapTap(at: location, in: geometry.size)
+                            }
+                        
+                        Path { path in
+                            guard let first = routePath.first else { return }
+                            path.move(to: convert(point: first, in: geometry.size))
+                            for point in routePath.dropFirst() {
+                                path.addLine(to: convert(point: point, in: geometry.size))
+                            }
+                        }
+                        .stroke(Color.blue.opacity(0.6), style: StrokeStyle(lineWidth: 5, dash: [8, 6]))
+                        
+                        if !routePath.isEmpty {
+                            Circle()
+                                .fill(Color.blue).frame(width: 18, height: 18)
+                                .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                                .shadow(color: .blue.opacity(0.5), radius: 5, x: 0, y: 0)
+                                .position(convert(point: currentDotPosition, in: geometry.size))
+                        }
+                        
+                        if let tapped = tappedNode {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.red.opacity(0.3)).frame(width: 50, height: 50)
+                                    .scaleEffect(pulseAnimation ? 1.2 : 0.8)
+                                    .opacity(pulseAnimation ? 0 : 1)
+                                
+                                Circle()
+                                    .fill(Color.red).frame(width: 16, height: 16)
+                                    .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                                    .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                            }
+                            .position(convert(point: tapped.position, in: geometry.size))
+                            .onAppear {
+                                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false)) { pulseAnimation = true }
+                            }
+                        }
+                    }
+                }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .scaleEffect(scale)
+            .offset(offset)
+            .gesture(magnification.simultaneously(with: drag))
+            .clipped()
+    }
+    
+    private var zoomControls: some View {
+        VStack(spacing: 0) {
+            Button(action: zoomIn) {
+                Image(systemName: "plus").font(.title2).frame(width: 44, height: 44).foregroundStyle(Color(uiColor: .label))
+            }
+            Divider().frame(width: 44)
+            Button(action: zoomOut) {
+                Image(systemName: "minus").font(.title2).frame(width: 44, height: 44).foregroundStyle(Color(uiColor: .label))
+            }
+        }
+        .frame(width: 44)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+    }
+    
+    @ViewBuilder
+    private var bottomActionArea: some View {
+        VStack {
+            if let tapped = tappedNode {
+                LocationPopupCard(node: tapped) {
+                    showDetailsSheet = true
+                } onClose: {
+                    withAnimation { tappedNode = nil; pulseAnimation = false }
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                
+            } else if let destName = selectedDestinationName {
+                VStack(spacing: 12) {
+                    Text("Navigating to: \(destName)").font(.headline)
+                    Button(action: startNavigationAnimation) {
+                        HStack {
+                            Image(systemName: isNavigating ? "figure.walk" : "play.fill")
+                            Text(isNavigating ? "Navigating..." : "Start Route")
+                        }
+                        .font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding()
+                        .background(isNavigating ? Color.gray : Color.blue).clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .disabled(isNavigating)
+                }
+                .padding(20).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 24))
+                .shadow(color: Color.black.opacity(0.08), radius: 10, y: -5)
+                .padding(.horizontal, 16).padding(.bottom, 16)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                
+            } else {
+                Button {
+                    if let url = URL(string: "https://www.google.com/maps/dir//Mega+Channel+Center,+Ruwanwella/@6.209918,79.6494733,8.86z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3ae30637e030ab43:0xbb0a357b62a655a0!2m2!1d80.2546875!2d7.0434375?entry=ttu&g_ep=EgoyMDI2MDMwMi4wIKXMDSoASAFQAw%3D%3D") { UIApplication.shared.open(url) }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "map.fill").font(.title3)
+                        Text("Mega Clinic Location").fontWeight(.medium)
+                    }
+                    .font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 16).background(Color.blue).clipShape(Capsule()).shadow(color: Color.blue.opacity(0.3), radius: 10, y: 5)
+                }
+                .padding(.horizontal, 20).padding(.bottom, 16)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
     }
     
@@ -271,7 +257,9 @@ struct ClinicMapView: View {
     }
     
     private func selectDestination(node: MapNode) {
-        isSearchFocused = false
+        // 🔴 UPDATED: Setting this to false natively dismisses the keyboard and search overlay!
+        isSearchActive = false
+        
         selectedDestinationName = node.name
         searchText = node.name
         tappedNode = nil
@@ -282,15 +270,8 @@ struct ClinicMapView: View {
         }
     }
     
-    private func resetSearch() {
-        withAnimation {
-            searchText = ""; isSearchFocused = false; routePath = []; selectedDestinationName = nil; isNavigating = false; tappedNode = nil
-            scale = 1.0; offset = .zero; lastOffset = .zero
-        }
-    }
-    
     private func handleMapTap(at location: CGPoint, in size: CGSize) {
-        isSearchFocused = false
+        isSearchActive = false
         
         let relativeTap = CGPoint(x: location.x / size.width, y: location.y / size.height)
         var closestNode: MapNode? = nil
@@ -341,12 +322,7 @@ struct LocationPopupCard: View {
     let onDetailsTapped: () -> Void
     let onClose: () -> Void
     
-    // 🔴 NEW: Computed property to determine availability.
-    // You can connect this to real backend data later.
-    var isAvailable: Bool {
-        // Just as an example, making "Doctor Room 6" unavailable so you can see the red UI
-        return node.id != "dr_room_6"
-    }
+    var isAvailable: Bool { return node.id != "dr_room_6" }
     
     var body: some View {
         VStack(spacing: 16) {
@@ -362,38 +338,21 @@ struct LocationPopupCard: View {
                     }
                     .font(.subheadline)
                     
-                    // 🔴 NEW: Availability Status underneath the floor text
                     HStack(spacing: 6) {
-                        Circle()
-                            .fill(isAvailable ? Color.green : Color.red)
-                            .frame(width: 8, height: 8)
-                        Text(isAvailable ? "Available" : "Unavailable")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundStyle(isAvailable ? .green : .red)
+                        Circle().fill(isAvailable ? Color.green : Color.red).frame(width: 8, height: 8)
+                        Text(isAvailable ? "Available" : "Unavailable").font(.subheadline).fontWeight(.medium).foregroundStyle(isAvailable ? .green : .red)
                     }
                     .padding(.top, 2)
                 }
                 Spacer()
                 
                 Button(action: onClose) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.gray)
-                        .padding(8)
-                        .background(Color(uiColor: .systemGray6))
-                        .clipShape(Circle())
+                    Image(systemName: "xmark").font(.system(size: 14, weight: .bold)).foregroundStyle(.gray).padding(8).background(Color(uiColor: .systemGray6)).clipShape(Circle())
                 }
             }
             
             Button(action: onDetailsTapped) {
-                Text("Details")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Color.blue)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                Text("Details").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(Color.blue).clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
         .padding(20).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 24)).shadow(color: Color.black.opacity(0.15), radius: 20, y: 10).padding(.horizontal, 16).padding(.bottom, 20)
@@ -403,8 +362,6 @@ struct LocationPopupCard: View {
 struct RoomDetailsView: View {
     @Environment(\.dismiss) var dismiss
     let node: MapNode
-    
-    // Using the exact same mock logic so the full details sheet matches
     var isAvailable: Bool { return node.id != "dr_room_6" }
     
     var body: some View {
@@ -424,7 +381,6 @@ struct RoomDetailsView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Room Information").font(.headline).fontWeight(.bold)
                         
-                        // 🔴 Added the status line here too so it matches!
                         DetailRow(icon: "circle.fill", title: "Status", value: isAvailable ? "Available" : "Unavailable", valueColor: isAvailable ? .green : .red)
                         DetailRow(icon: "number", title: "Room ID", value: "RM-\(node.id.suffix(4).uppercased())")
                         DetailRow(icon: "building.2", title: "Floor", value: "Ground Floor")
@@ -458,8 +414,7 @@ struct DetailRow: View {
     let icon: String
     let title: String
     let value: String
-    var valueColor: Color = .secondary // 🔴 Added a quick color modifier for the new status text
-    
+    var valueColor: Color = .secondary
     var body: some View {
         HStack { Image(systemName: icon).frame(width: 24).foregroundStyle(.gray); Text(title).fontWeight(.medium); Spacer(); Text(value).foregroundStyle(valueColor) }.font(.subheadline)
     }
@@ -471,5 +426,7 @@ struct SearchTag: View {
 }
 
 #Preview {
-    ClinicMapView()
+    NavigationStack {
+        ClinicMapView()
+    }
 }
