@@ -241,3 +241,4 @@ struct DoctorBookingView: View {
         DoctorBookingView(doctor: Doctor(name: "Dr. Sarah Jenkins", specialty: "Cardiologist", rating: 4.9, reviewCount: 120, fee: 150, image: "Image (2)", status: "Available Today", statusColor: .green, isBookable: true))
     }
 }
+

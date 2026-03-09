@@ -1,3 +1,4 @@
+
 import SwiftUI
 import Combine
 
@@ -67,17 +68,29 @@ struct HomeView: View {
                 ClinicMapView()
             }
             .navigationDestination(isPresented: $navigateToQueue) {
-                QueueView() // Connects to your real QueueView file
+                QueueView()
             }
             .navigationDestination(isPresented: $navigateToBooking) {
-                
-                Text("Doctor Booking Screen")
+                // 🔴 THE FIX: We pass the specific doctor data so the view knows who to book!
+                DoctorBookingView(
+                    doctor: Doctor(
+                        name: "Dr. Sarah Wilson",
+                        specialty: "Cardiologist",
+                        rating: 4.9,
+                        reviewCount: 120,
+                        fee: 150,
+                        image: "Ellipse 522", // Fallback to your profile icon if you don't have doctor images yet
+                        status: "Available Today",
+                        statusColor: .green,
+                        isBookable: true
+                    )
+                )
             }
             .navigationDestination(isPresented: $navigateToLabReports) {
-                LabReportsView() // Connects to your real LabReportsView file
+                LabReportsView()
             }
             .navigationDestination(isPresented: $navigateToPharmacy) {
-                PharmacyView() // Connects to your real PharmacyView file
+                PharmacyView()
             }
             .navigationDestination(isPresented: $navigateToNotifications) {
                 NotificationView()
