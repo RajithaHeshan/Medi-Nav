@@ -1,23 +1,24 @@
 import SwiftUI
 
-// 1. Define the Tab Enum globally so any file can see it
+
 enum AppTab {
     case home
+    case booking
     case chat
     case account
 }
 
-// 2. The Main Tab Bar Container
+
 struct CustomTabBar: View {
     @Binding var selectedTab: AppTab
     
     var body: some View {
         VStack(spacing: 0) {
-            Divider() // The thin grey separator
+            Divider()
                 .background(Color(uiColor: .separator))
             
             HStack(spacing: 0) {
-                // HOME
+           
                 TabBarButton(
                     icon: "house.fill",
                     text: "Home",
@@ -25,7 +26,14 @@ struct CustomTabBar: View {
                     selectedTab: $selectedTab
                 )
                 
-                // CHAT
+               
+                TabBarButton(
+                    icon: "calendar.badge.plus",
+                    text: "Booking",
+                    tab: .booking,
+                    selectedTab: $selectedTab
+                )
+                
                 TabBarButton(
                     icon: "bubble.left.and.bubble.right.fill",
                     text: "Chat",
@@ -34,7 +42,7 @@ struct CustomTabBar: View {
                 )
                 .overlay(notificationBadge)
                 
-                // ACCOUNT
+            
                 TabBarButton(
                     icon: "person.circle.fill",
                     text: "Account",
@@ -42,12 +50,12 @@ struct CustomTabBar: View {
                     selectedTab: $selectedTab
                 )
             }
-            .frame(height: 60) // Standard iOS Tab Height
-            .background(Color(uiColor: .systemBackground)) // Solid White Background
+            .frame(height: 60)
+            .background(Color(uiColor: .systemBackground))
         }
     }
     
-    // Sub-view for the badge (Clean Code: Keep the body simple)
+   
     private var notificationBadge: some View {
         Text("2")
             .font(.caption2)
@@ -60,21 +68,21 @@ struct CustomTabBar: View {
     }
 }
 
-// 3. The Individual Button Component
+
 struct TabBarButton: View {
     let icon: String
     let text: String
     let tab: AppTab
     @Binding var selectedTab: AppTab
     
-    // Semantic Colors (Computed Property)
+ 
     private var iconColor: Color {
         selectedTab == tab ? .blue : .gray
     }
     
     var body: some View {
         Button {
-            // Add Haptic Feedback for a "Physical" feel
+            
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             selectedTab = tab
         } label: {
@@ -82,25 +90,22 @@ struct TabBarButton: View {
                 Image(systemName: icon)
                     .font(.title2)
                     .foregroundStyle(iconColor)
-                    .symbolEffect(.bounce, value: selectedTab == tab) // iOS 17 Animation!
+                    .symbolEffect(.bounce, value: selectedTab == tab)
                 
                 Text(text)
                     .font(.caption)
                     .foregroundStyle(iconColor)
             }
             .frame(maxWidth: .infinity)
-            .contentShape(Rectangle()) // Makes the whole area clickable
+            .contentShape(Rectangle())
         }
     }
 }
 
-// MARK: - Preview (Isolated Component Test)
 
 #Preview {
     ZStack(alignment: .bottom) {
-        
         Color.gray.ignoresSafeArea()
-        
         CustomTabBar(selectedTab: .constant(.home))
     }
 }

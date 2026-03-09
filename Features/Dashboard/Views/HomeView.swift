@@ -1,4 +1,3 @@
-
 import SwiftUI
 import Combine
 
@@ -7,8 +6,8 @@ struct HomeView: View {
     
     // Navigation States
     @State private var navigateToEmergency = false
-    @State private var navigateToDoctors = false // 🔴 Added navigation state for Doctors
-    @State private var navigateToMyCare = false // 🔴 Added navigation state for My Care
+    @State private var navigateToDoctors = false
+    @State private var navigateToMyCare = false
     
     // Auto-swipe states
     @State private var currentStepIndex = 0
@@ -31,7 +30,9 @@ struct HomeView: View {
                         actionGrid
                         visitProgressSection
                         recentActivitySection
-                        Spacer(minLength: 80)
+                        
+                        // 🔴 FIXED: Increased bottom spacer so content isn't hidden behind the TabBar & Emergency button
+                        Spacer(minLength: 140)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 10)
@@ -43,7 +44,8 @@ struct HomeView: View {
                     navigateToEmergency = true
                 }
                 .padding(.trailing, 16)
-                .padding(.bottom, 20)
+                // 🔴 FIXED: Pushed the button up 90 points so it floats cleanly above your 60pt CustomTabBar
+                .padding(.bottom, 90)
             }
             .navigationBarHidden(true)
             
@@ -52,10 +54,10 @@ struct HomeView: View {
                 EmergencyView()
             }
             .navigationDestination(isPresented: $navigateToDoctors) {
-                DoctorServicesView() // 🔴 Connects to your Doctors UI
+                DoctorServicesView()
             }
             .navigationDestination(isPresented: $navigateToMyCare) {
-                MyCareView() // 🔴 Connects to your My Care UI
+                MyCareView()
             }
         }
     }
@@ -64,13 +66,11 @@ struct HomeView: View {
     
     private var headerSection: some View {
         HStack(spacing: 12) {
-            // 🔴 UPDATED: Using your custom application logo
             Image("Ellipse 522")
                 .resizable()
                 .scaledToFill()
                 .frame(width: 48, height: 48)
                 .clipShape(Circle())
-                // Optional: Add a subtle shadow or stroke if the logo blends into the background
                 .overlay(Circle().stroke(Color.gray.opacity(0.2), lineWidth: 1))
             
             VStack(alignment: .leading, spacing: 4) {
@@ -203,7 +203,6 @@ struct HomeView: View {
     
     private var actionGrid: some View {
         LazyVGrid(columns: columns, spacing: 16) {
-            // 🔴 UPDATED: Wrapped Doctors card in a Button
             Button { navigateToDoctors = true } label: {
                 GridMenuCard(title: "Doctors", icon: "stethoscope", color: Color(uiColor: .systemBlue))
             }
@@ -213,7 +212,6 @@ struct HomeView: View {
             
             GridMenuCard(title: "Map", icon: "map.fill", color: Color(uiColor: .systemOrange))
             
-            // 🔴 UPDATED: Wrapped My Care card in a Button
             Button { navigateToMyCare = true } label: {
                 GridMenuCard(title: "My Care", icon: "heart.fill", color: Color(uiColor: .systemRed))
             }
