@@ -6,35 +6,35 @@ struct QueueView: View {
     
     var body: some View {
         ZStack {
-            // HIG Background Color: Light gray on light mode, dark gray on dark mode
+            
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     
-                    // 1. Status Pill Header
+                
                     statusHeader
                     
-                    // 2. Main Title Section
+                  
                     mainTitleSection
                     
-                    // 3. Stats Card (Est. Call & Speed)
+                  
                     statsCard
                     
-                    // 4. Visual Queue Stepper
+                   
                     queueStepper
                     
-                    // 5. Location & Time Card
+                
                     locationTimeCard
                     
-                    // 6. Expandable Info Rows
+                 
                     VStack(spacing: 12) {
                         QueueExpandableRow(icon: "person.3.fill", iconColor: .blue, title: "Queue Details", subtitle: "2 ahead • 5 total today")
                         QueueExpandableRow(icon: "doc.text.fill", iconColor: .purple, title: "Appointment Info", subtitle: "Follow-up • Dr. Sarah Chen")
                     }
                     
-                    // HIG Fix: Keep content above the CustomTabBar
+                 
                     Spacer(minLength: 120)
                 }
                 .padding(.horizontal, 20)
@@ -44,18 +44,22 @@ struct QueueView: View {
         .navigationTitle("Latest Queue")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button { dismiss() } label: {
-                    Image(systemName: "arrow.left")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(Color.blue)
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color(uiColor: .label))
+                        .frame(width: 40, height: 40)
+                        .background(Color(uiColor: .systemBackground))
+                        .clipShape(Circle())
+                        .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
                 }
             }
         }
     }
     
-    // MARK: - View Components
     
     private var statusHeader: some View {
         HStack {
@@ -65,7 +69,7 @@ struct QueueView: View {
                     .frame(width: 8, height: 8)
                 Text("Queue Active")
                     .font(.subheadline)
-                    .fontWeight(.semibold)
+                    .fontWeight(.bold)
                     .foregroundStyle(Color.green)
             }
             
@@ -75,8 +79,8 @@ struct QueueView: View {
                 .font(.subheadline)
                 .fontWeight(.bold)
                 .foregroundStyle(Color.blue)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
                 .background(Color.blue.opacity(0.1))
                 .clipShape(Capsule())
         }
@@ -85,12 +89,12 @@ struct QueueView: View {
     private var mainTitleSection: some View {
         VStack(spacing: 8) {
             Text("OPD-10")
-                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .font(.system(size: 38, weight: .bold, design: .rounded)) // Made slightly larger
                 .foregroundStyle(Color(uiColor: .label))
             
             Text("General Medicine • Dr. Chen")
                 .font(.headline)
-                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                .foregroundStyle(Color.primary.opacity(0.75))
         }
         .padding(.vertical, 8)
     }
@@ -102,50 +106,51 @@ struct QueueView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "clock")
                         .foregroundStyle(Color.blue)
+                        .fontWeight(.semibold)
                     Text("Est. Call")
                         .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color.primary.opacity(0.75))
                 }
                 Text("10:45 AM")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundStyle(Color(uiColor: .label))
                 Text("~12 min wait")
-                    .font(.caption)
-                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    .font(.subheadline) // Increased from caption
+                    .foregroundStyle(Color.primary.opacity(0.75))
             }
             .frame(maxWidth: .infinity)
             
-            // Vertical Divider
+      
             Divider()
                 .frame(height: 60)
             
-            // Right Column
+           
             VStack(spacing: 8) {
                 HStack(spacing: 6) {
                     Image(systemName: "bolt.fill")
                         .foregroundStyle(Color.blue)
                     Text("Speed")
                         .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color.primary.opacity(0.75))
                 }
                 Text("4 min")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundStyle(Color(uiColor: .label))
                 Text("per patient")
-                    .font(.caption)
-                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    .font(.subheadline)
+                    .foregroundStyle(Color.primary.opacity(0.75))
             }
             .frame(maxWidth: .infinity)
         }
         .padding(.vertical, 24)
         .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 24))
-        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.gray.opacity(0.1), lineWidth: 1))
-        .shadow(color: Color.black.opacity(0.03), radius: 10, x: 0, y: 4)
+        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.gray.opacity(0.15), lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 6)
     }
     
     private var queueStepper: some View {
@@ -161,16 +166,17 @@ struct QueueView: View {
     
     private var locationTimeCard: some View {
         HStack(spacing: 0) {
-            // Location Column
+   
             VStack(spacing: 12) {
                 ZStack {
-                    Circle().fill(Color.blue.opacity(0.1)).frame(width: 44, height: 44)
-                    Image(systemName: "mappin.and.ellipse").foregroundStyle(Color.blue).font(.title3)
+                    Circle().fill(Color.blue.opacity(0.1)).frame(width: 48, height: 48)
+                    Image(systemName: "mappin.and.ellipse").foregroundStyle(Color.blue).font(.title3.bold())
                 }
                 VStack(spacing: 4) {
                     Text("Location")
                         .font(.subheadline)
-                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.primary.opacity(0.75))
                     Text("Room 204")
                         .font(.headline)
                         .fontWeight(.bold)
@@ -179,20 +185,21 @@ struct QueueView: View {
             }
             .frame(maxWidth: .infinity)
             
-            // Vertical Divider
+         
             Divider()
                 .frame(height: 60)
             
-            // Time Column
+         
             VStack(spacing: 12) {
                 ZStack {
-                    Circle().fill(Color.purple.opacity(0.1)).frame(width: 44, height: 44)
-                    Image(systemName: "calendar").foregroundStyle(Color.purple).font(.title3)
+                    Circle().fill(Color.purple.opacity(0.1)).frame(width: 48, height: 48)
+                    Image(systemName: "calendar").foregroundStyle(Color.purple).font(.title3.bold())
                 }
                 VStack(spacing: 4) {
                     Text("Time")
                         .font(.subheadline)
-                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.primary.opacity(0.75))
                     Text("10.30 AM")
                         .font(.headline)
                         .fontWeight(.bold)
@@ -204,12 +211,12 @@ struct QueueView: View {
         .padding(.vertical, 24)
         .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 24))
-        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.gray.opacity(0.1), lineWidth: 1))
-        .shadow(color: Color.black.opacity(0.03), radius: 10, x: 0, y: 4)
+        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.gray.opacity(0.15), lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 6)
     }
 }
 
-// MARK: - Reusable Subcomponents
+
 
 struct QueueStepView: View {
     enum StepState {
@@ -224,7 +231,6 @@ struct QueueStepView: View {
         VStack(spacing: 8) {
             ZStack {
                 if state == .active {
-                    // Soft glow background for active step
                     Circle()
                         .fill(Color.blue.opacity(0.15))
                         .frame(width: 64, height: 64)
@@ -238,32 +244,33 @@ struct QueueStepView: View {
                         .fontWeight(.bold)
                         .foregroundStyle(.white)
                 } else if state == .past {
+                    
                     Circle()
-                        .stroke(Color(uiColor: .systemGray4), lineWidth: 1.5)
+                        .stroke(Color(uiColor: .systemGray3), lineWidth: 2.0)
                         .frame(width: 48, height: 48)
                         .background(Circle().fill(Color(uiColor: .systemBackground)))
                     
                     Image(systemName: "checkmark")
-                        .foregroundStyle(Color(uiColor: .systemGray3))
+                        .foregroundStyle(Color(uiColor: .systemGray))
                         .font(.body.weight(.bold))
                 } else {
                     Circle()
-                        .stroke(Color(uiColor: .systemGray4), lineWidth: 1.5)
+                        .stroke(Color(uiColor: .systemGray3), lineWidth: 2.0)
                         .frame(width: 48, height: 48)
                         .background(Circle().fill(Color(uiColor: .systemBackground)))
                     
                     Text(mainText)
                         .font(.headline)
-                        .foregroundStyle(Color(uiColor: .systemGray2))
+                        .foregroundStyle(Color(uiColor: .systemGray))
                 }
             }
-            .frame(height: 64) // Fixed height to keep alignment even when active is larger
+            .frame(height: 64)
             
-            // Subtext Label
-            Text(subText.isEmpty ? " " : subText) // Keep space to prevent jumping
-                .font(.caption2)
-                .fontWeight(.medium)
-                .foregroundStyle(Color(uiColor: .secondaryLabel))
+         
+            Text(subText.isEmpty ? " " : subText)
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundStyle(Color.primary.opacity(0.65))
         }
     }
 }
@@ -276,35 +283,35 @@ struct QueueExpandableRow: View {
     
     var body: some View {
         Button {
-            // Future logic to expand or navigate
+        
         } label: {
             HStack(spacing: 16) {
                 ZStack {
-                    Circle().fill(iconColor.opacity(0.1)).frame(width: 40, height: 40)
-                    Image(systemName: icon).foregroundStyle(iconColor)
+                    Circle().fill(iconColor.opacity(0.1)).frame(width: 44, height: 44) // Enlarged slightly
+                    Image(systemName: icon).foregroundStyle(iconColor).font(.body.bold())
                 }
                 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(title)
-                        .font(.subheadline)
+                        .font(.headline)
                         .fontWeight(.bold)
                         .foregroundStyle(Color(uiColor: .label))
                     Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .font(.subheadline) 
+                        .foregroundStyle(Color.primary.opacity(0.75))
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.down")
-                    .font(.caption)
-                    .foregroundStyle(Color(uiColor: .systemGray3))
+                    .font(.body.bold())
+                    .foregroundStyle(Color(uiColor: .systemGray2))
             }
             .padding(16)
             .background(Color(uiColor: .systemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.1), lineWidth: 1))
-            .shadow(color: Color.black.opacity(0.02), radius: 5, x: 0, y: 2)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.15), lineWidth: 1))
+            .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 3)
         }
     }
 }
