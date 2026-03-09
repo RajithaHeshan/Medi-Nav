@@ -14,18 +14,13 @@ struct Doctor: Identifiable, Hashable {
     let isBookable: Bool
 }
 
-
 struct FindDoctorView: View {
     @Environment(\.dismiss) var dismiss
     
-    
     @State private var searchText = ""
     @State private var selectedCategory = "All"
-    
-   
     @State private var selectedDoctor: Doctor?
     
-   
     private let categories = ["All", "Cardiology", "Dentist", "Neurology"]
     
     private let doctors = [
@@ -35,7 +30,7 @@ struct FindDoctorView: View {
             rating: 4.9,
             reviewCount: 120,
             fee: 150,
-            image: "doctor1",
+            image: "doctor1", // Replace with your actual asset name
             status: "Available Today",
             statusColor: .green,
             isBookable: true
@@ -46,7 +41,7 @@ struct FindDoctorView: View {
             rating: 4.8,
             reviewCount: 98,
             fee: 180,
-            image: "doctor2",
+            image: "doctor2", // Replace with your actual asset name
             status: "Available Today",
             statusColor: .green,
             isBookable: true
@@ -75,91 +70,136 @@ struct FindDoctorView: View {
         )
     ]
     
-    // MARK: - Filter Logic
+    // MARK: - Smart Filter Logic (Now supports the Search Bar too!)
     var filteredDoctors: [Doctor] {
-        if selectedCategory == "All" {
-            return doctors
-        } else {
-            return doctors.filter { doctor in
-                if selectedCategory == "Cardiology" {
-                    return doctor.specialty == "Cardiologist"
-                } else if selectedCategory == "Neurology" {
-                    return doctor.specialty == "Neurologist"
-                } else {
-                    return doctor.specialty == selectedCategory
-                }
+        var result = doctors
+        
+        // 1. Filter by Category
+        if selectedCategory != "All" {
+            if selectedCategory == "Cardiology" {
+                result = result.filter { $0.specialty == "Cardiologist" }
+            } else if selectedCategory == "Neurology" {
+                result = result.filter { $0.specialty == "Neurologist" }
+            } else {
+                result = result.filter { $0.specialty == selectedCategory }
             }
         }
+        
+        // 2. Filter by Search Text
+        if !searchText.isEmpty {
+            result = result.filter { doctor in
+                doctor.name.localizedCaseInsensitiveContains(searchText) ||
+                doctor.specialty.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        
+        return result
     }
     
-    
     var body: some View {
-        NavigationStack {
+        ZStack(alignment: .top) {
+            Color(uiColor: .systemBackground)
+                .ignoresSafeArea()
+            
             VStack(spacing: 0) {
                 
-                
-                HStack {
-                    HStack(spacing: 8) {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundStyle(.gray)
-                        TextField("Search doctors...", text: $searchText)
+              
+                HStack(spacing: 16) {
+                    Button(action: { dismiss() }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color(uiColor: .systemBackground))
+                                .frame(width: 40, height: 40)
+                                .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                            
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(Color.blue)
+                                .offset(x: -1.5) // Visually centers the Apple SF Symbol perfectly
+                        }
                     }
-                    .padding(10)
-                    .background(Color(uiColor: .systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    
+                    Text("Find a Doctor")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color(uiColor: .label))
+                    
+                    Spacer()
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 10)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 16)
                 
+                // 2. HIG Compliant Search Bar with Dynamic Microphone/Xmark
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(Color(uiColor: .systemGray2))
+                        .font(.body.weight(.medium))
+                    
+                    TextField("Search doctors...", text: $searchText)
+                    
+                    Spacer()
+                    
+                    
+                    if !searchText.isEmpty {
+                        Button(action: {
+                            withAnimation { searchText = "" }
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(Color(uiColor: .systemGray3))
+                                .font(.body.weight(.medium))
+                        }
+                    } else {
+                        Image(systemName: "mic.fill")
+                            .foregroundStyle(Color(uiColor: .systemGray2))
+                            .font(.body.weight(.medium))
+                    }
+                }
+                .padding(10)
+                .background(Color(uiColor: .systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
                 
+                // 3. Category Picker
                 Picker("Category", selection: $selectedCategory) {
                     ForEach(categories, id: \.self) { category in
                         Text(category).tag(category)
                     }
                 }
                 .pickerStyle(.segmented)
-                .padding(.horizontal)
-                .padding(.bottom, 16)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 24)
                 
-           
-                ScrollView {
+                // 4. Scrollable List
+                ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         ForEach(filteredDoctors) { doctor in
-                            
-                            // 🔴 Trigger Action
                             DoctorRowItem(doctor: doctor) {
                                 if doctor.isBookable {
                                     selectedDoctor = doctor
                                 }
                             }
                             
-                            Divider().padding(.leading, 80)
+                            
+                            Divider().padding(.leading, 76)
                         }
+                        
+                        // Keeps content above the CustomTabBar
+                        Spacer(minLength: 120)
                     }
+                    .padding(.horizontal, 20)
                 }
             }
-            .navigationTitle("Find a Doctor")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .bold()
-                    }
-                }
-            }
-            
-            .navigationDestination(item: $selectedDoctor) { doctor in
-                DoctorBookingView(doctor: doctor)
-                    .navigationBarBackButtonHidden(true)
-            }
+        }
+        .navigationBarHidden(true) // Kills the double Apple back button entirely!
+        .navigationDestination(item: $selectedDoctor) { doctor in
+            DoctorBookingView(doctor: doctor)
         }
     }
 }
 
-
+// MARK: - Reusable Row Component
 struct DoctorRowItem: View {
     let doctor: Doctor
     var onBook: () -> Void
@@ -167,7 +207,7 @@ struct DoctorRowItem: View {
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
             
-            
+            // Profile Image
             ZStack {
                 Circle()
                     .fill(Color(uiColor: .systemGray6))
@@ -216,17 +256,17 @@ struct DoctorRowItem: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(doctor.isBookable ? Color.blue : Color(uiColor: .systemGray5))
-                    .foregroundStyle(doctor.isBookable ? .white : .gray)
+                    .foregroundStyle(doctor.isBookable ? .white : Color(uiColor: .systemGray))
                     .clipShape(Capsule())
             }
         }
-        .padding(.horizontal)
-        .padding(.vertical, 12)
+        .padding(.vertical, 16)
         .contentShape(Rectangle())
     }
 }
 
 #Preview {
-    FindDoctorView()
-    CustomTabBar(selectedTab: .constant(.home))
+    NavigationStack {
+        FindDoctorView()
+    }
 }
