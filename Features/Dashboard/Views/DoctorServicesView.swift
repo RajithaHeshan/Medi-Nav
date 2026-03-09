@@ -18,14 +18,12 @@ struct DoctorServicesView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            // HIG Background Color
+          
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // 🔴 FIX 1 & 2: Foolproof Custom Header!
-                // This guarantees the text never disappears, the spacing is exact,
-                // and the chevron is perfectly centered.
+                
                 HStack(spacing: 16) {
                     Button(action: { dismiss() }) {
                         ZStack {
