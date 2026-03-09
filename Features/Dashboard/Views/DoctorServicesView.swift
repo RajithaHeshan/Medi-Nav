@@ -1,8 +1,15 @@
+
 import SwiftUI
 
 struct DoctorServicesView: View {
     @Environment(\.dismiss) var dismiss
     
+    // MARK: - Navigation States
+    @State private var navigateToFindDoctor = false
+    @State private var navigateToBookingHistory = false
+    @State private var navigateToDoctorConsultation = false
+    @State private var navigateToConsultationHistory = false
+    @State private var navigateToReschedule = false
     
     let columns = [
         GridItem(.flexible(), spacing: 16),
@@ -10,259 +17,263 @@ struct DoctorServicesView: View {
     ]
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .top) {
+            // HIG Background Color
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
             
-            // 1. Custom Header
-            headerView
-            
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 32) {
+            VStack(spacing: 0) {
+                // 🔴 FIX 1 & 2: Foolproof Custom Header!
+                // This guarantees the text never disappears, the spacing is exact,
+                // and the chevron is perfectly centered.
+                HStack(spacing: 16) {
+                    Button(action: { dismiss() }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color(uiColor: .systemBackground))
+                                .frame(width: 40, height: 40)
+                                .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                            
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(Color.blue)
+                                .offset(x: -1.5) // 🔴 FIX 2: Visually centers the Apple SF Symbol!
+                        }
+                    }
                     
-                    // 2. Upcoming Appointment Card
-                    upcomingAppointmentCard
+                    Text("Doctor Services")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color(uiColor: .label))
                     
-                    // 3. Browse by Specialty Section
-                    specialtySection
-                    
-                    // 4. Main Action Grid (Now with Native SF Symbols)
-                    actionGridSection
-                    
-                    Spacer(minLength: 40)
+                    Spacer()
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 20)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 16)
+                
+                // Main Content
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 28) {
+                        upcomingAppointmentCard
+                        browseBySpecialtySection
+                        actionGrid
+                        
+                        Spacer(minLength: 120) // Keeps content above Tab Bar
+                    }
+                    .padding(.horizontal, 20)
+                }
             }
         }
-        .background(Color(uiColor: .systemGroupedBackground))
-        .navigationBarHidden(true)
-    }
-    
-    // MARK: - Subviews
-    
-    private var headerView: some View {
-        // 🔴 THE FIX: HIG standard 16pt spacing
-        HStack(spacing: 16) {
-            Button {
-                dismiss()
-            } label: {
-                // 🔴 THE FIX: HIG standard chevron instead of arrow
-                Image(systemName: "chevron.left")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color(uiColor: .systemBlue))
-            }
-            
-            Text("Doctor Services")
-                .font(.headline)
-                .fontWeight(.bold)
-            
-            Spacer()
+        .navigationBarHidden(true) // Completely hides the buggy native bar
+        
+        // MARK: - Navigation Destinations
+        .navigationDestination(isPresented: $navigateToFindDoctor) {
+            FindDoctorView()
         }
-        .padding()
-        .background(Color(uiColor: .systemBackground))
+        .navigationDestination(isPresented: $navigateToBookingHistory) {
+            BookingHistoryView()
+        }
+        .navigationDestination(isPresented: $navigateToDoctorConsultation) {
+            DoctorConsultationView()
+        }
+        .navigationDestination(isPresented: $navigateToConsultationHistory) {
+            DoctorConsultationHistoryView()
+        }
+        .navigationDestination(isPresented: $navigateToReschedule) {
+            DoctorBookingView(
+                doctor: Doctor(
+                    name: "Dr. Sarah Wilson",
+                    specialty: "Cardiologist",
+                    rating: 4.9,
+                    reviewCount: 120,
+                    fee: 150,
+                    image: "Ellipse 522",
+                    status: "Available Today",
+                    statusColor: .green,
+                    isBookable: true
+                )
+            )
+        }
     }
+    
+    // MARK: - View Components
     
     private var upcomingAppointmentCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Upcoming Appointment")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color(uiColor: .systemBlue))
-                
-                Spacer()
-                
-                Text("10:30 AM")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color(uiColor: .systemBlue))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color(uiColor: .systemBlue).opacity(0.1))
-                    .clipShape(Capsule())
-            }
-            
             Text("Friday, Oct 25")
-                .font(.subheadline)
+                .font(.headline)
                 .fontWeight(.bold)
                 .foregroundStyle(Color(uiColor: .label))
             
             HStack(spacing: 12) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color(uiColor: .systemBlue).opacity(0.1))
-                        .frame(width: 40, height: 40)
-                    Image(systemName: "cross.case.fill").foregroundStyle(Color(uiColor: .systemBlue))
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.blue.opacity(0.1))
+                        .frame(width: 48, height: 48)
+                    Image(systemName: "cross.case.fill")
+                        .foregroundStyle(Color.blue)
+                        .font(.title3)
                 }
-                
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Dr. Sarah Wilson")
                         .font(.subheadline)
                         .fontWeight(.bold)
                         .foregroundStyle(Color(uiColor: .label))
                     Text("Cardiologist - Room 12")
                         .font(.caption)
-                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .foregroundStyle(Color.primary.opacity(0.75))
                 }
             }
             
             HStack(spacing: 12) {
-                Button { } label: {
+                Button {
+                    navigateToReschedule = true
+                } label: {
                     Text("Reschedule")
-                        .font(.subheadline).fontWeight(.semibold)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
                         .foregroundStyle(Color(uiColor: .label))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color(uiColor: .secondarySystemGroupedBackground))
+                        .background(Color(uiColor: .systemBackground))
                         .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color(uiColor: .systemGray4), lineWidth: 1))
+                        .overlay(Capsule().stroke(Color.gray.opacity(0.2), lineWidth: 1))
                 }
                 
-                Button { } label: {
+                Button {
+                    // Cancel action logic
+                } label: {
                     Text("Cancel")
-                        .font(.subheadline).fontWeight(.semibold)
-                        .foregroundStyle(Color(uiColor: .systemRed))
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.red)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color(uiColor: .systemRed).opacity(0.05))
+                        .background(Color.red.opacity(0.05))
                         .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color(uiColor: .systemRed).opacity(0.3), lineWidth: 1))
+                        .overlay(Capsule().stroke(Color.red.opacity(0.2), lineWidth: 1))
                 }
             }
         }
         .padding(20)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
     
-    private var specialtySection: some View {
-        VStack(spacing: 16) {
+    private var browseBySpecialtySection: some View {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("Browse by Specialty")
-                    .font(.headline)
+                    .font(.title3)
                     .fontWeight(.bold)
                     .foregroundStyle(Color(uiColor: .label))
                 
                 Spacer()
                 
-                Button("See All") { }
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color(uiColor: .systemBlue))
+                Button("See All") {
+                    navigateToFindDoctor = true
+                }
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(Color.blue)
             }
             
             HStack(spacing: 0) {
-                SpecialtyIcon(title: "General", icon: "stethoscope", color: Color(uiColor: .systemBlue))
+                specialtyButton(icon: "stethoscope", title: "General", iconColor: .blue)
                 Spacer()
-                SpecialtyIcon(title: "Dental", icon: "cross.case.fill", color: Color(uiColor: .systemGreen))
+                specialtyButton(icon: "cross.case.fill", title: "Dental", iconColor: .green)
                 Spacer()
-                SpecialtyIcon(title: "Eye", icon: "eye.fill", color: Color(uiColor: .systemPurple))
+                specialtyButton(icon: "eye.fill", title: "Eye", iconColor: .purple)
                 Spacer()
-                SpecialtyIcon(title: "Heart", icon: "heart.fill", color: Color(uiColor: .systemRed))
+                specialtyButton(icon: "heart.fill", title: "Heart", iconColor: .red)
             }
-            .padding(.horizontal, 8)
         }
     }
     
-    // 🔴 UPDATED: Using the new ServiceActionCard with Native SF Symbols
-    private var actionGridSection: some View {
+    private var actionGrid: some View {
         LazyVGrid(columns: columns, spacing: 16) {
-            
-            ServiceActionCard(
-                title: "Doctors Booking",
-                iconName: "calendar.badge.plus",
-                iconColor: Color(uiColor: .systemBlue)
-            )
-            
-            ServiceActionCard(
-                title: "Booking History",
-                iconName: "list.clipboard.fill",
-                iconColor: Color(uiColor: .systemTeal)
-            )
-            
-            ServiceActionCard(
-                title: "Doctor Consulting",
-                iconName: "video.fill",
-                iconColor: Color(uiColor: .systemIndigo)
-            )
-            
-            ServiceActionCard(
-                title: "Consulting History",
-                iconName: "clock.fill",
-                iconColor: Color(uiColor: .systemPurple)
-            )
-        }
-    }
-}
-
-// MARK: - Reusable Components
-
-struct SpecialtyIcon: View {
-    let title: String
-    let icon: String
-    let color: Color
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.1))
-                    .frame(width: 60, height: 60)
-                
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundStyle(color)
+            Button { navigateToFindDoctor = true } label: {
+                ServiceGridCard(icon: "calendar.badge.plus", iconColor: .blue, title: "Doctors Booking")
             }
+            .buttonStyle(PlainButtonStyle())
             
-            Text(title)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(Color(uiColor: .label))
+            Button { navigateToBookingHistory = true } label: {
+                ServiceGridCard(icon: "list.clipboard.fill", iconColor: .cyan, title: "Booking History")
+            }
+            .buttonStyle(PlainButtonStyle())
+            
+            Button { navigateToDoctorConsultation = true } label: {
+                ServiceGridCard(icon: "video.fill", iconColor: .indigo, title: "Doctor Consulting")
+            }
+            .buttonStyle(PlainButtonStyle())
+            
+            Button { navigateToConsultationHistory = true } label: {
+                ServiceGridCard(icon: "clock.fill", iconColor: .purple, title: "Consulting History")
+            }
+            .buttonStyle(PlainButtonStyle())
         }
     }
-}
-
-// 🔴 THE FIX: Redesigned Card to use native SF Symbols instead of missing images
-struct ServiceActionCard: View {
-    let title: String
-    let iconName: String
-    let iconColor: Color
     
-    var body: some View {
+    // MARK: - Reusable Subcomponents
+    
+    private func specialtyButton(icon: String, title: String, iconColor: Color) -> some View {
         Button {
-            // Action for card tap
+            navigateToFindDoctor = true
         } label: {
-            VStack(spacing: 16) {
-                
-                // Native Symbol Container
+            VStack(spacing: 8) {
                 ZStack {
                     Circle()
                         .fill(iconColor.opacity(0.1))
-                        .frame(width: 64, height: 64)
-                    
-                    Image(systemName: iconName)
-                        .font(.system(size: 28, weight: .semibold))
+                        .frame(width: 60, height: 60)
+                    Image(systemName: icon)
+                        .font(.title2)
                         .foregroundStyle(iconColor)
                 }
-                
                 Text(title)
-                    .font(.subheadline)
+                    .font(.caption)
                     .fontWeight(.bold)
                     .foregroundStyle(Color(uiColor: .label))
-                    .multilineTextAlignment(.center)
             }
-            .padding(.vertical, 24)
-            .padding(.horizontal, 12)
-            .frame(maxWidth: .infinity)
-            .background(Color(uiColor: .secondarySystemGroupedBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         }
-        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// Extracted structurally so it can be reused easily
+struct ServiceGridCard: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(iconColor.opacity(0.1))
+                    .frame(width: 56, height: 56)
+                Image(systemName: icon)
+                    .font(.title2)
+                    .foregroundStyle(iconColor)
+            }
+            
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.bold)
+                .foregroundStyle(Color(uiColor: .label))
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 24)
+        .padding(.horizontal, 8)
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 5)
     }
 }
 
 #Preview {
-    DoctorServicesView()
+    NavigationStack {
+        DoctorServicesView()
+    }
 }
