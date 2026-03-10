@@ -4,17 +4,17 @@ import SwiftUI
 struct LaboratorySampleSubmissionView: View {
     @Environment(\.dismiss) var dismiss
     
-    // 🔴 NEW: Navigation States
+   
     @State private var navigateToPharmacy = false
     @State private var navigateToLabSamplePickup = false
     
     var body: some View {
         VStack(spacing: 0) {
             
-            // 1. Navigation Header
+           
             headerView
             
-            // 2. Scrollable Content
+           
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
                     
@@ -37,13 +37,12 @@ struct LaboratorySampleSubmissionView: View {
             .background(Color(uiColor: .systemGroupedBackground))
         }
         .navigationBarHidden(true)
-        
-        // 🔴 NEW: Navigation to Pharmacy View
+   
         .navigationDestination(isPresented: $navigateToPharmacy) {
             PharmacyView()
         }
         
-        // 🔴 NEW: Navigation to Lab Sample Pickup View (QR Code)
+     
         .navigationDestination(isPresented: $navigateToLabSamplePickup) {
             LabSamplePickupView()
         }

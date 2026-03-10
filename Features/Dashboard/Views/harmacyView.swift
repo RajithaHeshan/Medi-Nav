@@ -1,7 +1,7 @@
 
 import SwiftUI
 
-// MARK: - Data Models
+
 struct Medication: Identifiable {
     let id = UUID()
     let name: String
@@ -25,7 +25,11 @@ struct Medication: Identifiable {
 struct PharmacyView: View {
     @Environment(\.dismiss) var dismiss
     
-    // Sample Data
+  
+    @State private var navigateToMap = false
+    @State private var navigateToLabSubmission = false
+    
+   
     let medications: [Medication] = [
         Medication(name: "Amoxicillin", details: "500mg • Capsules", fillStatus: "Filled 2 of 5 times", status: .pending),
         Medication(name: "Amoxicillin", details: "500mg • Capsules", fillStatus: "Filled 2 of 5 times", status: .pending),
@@ -41,27 +45,27 @@ struct PharmacyView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // 1. Consistent Custom Header
+                
                 headerView
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         
-                        // 2. Visit Pharmacy Card
+                    
                         visitPharmacyCard
                         
-                        // 3. Visit Laboratory Card
+                   
                         visitLaboratoryCard
                         
-                        // 4. Staff/Pharmacist Card
+               
                         staffCard
                         
-                        // 5. Medication Lists
+                      
                         medicationSection(title: "Pending", status: .pending)
                         medicationSection(title: "Processing", status: .processing)
                         medicationSection(title: "Completed", status: .completed)
                         
-                        // Keeps content safely above CustomTabBar
+                     
                         Spacer(minLength: 120)
                     }
                     .padding(.horizontal, 20)
@@ -70,9 +74,17 @@ struct PharmacyView: View {
             }
         }
         .navigationBarHidden(true)
+        
+     
+        .navigationDestination(isPresented: $navigateToMap) {
+            ClinicMapView()
+        }
+        .navigationDestination(isPresented: $navigateToLabSubmission) {
+            LaboratorySampleSubmissionView()
+        }
     }
     
-    // MARK: - View Components
+
     
     private var headerView: some View {
         HStack(spacing: 16) {
@@ -127,7 +139,7 @@ struct PharmacyView: View {
                 }
             }
             
-            // Queue & Wait Time Block
+          
             HStack {
                 HStack(spacing: 8) {
                     Image(systemName: "person.2.fill")
@@ -159,8 +171,10 @@ struct PharmacyView: View {
                     .font(.caption)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                 Spacer()
+                
+             
                 Button {
-                    // Navigate to Map
+                    navigateToMap = true
                 } label: {
                     Text("View Map")
                         .font(.subheadline)
@@ -201,8 +215,9 @@ struct PharmacyView: View {
                 }
             }
             
+         
             Button {
-                // Check-in Logic
+                navigateToLabSubmission = true
             } label: {
                 Text("Check in to Laboratory")
                     .font(.headline)
@@ -219,8 +234,10 @@ struct PharmacyView: View {
                     .font(.caption)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                 Spacer()
+                
+              
                 Button {
-                    // Navigate to Map
+                    navigateToMap = true
                 } label: {
                     Text("View Map")
                         .font(.subheadline)
@@ -254,7 +271,7 @@ struct PharmacyView: View {
             Text(title)
                 .font(.headline)
                 .foregroundStyle(Color(uiColor: .secondaryLabel))
-                .textCase(.uppercase) // Automatically handles HIG section title styling
+                .textCase(.uppercase)
                 .padding(.bottom, 4)
             
             ForEach(sectionMeds) { med in
@@ -277,7 +294,7 @@ struct PharmacyView: View {
                         Text(med.fillStatus)
                             .font(.caption)
                             .fontWeight(.medium)
-                            .foregroundStyle(Color.cyan) // Replicating the distinct blue/cyan from your design
+                            .foregroundStyle(Color.cyan)
                     }
                     
                     Spacer()
@@ -300,13 +317,12 @@ struct StaffRow: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            // Profile Image Fallback (Using circles in case real images aren't added yet)
             ZStack {
                 Circle()
                     .fill(Color(uiColor: .systemGray5))
                     .frame(width: 50, height: 50)
                 
-                Image(imageName) // Make sure these assets exist in your Xcode asset catalog
+                Image(imageName)
                     .resizable()
                     .scaledToFill()
                     .frame(width: 50, height: 50)
