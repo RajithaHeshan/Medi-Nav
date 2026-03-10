@@ -18,78 +18,94 @@ struct PaymentView: View {
     
     @State private var selectedPaymentMethod: Int = 0
     
-    // Navigation States for all 3 flows
+   
     @State private var navigateToPharmacy = false
     @State private var navigateToLabReports = false
     @State private var navigateToBookingConfirmation = false
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .bottom) {
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
             
-            headerView
-            
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("APPOINTMENT SUMMARY")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.secondary)
-                            .padding(.leading, 4)
+            VStack(spacing: 0) {
+                
+                headerView
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 24) {
                         
-                        appointmentDetailsCard
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("PAYMENT METHOD")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.secondary)
-                            .padding(.leading, 4)
-                        
-                        Button {
-                            print("Apple Pay Tapped")
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "apple.logo")
-                                    .font(.title2)
-                                Text("Pay with Apple Pay")
-                                    .fontWeight(.semibold)
-                            }
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(Color.black)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("APPOINTMENT SUMMARY")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.secondary)
+                                .padding(.leading, 4)
+                            
+                            appointmentDetailsCard
                         }
                         
-                        PaymentOptionRow(
-                            icon: "creditcard.fill", iconColor: .blue, title: "Credit/Debit Card", subtitle: "Visa, Mastercard, AMEX", isSelected: selectedPaymentMethod == 0
-                        ) { selectedPaymentMethod = 0 }
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("PAYMENT METHOD")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.secondary)
+                                .padding(.leading, 4)
+                            
+                            Button {
+                                print("Apple Pay Tapped")
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "apple.logo")
+                                        .font(.title2)
+                                    Text("Pay with Apple Pay")
+                                        .fontWeight(.semibold)
+                                }
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(Color.black)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                            }
+                            
+                            PaymentOptionRow(
+                                icon: "creditcard.fill", iconColor: .blue, title: "Credit/Debit Card", subtitle: "Visa, Mastercard, AMEX", isSelected: selectedPaymentMethod == 0
+                            ) { withAnimation(.spring()) { selectedPaymentMethod = 0 } }
+                            
+                            PaymentOptionRow(
+                                icon: "shield.fill", iconColor: .gray, title: "Health Insurance", subtitle: "Use provider coverage", isSelected: selectedPaymentMethod == 1
+                            ) { withAnimation(.spring()) { selectedPaymentMethod = 1 } }
+                        }
                         
-                        PaymentOptionRow(
-                            icon: "shield.fill", iconColor: .gray, title: "Health Insurance", subtitle: "Use provider coverage", isSelected: selectedPaymentMethod == 1
-                        ) { selectedPaymentMethod = 1 }
+                        HStack(alignment: .top, spacing: 12) {
+                            Image(systemName: "info.circle.fill").font(.title3).foregroundStyle(.blue)
+                            Text("Your payment information is encrypted and securely processed by our medical gateway.")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundStyle(.blue)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.top, 2)
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.blue.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.blue.opacity(0.2), lineWidth: 1))
+                        
+                        // Overlap fixed
+                        Spacer(minLength: 240)
                     }
-                    
-                    HStack(alignment: .top, spacing: 12) {
-                        Image(systemName: "info.circle.fill").font(.title3).foregroundStyle(.blue)
-                        Text("Your payment information is encrypted and securely processed by our medical gateway.").font(.caption).foregroundStyle(.blue).fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding(16).frame(maxWidth: .infinity, alignment: .leading).background(Color.blue.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 12)).overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.blue.opacity(0.2), lineWidth: 1))
-                    
-                    Spacer(minLength: 20)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
                 }
-                .padding(20)
             }
             
+            // Sticky Footer
             bottomFooter
         }
-        .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         .navigationBarHidden(true)
         
-        // 🔴 Routing logic based on flow type
+      
         .navigationDestination(isPresented: $navigateToPharmacy) {
             PharmacyView()
         }
@@ -97,27 +113,87 @@ struct PaymentView: View {
             LabReportsView()
         }
         .navigationDestination(isPresented: $navigateToBookingConfirmation) {
-            // 🔴 Navigates to the screen you just built
+            
             PaymentConfirmationView(
                 doctor: doctor,
                 selectedDate: selectedDate,
                 selectedTime: selectedTime,
                 fee: doctor.fee
             )
+            .navigationBarBackButtonHidden(true)
         }
     }
     
-    // MARK: - Subviews
-    private var headerView: some View { HStack { Button { dismiss() } label: { Image(systemName: "chevron.left").font(.title3).bold().foregroundStyle(.black) }; Spacer(); Text("Payment").font(.headline).bold(); Spacer(); Image(systemName: "chevron.left").font(.title3).opacity(0) }.padding().background(Color(uiColor: .systemBackground)) }
     
-    private var appointmentDetailsCard: some View { VStack(spacing: 0) { HStack(spacing: 16) { VStack(alignment: .leading, spacing: 4) { Text(doctor.name).font(.headline); Text(doctor.specialty).font(.subheadline).foregroundStyle(.blue) }; Spacer(); Image(doctor.image).resizable().scaledToFill().frame(width: 50, height: 50).clipShape(RoundedRectangle(cornerRadius: 8)) }.padding(16); Divider().padding(.horizontal, 16); HStack { HStack(spacing: 8) { Image(systemName: "calendar").foregroundStyle(.blue); Text(selectedDate.formatted(date: .abbreviated, time: .omitted)).font(.subheadline).foregroundStyle(.secondary) }; Spacer(); HStack(spacing: 8) { Image(systemName: "clock").foregroundStyle(.blue); Text(selectedTime).font(.subheadline).foregroundStyle(.secondary) } }.padding(16) }.background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4) }
+    
+    private var headerView: some View {
+        HStack(spacing: 16) {
+            Button(action: { dismiss() }) {
+                ZStack {
+                    Circle()
+                        .fill(Color(uiColor: .systemBackground))
+                        .frame(width: 40, height: 40)
+                        .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                    
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color.blue)
+                        .offset(x: -1.5)
+                }
+            }
+            
+            Text("Payment")
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundStyle(Color(uiColor: .label))
+            
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 12)
+    }
+    
+    private var appointmentDetailsCard: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(doctor.name).font(.headline).fontWeight(.bold)
+                    Text(doctor.specialty).font(.subheadline).foregroundStyle(.blue)
+                }
+                Spacer()
+                Image(doctor.image).resizable().scaledToFill().frame(width: 56, height: 56).clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .padding(20)
+            
+            Divider().padding(.horizontal, 20)
+            
+            HStack {
+                HStack(spacing: 8) {
+                    Image(systemName: "calendar").foregroundStyle(.blue)
+                    Text(selectedDate.formatted(date: .abbreviated, time: .omitted)).font(.subheadline).fontWeight(.medium).foregroundStyle(.secondary)
+                }
+                Spacer()
+                HStack(spacing: 8) {
+                    Image(systemName: "clock").foregroundStyle(.blue)
+                    Text(selectedTime).font(.subheadline).fontWeight(.medium).foregroundStyle(.secondary)
+                }
+            }
+            .padding(20)
+        }
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+    }
     
     private var bottomFooter: some View {
         VStack(spacing: 16) {
-            Divider()
-            HStack { Text("Total Amount").foregroundStyle(.secondary); Spacer(); Text("$\(doctor.fee).00").font(.title2).bold() }.padding(.horizontal)
+            HStack(alignment: .bottom) {
+                Text("Total Amount").font(.subheadline).foregroundStyle(.secondary)
+                Spacer()
+                Text("$\(doctor.fee).00").font(.title2).fontWeight(.heavy)
+            }
             
-            // 🔴 Evaluates the flowType to decide which screen opens next
             Button {
                 if flowType == .pharmacy {
                     navigateToPharmacy = true
@@ -127,12 +203,69 @@ struct PaymentView: View {
                     navigateToBookingConfirmation = true
                 }
             } label: {
-                Text("Pay Now").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding().background(Color.blue).clipShape(Capsule())
+                Text("Pay Now")
+                    .font(.headline).fontWeight(.bold).foregroundStyle(.white)
+                    .frame(maxWidth: .infinity).padding(.vertical, 16)
+                    .background(Color.blue).clipShape(Capsule())
+                    .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
             }
-            .padding(.horizontal).padding(.bottom, 10)
         }
-        .padding(.top, 16).background(Color(uiColor: .systemBackground).ignoresSafeArea(edges: .bottom)).shadow(color: Color.black.opacity(0.05), radius: 10, y: -5)
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        .padding(.bottom, 90)
+        .background(
+            Color(uiColor: .systemBackground)
+                .shadow(color: Color.black.opacity(0.06), radius: 15, x: 0, y: -5)
+        )
     }
 }
 
-struct PaymentOptionRow: View { let icon: String; let iconColor: Color; let title: String; let subtitle: String; let isSelected: Bool; let action: () -> Void; var body: some View { Button(action: action) { HStack(spacing: 16) { ZStack { RoundedRectangle(cornerRadius: 8).fill(Color(uiColor: .systemGray6)).frame(width: 48, height: 48); Image(systemName: icon).font(.title3).foregroundStyle(iconColor) }; VStack(alignment: .leading, spacing: 4) { Text(title).font(.subheadline).fontWeight(.semibold).foregroundStyle(Color(uiColor: .label)); Text(subtitle).font(.caption).foregroundStyle(.secondary) }; Spacer(); Image(systemName: isSelected ? "checkmark.circle.fill" : "circle").font(.title2).foregroundStyle(isSelected ? .blue : .gray.opacity(0.3)) }.padding(16).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).overlay(RoundedRectangle(cornerRadius: 16).stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)).shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2) }.buttonStyle(.plain) } }
+struct PaymentOptionRow: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    let subtitle: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(uiColor: .systemGray6))
+                        .frame(width: 48, height: 48)
+                    Image(systemName: icon).font(.title3).foregroundStyle(iconColor)
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title).font(.subheadline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
+                    Text(subtitle).font(.caption).foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title2)
+                    .foregroundStyle(isSelected ? .blue : .gray.opacity(0.3))
+            }
+            .padding(16)
+            .background(Color(uiColor: .systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2))
+            .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+#Preview {
+    NavigationStack {
+        PaymentView(
+            doctor: Doctor(name: "Dr. Mike Ross", specialty: "Neurologist", rating: 4.8, reviewCount: 90, fee: 180, image: "Image (2)", status: "Available", statusColor: .green, isBookable: true),
+            selectedDate: Date(),
+            selectedTime: "10:30 AM",
+            flowType: .doctorBooking
+        )
+    }
+}

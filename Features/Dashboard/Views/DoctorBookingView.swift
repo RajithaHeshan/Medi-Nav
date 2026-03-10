@@ -28,8 +28,7 @@ struct DoctorBookingView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                
-                // 1. Unified Premium Header
+              
                 headerView
                 
                 ScrollView(showsIndicators: false) {
@@ -43,7 +42,7 @@ struct DoctorBookingView: View {
                         uploadSection(title: "Previous Medical Reports")
                         medicationSection
                         
-                        // 🔴 HIG FIX: Massive spacer so the user can completely scroll past the sticky footer
+                       //Massive spacer so the user can completely scroll past the sticky footer
                         Spacer(minLength: 240)
                     }
                     .padding(.horizontal, 20)
