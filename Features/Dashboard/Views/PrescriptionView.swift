@@ -3,7 +3,7 @@ import SwiftUI
 struct PrescriptionView: View {
     @Environment(\.dismiss) var dismiss
     
-    // Controls the custom Share Sheet presentation
+    
     @State private var showShareSheet = false
     
     var body: some View {

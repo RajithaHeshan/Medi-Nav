@@ -4,6 +4,9 @@ struct MyPrescriptionView: View {
     @Environment(\.dismiss) var dismiss
     @State private var searchText = ""
     
+
+    @State private var navigateToPrescription = false
+    
     var body: some View {
         ZStack(alignment: .top) {
             
@@ -12,22 +15,17 @@ struct MyPrescriptionView: View {
             
             VStack(spacing: 0) {
                 
-            
                 headerView
                 
-           
                 searchBarView
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 28) {
                         
-                     
                         needsRefillSection
                         
-                       
                         activeSection
                         
-                      
                         Spacer(minLength: 120)
                     }
                     .padding(.horizontal, 20)
@@ -36,9 +34,11 @@ struct MyPrescriptionView: View {
             }
         }
         .navigationBarHidden(true)
+      
+        .navigationDestination(isPresented: $navigateToPrescription) {
+            PrescriptionView()
+        }
     }
-    
-    
     
     private var headerView: some View {
         HStack(spacing: 16) {
@@ -74,7 +74,7 @@ struct MyPrescriptionView: View {
                 .foregroundStyle(Color(uiColor: .systemGray2))
                 .font(.body.weight(.medium))
             
-            TextField("Search doctors...", text: $searchText)
+            TextField("Search medications...", text: $searchText)
             
             Spacer()
             
@@ -101,7 +101,7 @@ struct MyPrescriptionView: View {
     
     private var needsRefillSection: some View {
         VStack(spacing: 16) {
-           
+            
             HStack {
                 Image(systemName: "bell.fill")
                     .foregroundStyle(Color.red)
@@ -117,7 +117,6 @@ struct MyPrescriptionView: View {
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
             
-          
             VStack(spacing: 16) {
                 
                 PrescriptionActionCard(
@@ -131,22 +130,24 @@ struct MyPrescriptionView: View {
                     buttonIcon: "arrow.triangle.2.circlepath",
                     buttonBgColor: .blue,
                     buttonTextColor: .white,
-                    action: { }
+                    action: {
+                       
+                        navigateToPrescription = true
+                    }
                 )
                 
-               
                 PrescriptionActionCard(
                     title: "Metformin 500mg",
                     subtitle: "Once a day • With dinner",
                     icon: "pills.fill",
                     iconColor: .orange,
                     statusText: "2 pills left • Refill requested",
-                    statusColor: .orange,
+                    statusColor: Color(red: 0.85, green: 0.4, blue: 0.0),
                     buttonTitle: "Request Sent",
                     buttonIcon: "checkmark.circle.fill",
                     buttonBgColor: Color(uiColor: .systemGray5),
-                    buttonTextColor: Color(uiColor: .secondaryLabel), // Adjusted for elder contrast
-                    action: { }
+                    buttonTextColor: Color(uiColor: .secondaryLabel),
+                    action: { } // This stays empty because the request is already sent!
                 )
             }
         }
@@ -156,8 +157,8 @@ struct MyPrescriptionView: View {
         VStack(spacing: 16) {
           
             HStack {
-                Image(systemName: "archivebox.fill")
-                    .foregroundStyle(Color(uiColor: .systemGray))
+                Image(systemName: "checkmark.shield.fill")
+                    .foregroundStyle(Color.green)
                 Text("Active")
                     .font(.title3)
                     .fontWeight(.bold)
@@ -206,19 +207,18 @@ struct MyPrescriptionView: View {
                     }
                 }
                 
-                // Custom Progress Bar
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
                         Capsule()
                             .fill(Color.blue.opacity(0.15))
-                            .frame(height: 6)
+                            .frame(height: 10)
                         
                         Capsule()
                             .fill(Color.blue)
-                            .frame(width: geometry.size.width * 0.75, height: 6) // Represents 28/~30 pills
+                            .frame(width: geometry.size.width * 0.75, height: 10)
                     }
                 }
-                .frame(height: 6)
+                .frame(height: 10)
                 .padding(.top, 4)
             }
             .padding(20)
@@ -229,7 +229,6 @@ struct MyPrescriptionView: View {
         }
     }
 }
-
 
 struct PrescriptionActionCard: View {
     let title: String
@@ -246,7 +245,7 @@ struct PrescriptionActionCard: View {
     
     var body: some View {
         VStack(spacing: 20) {
-           
+            
             HStack(alignment: .top, spacing: 16) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 16)
@@ -281,7 +280,6 @@ struct PrescriptionActionCard: View {
                 Spacer()
             }
             
-     
             Button(action: action) {
                 HStack(spacing: 8) {
                     Text(buttonTitle)
@@ -295,7 +293,6 @@ struct PrescriptionActionCard: View {
                 .background(buttonBgColor)
                 .clipShape(Capsule())
             }
-           
             .disabled(buttonBgColor == Color(uiColor: .systemGray5))
         }
         .padding(20)
@@ -311,5 +308,3 @@ struct PrescriptionActionCard: View {
         MyPrescriptionView()
     }
 }
-
-
