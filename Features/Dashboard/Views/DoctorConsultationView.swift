@@ -5,22 +5,22 @@ import UniformTypeIdentifiers
 struct DoctorConsultationView: View {
     @Environment(\.dismiss) var dismiss
     
-    // Bottom Sheet States
+
     @State private var showPrescriptionSheet = false
     @State private var showLabReportSheet = false
     @State private var showAttachModal = false
     
-    // Hardware/Device Access States
+   
     @State private var showCamera = false
     @State private var showFilePicker = false
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var selectedImage: UIImage?
     @State private var attachedFileName: String?
     
-    // Navigation States
+   
     @State private var navigateToPrescription = false
     @State private var navigateToMedicationPickup = false
-    @State private var navigateToLabSampleSubmission = false // 🔴 NEW: State for Lab Sample Submission
+    @State private var navigateToLabSampleSubmission = false // State for Lab Sample Submission
     
     var body: some View {
         VStack(spacing: 0) {
@@ -51,12 +51,12 @@ struct DoctorConsultationView: View {
             PrescriptionView()
         }
         
-        // Navigation 2: To Clinic Pharmacy QR Flow
+
         .navigationDestination(isPresented: $navigateToMedicationPickup) {
             MedicationPickupView()
         }
         
-        // 🔴 NEW Navigation 3: To Laboratory Sample Submission
+        
         .navigationDestination(isPresented: $navigateToLabSampleSubmission) {
             LaboratorySampleSubmissionView()
         }
@@ -73,12 +73,12 @@ struct DoctorConsultationView: View {
             .presentationDragIndicator(.visible)
         }
         
-        // Main Bottom Sheet for Lab Reports
+       
         .sheet(isPresented: $showLabReportSheet) {
             LabReportSampleSheet(
                 showAttachModal: $showAttachModal,
                 onClinicLaboratoryTapped: {
-                    // 🔴 UPDATED: Now triggers the Lab Sample Submission flow
+                
                     navigateToLabSampleSubmission = true
                 }
             )

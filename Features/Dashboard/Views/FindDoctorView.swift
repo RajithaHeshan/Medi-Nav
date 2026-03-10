@@ -30,7 +30,7 @@ struct FindDoctorView: View {
             rating: 4.9,
             reviewCount: 120,
             fee: 150,
-            image: "doctor1", // Replace with your actual asset name
+            image: "doctor1",
             status: "Available Today",
             statusColor: .green,
             isBookable: true
@@ -41,7 +41,7 @@ struct FindDoctorView: View {
             rating: 4.8,
             reviewCount: 98,
             fee: 180,
-            image: "doctor2", // Replace with your actual asset name
+            image: "doctor2",
             status: "Available Today",
             statusColor: .green,
             isBookable: true
@@ -70,11 +70,11 @@ struct FindDoctorView: View {
         )
     ]
     
-    // MARK: - Smart Filter Logic (Now supports the Search Bar too!)
+
     var filteredDoctors: [Doctor] {
         var result = doctors
         
-        // 1. Filter by Category
+       
         if selectedCategory != "All" {
             if selectedCategory == "Cardiology" {
                 result = result.filter { $0.specialty == "Cardiologist" }
@@ -85,7 +85,7 @@ struct FindDoctorView: View {
             }
         }
         
-        // 2. Filter by Search Text
+     
         if !searchText.isEmpty {
             result = result.filter { doctor in
                 doctor.name.localizedCaseInsensitiveContains(searchText) ||
@@ -130,7 +130,7 @@ struct FindDoctorView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 16)
                 
-                // 2. HIG Compliant Search Bar with Dynamic Microphone/Xmark
+             
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
                         .foregroundStyle(Color(uiColor: .systemGray2))
@@ -161,7 +161,7 @@ struct FindDoctorView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 16)
                 
-                // 3. Category Picker
+               
                 Picker("Category", selection: $selectedCategory) {
                     ForEach(categories, id: \.self) { category in
                         Text(category).tag(category)
@@ -171,7 +171,7 @@ struct FindDoctorView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
                 
-                // 4. Scrollable List
+                
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         ForEach(filteredDoctors) { doctor in
@@ -185,21 +185,21 @@ struct FindDoctorView: View {
                             Divider().padding(.leading, 76)
                         }
                         
-                        // Keeps content above the CustomTabBar
+                      
                         Spacer(minLength: 120)
                     }
                     .padding(.horizontal, 20)
                 }
             }
         }
-        .navigationBarHidden(true) // Kills the double Apple back button entirely!
+        .navigationBarHidden(true)
         .navigationDestination(item: $selectedDoctor) { doctor in
             DoctorBookingView(doctor: doctor)
         }
     }
 }
 
-// MARK: - Reusable Row Component
+
 struct DoctorRowItem: View {
     let doctor: Doctor
     var onBook: () -> Void
@@ -207,7 +207,7 @@ struct DoctorRowItem: View {
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
             
-            // Profile Image
+          
             ZStack {
                 Circle()
                     .fill(Color(uiColor: .systemGray6))
@@ -220,7 +220,7 @@ struct DoctorRowItem: View {
                     .clipShape(Circle())
             }
             
-            // Info
+            
             VStack(alignment: .leading, spacing: 4) {
                 Text(doctor.name)
                     .font(.headline)

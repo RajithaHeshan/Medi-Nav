@@ -5,7 +5,7 @@ import Combine
 struct HomeView: View {
     @State private var searchText = ""
     
-    // MARK: - Navigation States
+  
     @State private var navigateToEmergency = false
     @State private var navigateToDoctors = false
     @State private var navigateToMyCare = false
@@ -16,7 +16,7 @@ struct HomeView: View {
     @State private var navigateToPharmacy = false
     @State private var navigateToNotifications = false
     
-    // Auto-swipe states
+   
     @State private var currentStepIndex = 0
     let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
     
@@ -28,7 +28,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottomTrailing) {
-                // Main Scrollable Content
+                
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         headerSection
