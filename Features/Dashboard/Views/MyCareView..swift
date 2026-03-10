@@ -1,112 +1,157 @@
-
-
 import SwiftUI
 
 struct MyCareView: View {
     @Environment(\.dismiss) var dismiss
     
-    // 2-column grid layout for the top action cards
+    // MARK: - Navigation States
+    @State private var navigateToPharmacy = false
+    @State private var navigateToLabReports = false
+    @State private var navigateToMedicalHistory = false
+    @State private var navigateToVitalReports = false
+    @State private var navigateToLabSubmission = false
+    @State private var navigateToPrescriptionHistory = false
+    
     let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
     ]
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .top) {
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
             
-            // 1. Custom Header
-            headerView
-            
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 32) {
-                    
-                    // 2. Action Grid (Pharmacy, Labs, History, Vitals)
-                    actionGridSection
-                    
-                    // 3. Order Routing Testing
-                    orderRoutingSection
-                    
-                    // 4. Today's Medications
-                    medicationsSection
-                    
-                    // 5. Recent Activity
-                    recentActivitySection
-                    
-                    // 6. Body Metrics (BMI)
-                    bodyMetricsSection
-                    
-                    Spacer(minLength: 40)
+            VStack(spacing: 0) {
+                
+              
+                headerView
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 32) {
+                        
+                
+                        actionGridSection
+                        
+                   
+                        orderRoutineSection
+                        
+               
+                        medicationsSection
+                        
+                        
+                        recentActivitySection
+                        
+                     
+                        bodyMetricsSection
+                        
+                 
+                        Spacer(minLength: 120)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 20)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 20)
             }
         }
-        .background(Color(uiColor: .systemGroupedBackground))
         .navigationBarHidden(true)
+        
+        
+        .navigationDestination(isPresented: $navigateToPharmacy) {
+            PharmacyView()
+        }
+        .navigationDestination(isPresented: $navigateToLabReports) {
+            LabReportsView()
+        }
+        .navigationDestination(isPresented: $navigateToMedicalHistory) {
+            MedicalHistoryView()
+        }
+        .navigationDestination(isPresented: $navigateToVitalReports) {
+            VitalView()
+        }
+        .navigationDestination(isPresented: $navigateToLabSubmission) {
+            LaboratorySampleSubmissionView()
+        }
+        .navigationDestination(isPresented: $navigateToPrescriptionHistory) {
+            
+            MyPrescriptionView()
+        }
     }
     
-    // MARK: - Subviews
+   
     
     private var headerView: some View {
         HStack(spacing: 16) {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color(uiColor: .systemBlue))
+            Button(action: { dismiss() }) {
+                ZStack {
+                    Circle()
+                        .fill(Color(uiColor: .systemBackground))
+                        .frame(width: 40, height: 40)
+                        .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                    
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color.blue)
+                        .offset(x: -1.5)
+                }
             }
             
             Text("My Care")
-                .font(.headline)
+                .font(.title2)
                 .fontWeight(.bold)
+                .foregroundStyle(Color(uiColor: .label))
             
             Spacer()
         }
-        .padding()
-        .background(Color(uiColor: .systemBackground))
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
     }
     
     private var actionGridSection: some View {
         LazyVGrid(columns: columns, spacing: 16) {
-            MyCareActionCard(
-                title: "Pharmacy",
-                iconName: "pills.fill",
-                iconColor: Color(uiColor: .systemPink)
-            )
-            MyCareActionCard(
-                title: "Lab Reports",
-                iconName: "clipboard.fill",
-                iconColor: Color(uiColor: .systemOrange)
-            )
-            MyCareActionCard(
-                title: "Medical History",
-                iconName: "doc.text.fill",
-                iconColor: Color(uiColor: .systemBlue)
-            )
-            MyCareActionCard(
-                title: "Vital Reports",
-                iconName: "heart.text.square.fill",
-                iconColor: Color(uiColor: .systemPurple)
-            )
+            Button { navigateToPharmacy = true } label: {
+                MyCareActionCard(title: "Pharmacy", iconName: "pills.fill", iconColor: Color(uiColor: .systemPink))
+            }
+            .buttonStyle(PlainButtonStyle())
+            
+            Button { navigateToLabReports = true } label: {
+                MyCareActionCard(title: "Lab Reports", iconName: "clipboard.fill", iconColor: Color(uiColor: .systemOrange))
+            }
+            .buttonStyle(PlainButtonStyle())
+            
+            Button { navigateToMedicalHistory = true } label: {
+                MyCareActionCard(title: "Medical History", iconName: "doc.text.fill", iconColor: Color(uiColor: .systemBlue))
+            }
+            .buttonStyle(PlainButtonStyle())
+            
+            Button { navigateToVitalReports = true } label: {
+                MyCareActionCard(title: "Vital Reports", iconName: "heart.text.square.fill", iconColor: Color(uiColor: .systemPurple))
+            }
+            .buttonStyle(PlainButtonStyle())
         }
     }
     
-    private var orderRoutingSection: some View {
+    private var orderRoutineSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Order Routing Testing")
+            Text("Order Routine Testing")
                 .font(.headline)
                 .fontWeight(.bold)
                 .foregroundStyle(Color(uiColor: .label))
             
             HStack {
-                RoutingTestIcon(title: "Blood Test", icon: "drop.fill", color: Color(uiColor: .systemRed))
+                Button { navigateToLabSubmission = true } label: {
+                    RoutingTestIcon(title: "Blood Test", icon: "drop.fill", color: Color(uiColor: .systemRed))
+                }
+                
                 Spacer()
-                RoutingTestIcon(title: "Urine Test", icon: "flask.fill", color: Color(uiColor: .systemYellow))
+                
+                Button { navigateToLabSubmission = true } label: {
+                    RoutingTestIcon(title: "Urine Test", icon: "flask.fill", color: Color(uiColor: .systemYellow))
+                }
+                
                 Spacer()
-                // 🔴 FIXED: Changed invalid 'microscope' to native 'stethoscope'
-                RoutingTestIcon(title: "General Health", icon: "stethoscope", color: Color(uiColor: .systemBlue))
+                
+                Button { navigateToLabSubmission = true } label: {
+                    RoutingTestIcon(title: "General Health", icon: "stethoscope", color: Color(uiColor: .systemBlue))
+                }
             }
             .padding(.horizontal, 16)
         }
@@ -147,16 +192,24 @@ struct MyCareView: View {
                 .foregroundStyle(Color(uiColor: .label))
             
             VStack(spacing: 0) {
-                RecentActivityListItem(icon: "checkmark", iconBg: .systemGreen, title: "General Checkup", subtitle: "Completed Oct 12 • Dr. Smith")
-                Divider().padding(.leading, 56)
-                
-                // 🔴 FIXED: Changed invalid 'microscope' to native 'testtube.2'
-                RecentActivityListItem(icon: "testtube.2", iconBg: .systemBlue, title: "Blood Test Results", subtitle: "Available Oct 08 • Lab Corp")
+                Button { navigateToVitalReports = true } label: {
+                    RecentActivityListItem(icon: "checkmark", iconBg: .systemGreen, title: "General Checkup", subtitle: "Completed Oct 12 • Dr. Smith")
+                }
                 
                 Divider().padding(.leading, 56)
-                RecentActivityListItem(icon: "pills.fill", iconBg: .systemOrange, title: "Prescription Refill", subtitle: "Processed Oct 05 • CVS Pharmacy")
+                
+                Button { navigateToLabReports = true } label: {
+                    RecentActivityListItem(icon: "testtube.2", iconBg: .systemBlue, title: "Blood Test Results", subtitle: "Available Oct 08 • Lab Corp")
+                }
+                
+                Divider().padding(.leading, 56)
+                
+                Button { navigateToPrescriptionHistory = true } label: {
+                    RecentActivityListItem(icon: "pills.fill", iconBg: .systemOrange, title: "Prescription Refill", subtitle: "Processed Oct 05 • CVS Pharmacy")
+                }
             }
-            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            .buttonStyle(PlainButtonStyle())
+            .background(Color(uiColor: .systemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         }
@@ -188,7 +241,6 @@ struct MyCareView: View {
                     .foregroundStyle(.secondary)
             }
             
-            // Custom segmented progress bar
             VStack(spacing: 8) {
                 HStack {
                     Text("Underweight").font(.caption2).foregroundStyle(.secondary)
@@ -213,7 +265,7 @@ struct MyCareView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(20)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
@@ -227,33 +279,28 @@ struct MyCareActionCard: View {
     let iconColor: Color
     
     var body: some View {
-        Button {
-            // Action
-        } label: {
-            VStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(iconColor.opacity(0.1))
-                        .frame(width: 56, height: 56)
-                    
-                    Image(systemName: iconName)
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundStyle(iconColor)
-                }
+        VStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(iconColor.opacity(0.1))
+                    .frame(width: 56, height: 56)
                 
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color(uiColor: .label))
+                Image(systemName: iconName)
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(iconColor)
             }
-            .padding(.vertical, 24)
-            .padding(.horizontal, 12)
-            .frame(maxWidth: .infinity)
-            .background(Color(uiColor: .secondarySystemGroupedBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
+            
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.bold)
+                .foregroundStyle(Color(uiColor: .label))
         }
-        .buttonStyle(PlainButtonStyle())
+        .padding(.vertical, 24)
+        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity)
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
     }
 }
 
@@ -319,7 +366,7 @@ struct MyCareMedicationRow: View {
             
             ZStack {
                 Circle()
-                    .stroke(isTaken ? Color.clear : Color(uiColor: .systemGray4), lineWidth: 2)
+                    .stroke(isTaken ? Color.clear : Color(uiColor: .systemGray3), lineWidth: 2)
                     .frame(width: 28, height: 28)
                 
                 if isTaken {
@@ -333,7 +380,7 @@ struct MyCareMedicationRow: View {
             }
         }
         .padding(16)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: Color.black.opacity(0.02), radius: 5, x: 0, y: 2)
         .opacity(isTaken ? 0.7 : 1.0)
@@ -375,9 +422,12 @@ struct RecentActivityListItem: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+        .contentShape(Rectangle())
     }
 }
 
 #Preview {
-    MyCareView()
+    NavigationStack {
+        MyCareView()
+    }
 }
