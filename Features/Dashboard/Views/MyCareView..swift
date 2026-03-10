@@ -3,7 +3,7 @@ import SwiftUI
 struct MyCareView: View {
     @Environment(\.dismiss) var dismiss
     
-    // MARK: - Navigation States
+   
     @State private var navigateToPharmacy = false
     @State private var navigateToLabReports = false
     @State private var navigateToMedicalHistory = false
