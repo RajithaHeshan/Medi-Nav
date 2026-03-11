@@ -63,6 +63,7 @@ struct ChatView: View {
             inputBar
         }
         .navigationBarHidden(true)
+        .ignoresSafeArea(.all, edges: .bottom)
        
     }
     
@@ -164,6 +165,7 @@ struct ChatView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+        .padding(.bottom, 100)
         .background(.ultraThinMaterial)
     }
 }
@@ -194,7 +196,7 @@ struct MessageBubble: View {
                     .padding(.vertical, 12)
                     .background(message.isCurrentUser ? Color.blue : Color(uiColor: .systemGray6))
                     .foregroundStyle(message.isCurrentUser ? Color.white : Color(uiColor: .label))
-                    // HIG iOS 17+ Modern Corner Radii (Sharper corner at the tail)
+                 
                     .clipShape(
                         .rect(
                             topLeadingRadius: 20,
