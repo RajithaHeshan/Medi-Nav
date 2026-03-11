@@ -92,7 +92,7 @@ struct PaymentView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.blue.opacity(0.2), lineWidth: 1))
                         
-                        // Overlap fixed
+                       
                         Spacer(minLength: 240)
                     }
                     .padding(.horizontal, 20)
@@ -100,7 +100,7 @@ struct PaymentView: View {
                 }
             }
             
-            // Sticky Footer
+       
             bottomFooter
         }
         .navigationBarHidden(true)
