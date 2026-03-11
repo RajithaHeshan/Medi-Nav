@@ -1,3 +1,5 @@
+
+
 import SwiftUI
 import PhotosUI
 import UniformTypeIdentifiers
@@ -32,25 +34,26 @@ struct DoctorConsultationView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         doctorProfileCard
+                        
+                       
+                        visitDoctorQueueCard
+                        
                         nextStepPharmacyCard
                         vitalsOverviewSection
                         prescriptionsSection
                         labReportsSection
                         
-                       
                         Spacer(minLength: 120)
                     }
-                    .padding(.horizontal, 20) // Unified padding
+                    .padding(.horizontal, 20)
                     .padding(.top, 16)
                 }
             }
             
-          
             provideSampleStickyFooter
         }
         .navigationBarHidden(true)
         
-        // Navigation 1: To External Pharmacy Prescription Upload
         .navigationDestination(isPresented: $navigateToPrescription) {
             PrescriptionView()
         }
@@ -63,7 +66,7 @@ struct DoctorConsultationView: View {
             LaboratorySampleSubmissionView()
         }
         
-        // Main Bottom Sheet for Prescriptions
+    
         .sheet(isPresented: $showPrescriptionSheet) {
             PrescriptionDetailsSheet(
                 showAttachModal: $showAttachModal,
@@ -97,12 +100,10 @@ struct DoctorConsultationView: View {
             .presentationDragIndicator(.visible)
         }
         
-        // Native Camera Presentation
         .fullScreenCover(isPresented: $showCamera) {
             CameraCaptureView(image: $selectedImage).ignoresSafeArea()
         }
         
-        // Native File Manager Presentation
         .fileImporter(isPresented: $showFilePicker, allowedContentTypes: [.pdf, .image, .plainText], allowsMultipleSelection: false) { result in
             switch result {
             case .success(let urls):
@@ -117,7 +118,6 @@ struct DoctorConsultationView: View {
             }
         }
         
-        // Listen for when a user picks a photo from the Photo Library
         .onChange(of: selectedPhotoItem) { _ in
             if selectedPhotoItem != nil {
                 attachedFileName = "Selected from Photo Library"
@@ -131,6 +131,7 @@ struct DoctorConsultationView: View {
     }
     
    
+    
     private var headerView: some View {
         HStack(spacing: 16) {
             Button(action: { dismiss() }) {
@@ -187,9 +188,89 @@ struct DoctorConsultationView: View {
                 .foregroundStyle(Color(uiColor: .systemGray3))
         }
         .padding(16)
-        .background(Color(uiColor: .systemBackground)) // Changed to pure white
-        .clipShape(RoundedRectangle(cornerRadius: 20)) //         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
+    
+   
+    private var visitDoctorQueueCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Visit Doctor")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color(uiColor: .label))
+                
+                Spacer()
+                
+                Text("10:30 AM")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.blue)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.blue.opacity(0.1))
+                    .clipShape(Capsule())
+            }
+            
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "person.fill").foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 20)
+                    Text("DR. Wickrama").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                }
+                HStack(spacing: 8) {
+                    Image(systemName: "mappin.and.ellipse").foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 20)
+                    Text("2nd Floor, West Wing").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                }
+            }
+            
+            // Queue & Time Info Box
+            HStack {
+                HStack(spacing: 8) {
+                    Image(systemName: "person.2.fill").foregroundStyle(Color.blue)
+                    Text("5 Queue").font(.subheadline).fontWeight(.bold)
+                }
+                .frame(maxWidth: .infinity)
+                
+                Divider().frame(height: 24)
+                
+                HStack(spacing: 8) {
+                    Image(systemName: "hourglass").foregroundStyle(Color.orange)
+                    Text("15 mins").font(.subheadline).fontWeight(.bold)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .padding(.vertical, 14)
+            .background(Color(uiColor: .systemGray6))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            
+            // Footer row
+            HStack {
+                Text("Please proceed immediately")
+                    .font(.caption)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                Spacer()
+                Button(action: { }) {
+                    HStack(spacing: 4) {
+                        Text("View Map")
+                        Image(systemName: "arrow.right")
+                    }
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.blue)
+                    .padding(.vertical, 8)
+                    .padding(.leading, 8)
+                    .contentShape(Rectangle())
+                }
+            }
+        }
+        .padding(20)
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+    }
+    // ----------------------------
     
     private var nextStepPharmacyCard: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -226,7 +307,7 @@ struct DoctorConsultationView: View {
                 }
                 .font(.subheadline)
                 .foregroundStyle(.white)
-                .frame(maxWidth: .infinity) // Makes button stretch
+                .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
                 .background(Color(uiColor: .systemBlue))
                 .clipShape(RoundedRectangle(cornerRadius: 14))
@@ -239,13 +320,13 @@ struct DoctorConsultationView: View {
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                 Spacer()
                 Button {
-                    // View Map Action
+                    
                 } label: {
                     Text("View Map")
                         .font(.caption)
                         .fontWeight(.bold)
                         .foregroundStyle(Color(uiColor: .systemBlue))
-                        .padding(.vertical, 8) // Touch target boost
+                        .padding(.vertical, 8)
                         .padding(.leading, 8)
                         .contentShape(Rectangle())
                 }
@@ -311,7 +392,7 @@ struct DoctorConsultationView: View {
             .padding(.bottom,90)
         }
         .background(
-            // Adds a subtle fade at the bottom to separate scrolling content
+            
             LinearGradient(
                 colors: [Color(uiColor: .systemGroupedBackground).opacity(0), Color(uiColor: .systemGroupedBackground)],
                 startPoint: .top,
@@ -321,8 +402,6 @@ struct DoctorConsultationView: View {
         )
     }
 }
-
-// MARK: - Sheets and Helpers (Kept completely intact)
 
 struct LabReportSampleSheet: View {
     @Environment(\.dismiss) var dismiss
@@ -411,9 +490,7 @@ struct CustomAttachMenuSheet: View {
     }
 }
 
-
 struct CameraCaptureView: UIViewControllerRepresentable { @Binding var image: UIImage?; @Environment(\.presentationMode) var presentationMode; func makeUIViewController(context: Context) -> UIImagePickerController { let picker = UIImagePickerController(); picker.delegate = context.coordinator; picker.sourceType = .camera; return picker }; func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}; func makeCoordinator() -> Coordinator { Coordinator(self) }; class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate { let parent: CameraCaptureView; init(_ parent: CameraCaptureView) { self.parent = parent }; func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) { if let uiImage = info[.originalImage] as? UIImage { parent.image = uiImage }; parent.presentationMode.wrappedValue.dismiss() } } }
-
 
 struct ModalMenuButton: View { let title: String; let icon: String; let action: () -> Void; var body: some View { Button(action: action) { HStack(spacing: 16) { Image(systemName: icon).font(.title3).foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 24); Text(title).font(.headline).foregroundStyle(Color(uiColor: .label)); Spacer(); Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(Color(uiColor: .systemGray3)) }.padding().background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2) } } }
 
@@ -421,7 +498,7 @@ struct PrescribedMedicationRow: View { let icon: String; let iconColor: Color; l
 
 struct PharmacyRoutingButton: View { let title: String; let subtitle: String; let icon: String; let isPrimary: Bool; let action: () -> Void; var body: some View { Button(action: action) { HStack(spacing: 16) { Image(systemName: icon).font(.title2).foregroundStyle(isPrimary ? .white : Color(uiColor: .systemBlue)).frame(width: 30); VStack(alignment: .leading, spacing: 2) { Text(title).font(.subheadline).fontWeight(.bold).foregroundStyle(isPrimary ? .white : Color(uiColor: .label)); Text(subtitle).font(.caption).foregroundStyle(isPrimary ? .white.opacity(0.8) : Color(uiColor: .secondaryLabel)) }; Spacer(); Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(isPrimary ? .white : Color(uiColor: .systemGray3)) }.padding().background(isPrimary ? Color(uiColor: .systemBlue) : Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: isPrimary ? Color(uiColor: .systemBlue).opacity(0.3) : Color.clear, radius: 8, x: 0, y: 4) }.buttonStyle(PlainButtonStyle()) } }
 
-struct SectionHeader: View { let title: String; let actionText: String; var body: some View { HStack { Text(title).font(.title3).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Spacer(); Button(actionText) { }.font(.subheadline).fontWeight(.semibold).foregroundStyle(Color(uiColor: .systemBlue)).padding(.vertical, 8).padding(.leading, 8).contentShape(Rectangle()) } } } // HIG FIX: Increased touch target
+struct SectionHeader: View { let title: String; let actionText: String; var body: some View { HStack { Text(title).font(.title3).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Spacer(); Button(actionText) { }.font(.subheadline).fontWeight(.semibold).foregroundStyle(Color(uiColor: .systemBlue)).padding(.vertical, 8).padding(.leading, 8).contentShape(Rectangle()) } } }
 
 
 struct VitalsCard: View { let statusIcon: String; let statusColor: Color; let statusText: String; let title: String; let value: String; let unit: String; let progress: Double; var body: some View { VStack(alignment: .leading, spacing: 12) { HStack { ZStack { Circle().fill(statusColor.opacity(0.1)).frame(width: 28, height: 28); Image(systemName: statusIcon).font(.caption).foregroundStyle(statusColor) }; Spacer(); Text(statusText).font(.caption2).fontWeight(.semibold).foregroundStyle(Color(uiColor: .secondaryLabel)) }; VStack(alignment: .leading, spacing: 4) { Text(title).font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel)); HStack(alignment: .firstTextBaseline, spacing: 2) { Text(value).font(.title2).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Text(unit).font(.caption2).foregroundStyle(Color(uiColor: .tertiaryLabel)) } }; GeometryReader { geometry in ZStack(alignment: .leading) { Capsule().fill(Color(uiColor: .systemGray5)).frame(height: 4); Capsule().fill(statusColor).frame(width: geometry.size.width * progress, height: 4) } }.frame(height: 4) }.padding(16).frame(maxWidth: .infinity).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 20)).shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4) } }
