@@ -4,12 +4,15 @@ import SwiftUI
 struct DoctorServicesView: View {
     @Environment(\.dismiss) var dismiss
     
-    // MARK: - Navigation States
+   
     @State private var navigateToFindDoctor = false
     @State private var navigateToBookingHistory = false
     @State private var navigateToDoctorConsultation = false
     @State private var navigateToConsultationHistory = false
     @State private var navigateToReschedule = false
+    
+  
+    @State private var selectedSpecialtyForSearch = "All"
     
     let columns = [
         GridItem(.flexible(), spacing: 16),
@@ -18,7 +21,6 @@ struct DoctorServicesView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-          
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
             
@@ -50,14 +52,13 @@ struct DoctorServicesView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 16)
                 
-                // Main Content
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 28) {
                         upcomingAppointmentCard
                         browseBySpecialtySection
                         actionGrid
                         
-                        Spacer(minLength: 120) 
+                        Spacer(minLength: 120)
                     }
                     .padding(.horizontal, 20)
                 }
@@ -65,20 +66,18 @@ struct DoctorServicesView: View {
         }
         .navigationBarHidden(true)
         
-        // MARK: - Navigation Destinations
+     
         .navigationDestination(isPresented: $navigateToFindDoctor) {
-            // Placeholder or actual view
-            Text("Find Doctor View")
+           
+            FindDoctorView(initialSpecialty: selectedSpecialtyForSearch)
         }
         .navigationDestination(isPresented: $navigateToBookingHistory) {
             BookingHistoryView()
         }
         .navigationDestination(isPresented: $navigateToDoctorConsultation) {
-            // Placeholder or actual view
             Text("Doctor Consultation View")
         }
         .navigationDestination(isPresented: $navigateToConsultationHistory) {
-            // Placeholder or actual view
             Text("Consultation History View")
         }
         .navigationDestination(isPresented: $navigateToReschedule) {
@@ -127,7 +126,6 @@ struct DoctorServicesView: View {
                 }
             }
             
-           
             HStack(spacing: 12) {
                 Button {
                     navigateToReschedule = true
@@ -174,6 +172,7 @@ struct DoctorServicesView: View {
                 Spacer()
                 
                 Button("See All") {
+                    selectedSpecialtyForSearch = "All"
                     navigateToFindDoctor = true
                 }
                 .font(.subheadline)
@@ -182,20 +181,24 @@ struct DoctorServicesView: View {
             }
             
             HStack(spacing: 0) {
-                specialtyButton(icon: "stethoscope", title: "General", iconColor: .blue)
+             
+                specialtyButton(icon: "stethoscope", title: "General", iconColor: .blue, targetSpecialty: "All")
                 Spacer()
-                specialtyButton(icon: "cross.case.fill", title: "Dental", iconColor: .green)
+                specialtyButton(icon: "cross.case.fill", title: "Dental", iconColor: .green, targetSpecialty: "Dentist")
                 Spacer()
-                specialtyButton(icon: "eye.fill", title: "Eye", iconColor: .purple)
+                specialtyButton(icon: "eye.fill", title: "Eye", iconColor: .purple, targetSpecialty: "All") // Stays "All" since there is no Eye tab yet
                 Spacer()
-                specialtyButton(icon: "heart.fill", title: "Heart", iconColor: .red)
+                specialtyButton(icon: "heart.fill", title: "Heart", iconColor: .red, targetSpecialty: "Cardiology")
             }
         }
     }
     
     private var actionGrid: some View {
         LazyVGrid(columns: columns, spacing: 16) {
-            Button { navigateToFindDoctor = true } label: {
+            Button {
+                selectedSpecialtyForSearch = "All"
+                navigateToFindDoctor = true
+            } label: {
                 ServiceGridCard(icon: "calendar.badge.plus", iconColor: .blue, title: "Doctors Booking")
             }
             .buttonStyle(PlainButtonStyle())
@@ -217,10 +220,10 @@ struct DoctorServicesView: View {
         }
     }
     
-   
-    
-    private func specialtyButton(icon: String, title: String, iconColor: Color) -> some View {
+  
+    private func specialtyButton(icon: String, title: String, iconColor: Color, targetSpecialty: String) -> some View {
         Button {
+            selectedSpecialtyForSearch = targetSpecialty
             navigateToFindDoctor = true
         } label: {
             VStack(spacing: 8) {
@@ -240,7 +243,6 @@ struct DoctorServicesView: View {
         }
     }
 }
-
 
 struct ServiceGridCard: View {
     let icon: String

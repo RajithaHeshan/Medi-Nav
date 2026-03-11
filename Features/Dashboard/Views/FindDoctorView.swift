@@ -18,10 +18,16 @@ struct FindDoctorView: View {
     @Environment(\.dismiss) var dismiss
     
     @State private var searchText = ""
-    @State private var selectedCategory = "All"
+    @State private var selectedCategory: String
     @State private var selectedDoctor: Doctor?
     
     private let categories = ["All", "Cardiology", "Dentist", "Neurology"]
+    
+   
+    init(initialSpecialty: String = "All") {
+        // Sets the starting tab to whatever the user tapped
+        _selectedCategory = State(initialValue: initialSpecialty)
+    }
     
     private let doctors = [
         Doctor(
@@ -30,7 +36,7 @@ struct FindDoctorView: View {
             rating: 4.9,
             reviewCount: 120,
             fee: 150,
-            image: "doctor1",
+            image: "doctor1", // Make sure you have these images in your Assets!
             status: "Available Today",
             statusColor: .green,
             isBookable: true
@@ -70,11 +76,9 @@ struct FindDoctorView: View {
         )
     ]
     
-
     var filteredDoctors: [Doctor] {
         var result = doctors
         
-       
         if selectedCategory != "All" {
             if selectedCategory == "Cardiology" {
                 result = result.filter { $0.specialty == "Cardiologist" }
@@ -85,7 +89,6 @@ struct FindDoctorView: View {
             }
         }
         
-     
         if !searchText.isEmpty {
             result = result.filter { doctor in
                 doctor.name.localizedCaseInsensitiveContains(searchText) ||
@@ -103,34 +106,10 @@ struct FindDoctorView: View {
             
             VStack(spacing: 0) {
                 
-              
-                HStack(spacing: 16) {
-                    Button(action: { dismiss() }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color(uiColor: .systemBackground))
-                                .frame(width: 40, height: 40)
-                                .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
-                            
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundStyle(Color.blue)
-                                .offset(x: -1.5) // Visually centers the Apple SF Symbol perfectly
-                        }
-                    }
-                    
-                    Text("Find a Doctor")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundStyle(Color(uiColor: .label))
-                    
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
+               
+                headerView
                 
-             
+               
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
                         .foregroundStyle(Color(uiColor: .systemGray2))
@@ -139,7 +118,6 @@ struct FindDoctorView: View {
                     TextField("Search doctors...", text: $searchText)
                     
                     Spacer()
-                    
                     
                     if !searchText.isEmpty {
                         Button(action: {
@@ -157,11 +135,11 @@ struct FindDoctorView: View {
                 }
                 .padding(10)
                 .background(Color(uiColor: .systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .clipShape(RoundedRectangle(cornerRadius: 12)) // Made slightly softer
                 .padding(.horizontal, 20)
                 .padding(.bottom, 16)
                 
-               
+                // Segmented Picker
                 Picker("Category", selection: $selectedCategory) {
                     ForEach(categories, id: \.self) { category in
                         Text(category).tag(category)
@@ -169,9 +147,9 @@ struct FindDoctorView: View {
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 20)
-                .padding(.bottom, 24)
+                .padding(.bottom, 16)
                 
-                
+                // Doctor List
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         ForEach(filteredDoctors) { doctor in
@@ -181,11 +159,10 @@ struct FindDoctorView: View {
                                 }
                             }
                             
-                            
                             Divider().padding(.leading, 76)
                         }
                         
-                      
+                        // Good job keeping this Spacer! It perfectly prevents Tab Bar overlap.
                         Spacer(minLength: 120)
                     }
                     .padding(.horizontal, 20)
@@ -197,8 +174,37 @@ struct FindDoctorView: View {
             DoctorBookingView(doctor: doctor)
         }
     }
+    
+ 
+    
+    private var headerView: some View {
+        HStack(spacing: 16) {
+            Button(action: { dismiss() }) {
+                ZStack {
+                    Circle()
+                        .fill(Color(uiColor: .systemBackground))
+                        .frame(width: 40, height: 40)
+                        .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                    
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color.blue)
+                        .offset(x: -1.5)
+                }
+            }
+            
+            Text("Find a Doctor")
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundStyle(Color(uiColor: .label))
+            
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 16)
+    }
 }
-
 
 struct DoctorRowItem: View {
     let doctor: Doctor
@@ -207,19 +213,17 @@ struct DoctorRowItem: View {
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
             
-          
             ZStack {
                 Circle()
                     .fill(Color(uiColor: .systemGray6))
-                    .frame(width: 60, height: 60)
+                    .frame(width: 64, height: 64) // Made slightly larger for elder visibility
                 
                 Image(doctor.image)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 60, height: 60)
+                    .frame(width: 64, height: 64)
                     .clipShape(Circle())
             }
-            
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(doctor.name)
@@ -248,13 +252,13 @@ struct DoctorRowItem: View {
             
             Spacer()
             
-            // Action Button
+        
             Button(action: onBook) {
                 Text(doctor.isBookable ? "Book" : "Wait")
                     .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .fontWeight(.bold)
+                    .padding(.horizontal, 20) // Slightly wider touch target
+                    .padding(.vertical, 10)
                     .background(doctor.isBookable ? Color.blue : Color(uiColor: .systemGray5))
                     .foregroundStyle(doctor.isBookable ? .white : Color(uiColor: .systemGray))
                     .clipShape(Capsule())
@@ -267,6 +271,7 @@ struct DoctorRowItem: View {
 
 #Preview {
     NavigationStack {
-        FindDoctorView()
+        // Try previewing with different initial specialties!
+        FindDoctorView(initialSpecialty: "Dentist")
     }
 }
