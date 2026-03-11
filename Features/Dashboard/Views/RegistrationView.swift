@@ -3,14 +3,17 @@ import SwiftUI
 struct RegistrationView: View {
     @Environment(\.dismiss) var dismiss
     
-    
+ 
     @State private var fullName = ""
     @State private var emailAddress = ""
     @State private var phoneNumber = ""
     
-   
+
     @State private var dateOfBirth = Date()
     @State private var showDatePicker = false
+    
+ 
+    @State private var navigateToStep2 = false
     
     var body: some View {
         ZStack {
@@ -18,7 +21,7 @@ struct RegistrationView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // 1. Navigation Header
+               
                 headerView
                 
                 ScrollView(showsIndicators: false) {
@@ -27,7 +30,7 @@ struct RegistrationView: View {
                       
                         progressSection
                         
-                      
+                        
                         Text("Please fill in your personal details to create your Medi-Nav account. We will keep your information secure.")
                             .font(.subheadline)
                             .foregroundStyle(Color(uiColor: .secondaryLabel))
@@ -36,17 +39,15 @@ struct RegistrationView: View {
                       
                         VStack(spacing: 20) {
                             
-                         
                             InputField(label: "Full Name", placeholder: "Enter your full name", text: $fullName)
                             
-                     
+                           
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Date of Birth")
                                     .font(.subheadline)
                                     .fontWeight(.bold)
                                     .foregroundStyle(Color(uiColor: .label))
                                 
-                               
                                 HStack {
                                     Text("Select your DOB")
                                         .foregroundStyle(Color(uiColor: .secondaryLabel))
@@ -55,7 +56,7 @@ struct RegistrationView: View {
                                     
                                     DatePicker("", selection: $dateOfBirth, displayedComponents: .date)
                                         .labelsHidden()
-                                        .environment(\.locale, Locale(identifier: "en_US")) // Optional: forces specific formatting
+                                        .environment(\.locale, Locale(identifier: "en_US"))
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
@@ -63,24 +64,26 @@ struct RegistrationView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
                             
-                            // Email Address
+                         
                             InputField(label: "Email Address", placeholder: "Enter your email", text: $emailAddress, keyboardType: .emailAddress)
                             
-                            // Phone Number
+                       
                             InputField(label: "Phone Number", placeholder: "Enter your phone number", text: $phoneNumber, keyboardType: .phonePad)
                         }
                     }
                     .padding(24)
                     
-                    Spacer(minLength: 100) // Keyboard clearance
+                    Spacer(minLength: 100)
                 }
             }
             
-            // 5. Bottom Sticky Action Button
+        
             VStack {
                 Spacer()
+                
+             
                 Button(action: {
-                    // Navigate to Step 2
+                    navigateToStep2 = true
                 }) {
                     Text("Next Step")
                         .font(.headline)
@@ -94,7 +97,6 @@ struct RegistrationView: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
-                // Adds a gradient fade to make the button pop over scrolling content
                 .background(
                     LinearGradient(
                         colors: [Color(uiColor: .systemBackground).opacity(0), Color(uiColor: .systemBackground)],
@@ -106,13 +108,18 @@ struct RegistrationView: View {
             }
         }
         .navigationBarHidden(true)
+        
+      
+        .navigationDestination(isPresented: $navigateToStep2) {
+            RegistrationStep2View()
+        }
     }
     
-    // MARK: - Subviews
+   
     
     private var headerView: some View {
         HStack {
-            // Invisible spacer to balance the "Skip" button
+          
             Text("Skip").opacity(0)
             
             Spacer()
@@ -195,6 +202,7 @@ struct InputField: View {
 }
 
 #Preview {
-    RegistrationView()
+    NavigationStack {
+        RegistrationView()
+    }
 }
-

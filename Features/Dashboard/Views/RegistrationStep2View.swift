@@ -1,17 +1,22 @@
+
+
 import SwiftUI
 
 struct RegistrationStep2View: View {
     @Environment(\.dismiss) var dismiss
     
-    // Form States
+
     @State private var allergies = ""
     @State private var conditions = ""
     @State private var isTakingMedication = false
     @State private var bloodType = "O Positive"
     
-    // Mock Data for Uploads
+
     @State private var previousReports: [String] = ["Blood_Test.pdf"]
     @State private var currentMedications: [String] = ["Prescription.pdf"]
+    
+   
+    @State private var navigateToLogin = false
     
     let bloodTypes = ["A Positive", "A Negative", "B Positive", "B Negative", "O Positive", "O Negative", "AB Positive", "AB Negative"]
     
@@ -21,25 +26,25 @@ struct RegistrationStep2View: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // 1. Navigation Header
+             
                 headerView
                 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
                         
-                        // 2. Progress Bar Section
+                        
                         progressSection
                         
-                        // 3. Input Fields
+                    
                         VStack(spacing: 24) {
                             
-                            // Known Allergies
+                          
                             MultilineInputField(label: "Known Allergies", placeholder: "List any food, drug, or environmental allergies", text: $allergies)
                             
-                            // Chronic Conditions
+                     
                             MultilineInputField(label: "Chronic Conditions", placeholder: "e.g., Diabetes, Hypertension, Asthma...", text: $conditions)
                             
-                            // Current Medication Toggle
+                          
                             VStack(alignment: .leading, spacing: 8) {
                                 Toggle(isOn: $isTakingMedication) {
                                     VStack(alignment: .leading, spacing: 4) {
@@ -58,7 +63,7 @@ struct RegistrationStep2View: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
                             
-                            // Blood Type Native Picker
+                          
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Blood Type")
                                     .font(.subheadline)
@@ -87,7 +92,7 @@ struct RegistrationStep2View: View {
                                 }
                             }
                             
-                            // Upload Sections
+                           
                             FileUploadSection(title: "Upload Previous Medical Reports", files: $previousReports)
                             
                             FileUploadSection(title: "Upload Current Medication Prescriptions", files: $currentMedications)
@@ -95,15 +100,17 @@ struct RegistrationStep2View: View {
                     }
                     .padding(24)
                     
-                    Spacer(minLength: 100) // Keyboard & Button clearance
+                    Spacer(minLength: 100)
                 }
             }
             
-            // 4. Bottom Sticky Action Button
+            
             VStack {
                 Spacer()
+                
+               
                 Button(action: {
-                    // Complete Registration Action
+                    navigateToLogin = true
                 }) {
                     Text("Complete Registration")
                         .font(.headline)
@@ -128,9 +135,15 @@ struct RegistrationStep2View: View {
             }
         }
         .navigationBarHidden(true)
+        
+     
+        .navigationDestination(isPresented: $navigateToLogin) {
+            LoginView()
+                .navigationBarBackButtonHidden(true) // Prevents swiping back to the registration form!
+        }
     }
     
-    // MARK: - Subviews
+
     
     private var headerView: some View {
         HStack {
@@ -153,7 +166,6 @@ struct RegistrationStep2View: View {
     private var progressSection: some View {
         VStack(spacing: 8) {
             HStack(alignment: .bottom) {
-              
                 Text("Medical Details")
                     .font(.title3)
                     .fontWeight(.bold)
@@ -165,7 +177,7 @@ struct RegistrationStep2View: View {
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
             
-           
+        
             Capsule()
                 .fill(Color.blue)
                 .frame(height: 6)
@@ -202,7 +214,7 @@ struct MultilineInputField: View {
                         .foregroundStyle(Color(uiColor: .placeholderText))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 16)
-                        .zIndex(1) 
+                        .zIndex(1)
                         .allowsHitTesting(false)
                 }
                 
@@ -233,9 +245,9 @@ struct FileUploadSection: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                     
-                    // Add Button
+                   
                     Button(action: {
-                        // Action to open file picker
+                        
                     }) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 12)
@@ -249,11 +261,11 @@ struct FileUploadSection: View {
                         }
                     }
                     
-                    // Uploaded Files
+              
                     ForEach(files.indices, id: \.self) { index in
                         ZStack(alignment: .topTrailing) {
                             
-                            // File Thumbnail
+                     
                             VStack(spacing: 8) {
                                 Image(systemName: "doc.text.fill")
                                     .font(.title)
@@ -270,7 +282,7 @@ struct FileUploadSection: View {
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(uiColor: .systemGray5), lineWidth: 1))
                             
-                            // Delete Badge
+                       
                             Button(action: {
                                 files.remove(at: index)
                             }) {
@@ -283,7 +295,7 @@ struct FileUploadSection: View {
                     }
                 }
                 .padding(.vertical, 8)
-                .padding(.horizontal, 4) // Prevents shadow/badge clipping on edges
+                .padding(.horizontal, 4)
             }
         }
     }
