@@ -4,22 +4,22 @@ struct ClinicMapView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.openURL) var openURL
     
-    // Native iOS Search State
+    
     @State private var searchText = ""
     @State private var isSearchActive = false
     
-    // Navigation State
+   
     @State private var routePath: [CGPoint] = []
     @State private var currentDotPosition: CGPoint = CGPoint(x: 0.05, y: 0.52)
     @State private var isNavigating = false
     @State private var selectedDestinationName: String? = nil
     
-    // Map Tapping State
+ 
     @State private var tappedNode: MapNode? = nil
     @State private var showDetailsSheet = false
     @State private var pulseAnimation = false
     
-    // Zoom & Pan States
+
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
@@ -30,18 +30,18 @@ struct ClinicMapView: View {
     var body: some View {
         ZStack {
             
-            // 1. The Canvas Background
+          
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
             
-            // 2. The Map Area
+          
             mapContent
             
-            // 3. Dynamic Safe Area UI Layout
+           
             VStack(spacing: 0) {
                 Spacer()
                 
-                // Zoom Controls
+               
                 HStack {
                     Spacer()
                     zoomControls
@@ -49,7 +49,7 @@ struct ClinicMapView: View {
                 .padding(.trailing, 16)
                 .padding(.bottom, 16)
                 
-                // Bottom Action Cards
+             
                 bottomActionArea
             }
         }
@@ -88,7 +88,7 @@ struct ClinicMapView: View {
         }
     }
     
-    // MARK: - Extracted UI Views
+    
     
     private var mapContent: some View {
         Image("ClinicMapImage")
@@ -175,7 +175,7 @@ struct ClinicMapView: View {
                     withAnimation { tappedNode = nil; pulseAnimation = false }
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
-                
+                .padding(.bottom, 90)
             } else if let destName = selectedDestinationName {
                 VStack(spacing: 12) {
                     Text("Navigating to: \(destName)").font(.headline)
@@ -192,11 +192,12 @@ struct ClinicMapView: View {
                 .padding(20).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 24))
                 .shadow(color: Color.black.opacity(0.08), radius: 10, y: -5)
                 .padding(.horizontal, 16).padding(.bottom, 16)
+                //.transition(.move(edge: .bottom).combined(with: .opacity))
+                .padding(.bottom, 90)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
-                
             } else {
                 
-                // 🔴 THE FIX: Using your exact provided URL, but upgraded to 'https' for iOS security!
+               
                 Button {
                     if let url = URL(string: "https://googleusercontent.com/maps.google.com/16") {
                         openURL(url)
@@ -210,12 +211,14 @@ struct ClinicMapView: View {
                 }
                 .padding(.horizontal, 20).padding(.bottom, 16)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
+                .padding(.bottom, 90)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
                 
             }
         }
     }
     
-    // MARK: - Logic & Computed Properties
+
     
     var magnification: some Gesture {
         MagnificationGesture()
@@ -316,7 +319,7 @@ struct ClinicMapView: View {
     }
 }
 
-// MARK: - Custom UI Components
+
 
 struct LocationPopupCard: View {
     let node: MapNode
@@ -431,3 +434,5 @@ struct SearchTag: View {
         ClinicMapView()
     }
 }
+
+
