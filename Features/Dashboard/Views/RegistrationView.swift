@@ -188,7 +188,7 @@ struct InputField: View {
                 .autocapitalization(keyboardType == .emailAddress ? .none : .words)
                 .disableAutocorrection(keyboardType == .emailAddress)
                 .padding()
-                .background(Color(uiColor: .secondarySystemBackground)) // 🔴 HIG FIX: Borderless filled style
+                .background(Color(uiColor: .secondarySystemBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }

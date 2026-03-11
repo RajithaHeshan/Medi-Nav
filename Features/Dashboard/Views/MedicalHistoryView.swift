@@ -192,7 +192,7 @@ struct HistoryMenuRow: View {
     }
 }
 
-// MARK: - Temporary Placeholders (Prevents Xcode Crashes!)
+
 struct LabReportHistoryView1: View {
     var body: some View {
         Text("Lab Report History Screen").font(.title)
