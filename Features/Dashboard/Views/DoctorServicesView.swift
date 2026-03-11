@@ -35,7 +35,7 @@ struct DoctorServicesView: View {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundStyle(Color.blue)
-                                .offset(x: -1.5) // 🔴 FIX 2: Visually centers the Apple SF Symbol!
+                                .offset(x: -1.5)
                         }
                     }
                     
@@ -57,26 +57,29 @@ struct DoctorServicesView: View {
                         browseBySpecialtySection
                         actionGrid
                         
-                        Spacer(minLength: 120) // Keeps content above Tab Bar
+                        Spacer(minLength: 120) 
                     }
                     .padding(.horizontal, 20)
                 }
             }
         }
-        .navigationBarHidden(true) // Completely hides the buggy native bar
+        .navigationBarHidden(true)
         
         // MARK: - Navigation Destinations
         .navigationDestination(isPresented: $navigateToFindDoctor) {
-            FindDoctorView()
+            // Placeholder or actual view
+            Text("Find Doctor View")
         }
         .navigationDestination(isPresented: $navigateToBookingHistory) {
             BookingHistoryView()
         }
         .navigationDestination(isPresented: $navigateToDoctorConsultation) {
-            DoctorConsultationView()
+            // Placeholder or actual view
+            Text("Doctor Consultation View")
         }
         .navigationDestination(isPresented: $navigateToConsultationHistory) {
-            DoctorConsultationHistoryView()
+            // Placeholder or actual view
+            Text("Consultation History View")
         }
         .navigationDestination(isPresented: $navigateToReschedule) {
             DoctorBookingView(
@@ -124,19 +127,19 @@ struct DoctorServicesView: View {
                 }
             }
             
+           
             HStack(spacing: 12) {
                 Button {
                     navigateToReschedule = true
                 } label: {
                     Text("Reschedule")
                         .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(Color(uiColor: .label))
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color(uiColor: .systemBackground))
-                        .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color.gray.opacity(0.2), lineWidth: 1))
+                        .padding(.vertical, 14)
+                        .background(Color.blue)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
                 
                 Button {
@@ -144,15 +147,15 @@ struct DoctorServicesView: View {
                 } label: {
                     Text("Cancel")
                         .font(.subheadline)
-                        .fontWeight(.semibold)
+                        .fontWeight(.bold)
                         .foregroundStyle(Color.red)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color.red.opacity(0.05))
-                        .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color.red.opacity(0.2), lineWidth: 1))
+                        .padding(.vertical, 14)
+                        .background(Color.red.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
             }
+            .padding(.top, 4)
         }
         .padding(20)
         .background(Color(uiColor: .systemBackground))
@@ -214,7 +217,7 @@ struct DoctorServicesView: View {
         }
     }
     
-    // MARK: - Reusable Subcomponents
+   
     
     private func specialtyButton(icon: String, title: String, iconColor: Color) -> some View {
         Button {
@@ -238,7 +241,7 @@ struct DoctorServicesView: View {
     }
 }
 
-// Extracted structurally so it can be reused easily
+
 struct ServiceGridCard: View {
     let icon: String
     let iconColor: Color
