@@ -1,17 +1,15 @@
-
 import SwiftUI
 
 struct DoctorServicesView: View {
     @Environment(\.dismiss) var dismiss
     
-   
+    
     @State private var navigateToFindDoctor = false
     @State private var navigateToBookingHistory = false
     @State private var navigateToDoctorConsultation = false
     @State private var navigateToConsultationHistory = false
     @State private var navigateToReschedule = false
     
-  
     @State private var selectedSpecialtyForSearch = "All"
     
     let columns = [
@@ -21,6 +19,7 @@ struct DoctorServicesView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
+          
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
             
@@ -52,13 +51,14 @@ struct DoctorServicesView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 16)
                 
+               
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 28) {
                         upcomingAppointmentCard
                         browseBySpecialtySection
                         actionGrid
                         
-                        Spacer(minLength: 120)
+                        Spacer(minLength: 120) // Keeps content above Tab Bar
                     }
                     .padding(.horizontal, 20)
                 }
@@ -66,19 +66,20 @@ struct DoctorServicesView: View {
         }
         .navigationBarHidden(true)
         
-     
+       
         .navigationDestination(isPresented: $navigateToFindDoctor) {
-           
             FindDoctorView(initialSpecialty: selectedSpecialtyForSearch)
         }
         .navigationDestination(isPresented: $navigateToBookingHistory) {
             BookingHistoryView()
         }
+       
         .navigationDestination(isPresented: $navigateToDoctorConsultation) {
-            Text("Doctor Consultation View")
+            DoctorConsultationView()
         }
+        
         .navigationDestination(isPresented: $navigateToConsultationHistory) {
-            Text("Consultation History View")
+            DoctorConsultationHistoryView()
         }
         .navigationDestination(isPresented: $navigateToReschedule) {
             DoctorBookingView(
@@ -97,7 +98,7 @@ struct DoctorServicesView: View {
         }
     }
     
-    // MARK: - View Components
+   
     
     private var upcomingAppointmentCard: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -181,12 +182,11 @@ struct DoctorServicesView: View {
             }
             
             HStack(spacing: 0) {
-             
                 specialtyButton(icon: "stethoscope", title: "General", iconColor: .blue, targetSpecialty: "All")
                 Spacer()
                 specialtyButton(icon: "cross.case.fill", title: "Dental", iconColor: .green, targetSpecialty: "Dentist")
                 Spacer()
-                specialtyButton(icon: "eye.fill", title: "Eye", iconColor: .purple, targetSpecialty: "All") // Stays "All" since there is no Eye tab yet
+                specialtyButton(icon: "eye.fill", title: "Eye", iconColor: .purple, targetSpecialty: "All")
                 Spacer()
                 specialtyButton(icon: "heart.fill", title: "Heart", iconColor: .red, targetSpecialty: "Cardiology")
             }
@@ -220,7 +220,8 @@ struct DoctorServicesView: View {
         }
     }
     
-  
+   
+    
     private func specialtyButton(icon: String, title: String, iconColor: Color, targetSpecialty: String) -> some View {
         Button {
             selectedSpecialtyForSearch = targetSpecialty
