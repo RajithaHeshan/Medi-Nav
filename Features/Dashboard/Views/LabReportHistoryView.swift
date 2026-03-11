@@ -6,140 +6,184 @@ struct LabReportHistoryView: View {
     @State private var selectedFilter = "All"
     @State private var selectedReport: HistoryReportItem?
     
-    // Filters (Long names work perfectly here!)
+  
     let filters = ["All", "Blood", "Urine", "Pathology", "Radiology", "Microbiology"]
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
+            ZStack(alignment: .top) {
+                Color(uiColor: .systemGroupedBackground)
+                    .ignoresSafeArea()
                 
-                // 1. Header
-                headerView
-                
-                // 2. Search & Filters
-                VStack(spacing: 16) {
-                    searchBar
+                VStack(spacing: 0) {
                     
                    
-                    filterBar
-                }
-                .padding(.bottom, 16)
-                .background(Color(uiColor: .systemBackground))
-                
-               
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 16) {
+                        headerView
+                        searchBar
+                        filterBar
+                    }
+                    .padding(.bottom, 16)
+                    .background(Color(uiColor: .systemBackground))
+                  
+                    .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 4)
+                    .zIndex(1)
+                    
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 24) {
+                            
                         
-                        // Section: October 2023
-                        historySection(header: "October 2023") {
-                            if showItem(type: "Blood") {
-                                HistoryReportRow(
-                                    title: "Lipid Profile",
-                                    date: "Oct 24",
-                                    doctor: "Dr. Sarah Johnson",
-                                    icon: "drop.fill",
-                                    iconColor: .red,
-                                    resultBadge: "High Risk",
-                                    badgeColor: .red
-                                ) {
-                                    selectedReport = HistoryReportItem(title: "Lipid Profile", status: .ready)
+                            historySection(header: "October 2023") {
+                                if showItem(type: "Blood", title: "Lipid Profile") {
+                                    HistoryReportRow(
+                                        title: "Lipid Profile",
+                                        date: "Oct 24",
+                                        doctor: "Dr. Sarah Johnson",
+                                        icon: "drop.fill",
+                                        iconColor: .red,
+                                        resultBadge: "High Risk",
+                                        badgeColor: .red
+                                    ) {
+                                        selectedReport = HistoryReportItem(title: "Lipid Profile", status: .ready)
+                                    }
+                                }
+                                
+                               
+                                if showItem(type: "Blood", title: "Lipid Profile") && showItem(type: "Blood", title: "Complete Blood Count") {
+                                    Divider().padding(.leading, 72)
+                                }
+                                
+                                if showItem(type: "Blood", title: "Complete Blood Count") {
+                                    HistoryReportRow(
+                                        title: "Complete Blood Count",
+                                        date: "Oct 12",
+                                        doctor: "Dr. Smith",
+                                        icon: "drop.fill",
+                                        iconColor: .purple,
+                                        resultBadge: "Normal",
+                                        badgeColor: .green
+                                    ) {
+                                        selectedReport = HistoryReportItem(title: "Complete Blood Count", status: .ready)
+                                    }
                                 }
                             }
                             
-                            if showItem(type: "Blood") {
-                               
-                                Divider().padding(.leading, 72)
-                                
-                                HistoryReportRow(
-                                    title: "Complete Blood Count",
-                                    date: "Oct 12",
-                                    doctor: "Dr. Smith",
-                                    icon: "drop.fill",
-                                    iconColor: .purple,
-                                    resultBadge: "Normal",
-                                    badgeColor: .green
-                                ) {
-                                    selectedReport = HistoryReportItem(title: "Complete Blood Count", status: .ready)
+                          
+                            historySection(header: "September 2023") {
+                                if showItem(type: "Urine", title: "Urinalysis") {
+                                    HistoryReportRow(
+                                        title: "Urinalysis",
+                                        date: "Sep 10",
+                                        doctor: "Dr. Sarah Johnson",
+                                        icon: "flask.fill",
+                                        iconColor: .yellow,
+                                        resultBadge: "Normal",
+                                        badgeColor: .green
+                                    ) {
+                                        selectedReport = HistoryReportItem(title: "Urinalysis", status: .archived)
+                                    }
                                 }
                             }
+                            
+                          
+                            Spacer(minLength: 120)
                         }
-                        
-                        // Section: September 2023
-                        historySection(header: "September 2023") {
-                            if showItem(type: "Urine") {
-                                HistoryReportRow(
-                                    title: "Urinalysis",
-                                    date: "Sep 10",
-                                    doctor: "Dr. Sarah Johnson",
-                                    icon: "flask.fill",
-                                    iconColor: .yellow,
-                                    resultBadge: "Normal",
-                                    badgeColor: .green
-                                ) {
-                                    selectedReport = HistoryReportItem(title: "Urinalysis", status: .archived)
-                                }
-                            }
-                        }
-                        
-                        Spacer(minLength: 40)
+                        .padding(.top, 24)
+                        .padding(.horizontal, 20)
                     }
-                    .padding()
                 }
             }
-            .background(Color(uiColor: .systemGroupedBackground))
             .navigationBarHidden(true)
             
-            // MARK: - Destination
+          
             .navigationDestination(item: $selectedReport) { report in
-                LabReportDetailView(
-                    reportTitle: report.title,
-                    status: report.status
-                )
-                .navigationBarBackButtonHidden(true)
+              
+                Text("Detail View for: \(report.title)")
+                    .navigationBarBackButtonHidden(true)
             }
         }
     }
     
-    // Data Model
+  
     struct HistoryReportItem: Identifiable, Hashable {
         let id = UUID()
         let title: String
         let status: LabStatus
     }
     
-    // Filter Logic
-    private func showItem(type: String) -> Bool {
-        return selectedFilter == "All" || selectedFilter == type
+   
+    enum LabStatus {
+        case ready, pending, archived
     }
     
-    // MARK: - Subviews
+   
+    private func showItem(type: String, title: String) -> Bool {
+        let matchesFilter = selectedFilter == "All" || selectedFilter == type
+        let matchesSearch = searchText.isEmpty || title.localizedCaseInsensitiveContains(searchText)
+        return matchesFilter && matchesSearch
+    }
     
+   
     private var headerView: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "chevron.left").font(.title3).bold().foregroundStyle(.black)
+        HStack(spacing: 16) {
+            Button(action: { dismiss() }) {
+                ZStack {
+                    Circle()
+                        .fill(Color(uiColor: .systemGroupedBackground)) // Slightly darker to pop against the white header
+                        .frame(width: 40, height: 40)
+                    
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color.blue)
+                        .offset(x: -1.5)
+                }
             }
+            
             Spacer()
-            Text("Lab History").font(.headline).bold()
+            
+            Text("Lab History")
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundStyle(Color(uiColor: .label))
+                .padding(.trailing, 40) // Visually centers the text
+            
             Spacer()
-            Image(systemName: "chevron.left").font(.title3).opacity(0)
         }
-        .padding()
-        .background(Color(uiColor: .systemBackground))
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
     }
     
+   
     private var searchBar: some View {
         HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass").foregroundStyle(.gray)
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(Color(uiColor: .systemGray2))
+                .font(.body.weight(.medium))
+            
             TextField("Search past reports...", text: $searchText)
+            
+            Spacer()
+            
+            if !searchText.isEmpty {
+                Button(action: {
+                    withAnimation { searchText = "" }
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(Color(uiColor: .systemGray3))
+                        .font(.body.weight(.medium))
+                }
+            } else {
+                Image(systemName: "mic.fill")
+                    .foregroundStyle(Color(uiColor: .systemGray2))
+                    .font(.body.weight(.medium))
+            }
         }
         .padding(12)
-        .background(Color(uiColor: .secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .padding(.horizontal)
+        .background(Color(uiColor: .systemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 20)
     }
     
-    // 🟢 UPDATED FILTER BAR (Matches VitalHistoryView style)
     private var filterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 10) {
@@ -151,23 +195,20 @@ struct LabReportHistoryView: View {
                     } label: {
                         Text(filter)
                             .font(.subheadline)
-                            .fontWeight(.medium)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(selectedFilter == filter ? Color.blue : Color(uiColor: .secondarySystemBackground))
-                            .foregroundStyle(selectedFilter == filter ? .white : .primary)
+                            .fontWeight(.bold) // Stronger weight for better readability
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(selectedFilter == filter ? Color.blue : Color(uiColor: .systemGroupedBackground))
+                            .foregroundStyle(selectedFilter == filter ? .white : Color(uiColor: .label))
                             .clipShape(Capsule())
-                            .overlay(
-                                Capsule()
-                                    .stroke(Color.gray.opacity(0.1), lineWidth: 1)
-                            )
                     }
                 }
             }
-            .padding(.horizontal)
+            .padding(.horizontal, 20)
         }
     }
     
+   
     private func historySection<Content: View>(header: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(header)
@@ -180,14 +221,14 @@ struct LabReportHistoryView: View {
             VStack(spacing: 0) {
                 content()
             }
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .shadow(color: Color.black.opacity(0.02), radius: 5, x: 0, y: 2)
+            .background(Color(uiColor: .systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 20)) // Matched to app standard 20pt
+            .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 2)
         }
     }
 }
 
-// MARK: - History Row Component
+
 struct HistoryReportRow: View {
     let title: String
     let date: String
@@ -201,22 +242,21 @@ struct HistoryReportRow: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 16) {
-                // Icon Box
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: 12)
                         .fill(iconColor.opacity(0.1))
-                        .frame(width: 44, height: 44)
+                        .frame(width: 48, height: 48)
                     
                     Image(systemName: icon)
-                        .font(.body)
+                        .font(.title3)
                         .foregroundStyle(iconColor)
                 }
                 
-                // Info
+              
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.subheadline)
-                        .fontWeight(.semibold)
+                        .fontWeight(.bold)
                         .foregroundStyle(Color(uiColor: .label))
                     
                     Text("\(date) • \(doctor)")
@@ -226,23 +266,25 @@ struct HistoryReportRow: View {
                 
                 Spacer()
                 
-                // Result Badge
+               
                 Text(resultBadge)
                     .font(.caption2)
                     .fontWeight(.bold)
                     .foregroundStyle(badgeColor)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(badgeColor.opacity(0.1))
                     .clipShape(Capsule())
                 
-                // Chevron
+               
                 Image(systemName: "chevron.right")
                     .font(.caption)
-                    .foregroundStyle(.gray.opacity(0.4))
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color(uiColor: .systemGray3))
             }
             .padding(16)
-            .background(Color.white)
+            .background(Color(uiColor: .systemBackground))
+            .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
     }
