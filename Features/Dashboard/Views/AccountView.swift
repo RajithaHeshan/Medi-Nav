@@ -3,6 +3,9 @@ import SwiftUI
 struct AccountView: View {
     @Environment(\.dismiss) var dismiss
     
+   
+    @State private var navigateToSettings = false
+    @State private var navigateToAccessibility = false
     var body: some View {
         ZStack(alignment: .top) {
             
@@ -10,18 +13,17 @@ struct AccountView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-            
+               
                 headerView
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         
-          
+                        
                         profileHeaderCard
                         
-                   
-                        VStack(alignment: .leading, spacing: 8) {
                         
+                        VStack(alignment: .leading, spacing: 8) {
                             AccountSectionHeader(title: "Medical & Records")
                             
                             VStack(spacing: 0) {
@@ -34,24 +36,29 @@ struct AccountView: View {
                             .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 2)
                         }
                         
-                 
+                      
                         VStack(alignment: .leading, spacing: 8) {
-                          
                             AccountSectionHeader(title: "Preferences")
                             
                             VStack(spacing: 0) {
-                                AccountRow(icon: "gearshape.fill", iconColor: .gray, title: "Settings", showDivider: true)
-                                AccountRow(icon: "accessibility.fill", iconColor: .gray, title: "Accessibility", subtitle: "VoiceOver, High Contrast, Text Size", showDivider: true)
+                                AccountRow(icon: "gearshape.fill", iconColor: .gray, title: "Settings", showDivider: true) {
+                                    navigateToSettings = true
+                                }
+                                
+                                
+                                AccountRow(icon: "accessibility.fill", iconColor: .blue, title: "Accessibility", subtitle: "VoiceOver, High Contrast, Text Size", showDivider: true) {
+                                    navigateToAccessibility = true
+                                }
+                                
                                 AccountRow(icon: "bell.fill", iconColor: .gray, title: "Notifications", showDivider: false)
                             }
                             .background(Color(uiColor: .systemBackground))
                             .clipShape(RoundedRectangle(cornerRadius: 20))
                             .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 2)
                         }
-                        
-                   
+                    
                         Button {
-                           
+                          
                         } label: {
                             Text("Log Out")
                                 .font(.headline)
@@ -73,9 +80,18 @@ struct AccountView: View {
             }
         }
         .navigationBarHidden(true)
+        
+      
+        .navigationDestination(isPresented: $navigateToSettings) {
+            SettingsView()
+        }
+       
+        .navigationDestination(isPresented: $navigateToAccessibility) {
+            AccessibilityView()
+        }
     }
     
-  
+ 
     
     private var headerView: some View {
         HStack(spacing: 16) {
@@ -151,6 +167,7 @@ struct AccountView: View {
 }
 
 
+
 struct AccountSectionHeader: View {
     let title: String
     
@@ -170,11 +187,10 @@ struct AccountRow: View {
     let title: String
     var subtitle: String? = nil
     var showDivider: Bool
+    var action: () -> Void = {}
     
     var body: some View {
-        Button(action: {
-            // Row tap action
-        }) {
+        Button(action: action) {
             VStack(spacing: 0) {
                 HStack(spacing: 16) {
                     
