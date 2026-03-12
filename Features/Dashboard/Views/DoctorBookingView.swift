@@ -7,7 +7,6 @@ struct DoctorBookingView: View {
     
     let doctor: Doctor
     
-   
     @State private var selectedPatientType: String = "Adult"
     let patientTypes = ["Adult", "Child", "Elder", "Pregnant"]
     
@@ -15,9 +14,8 @@ struct DoctorBookingView: View {
     @State private var calendarDays: [Date] = []
     @State private var selectedTime: String = "10:30 AM"
     
-
-    
-    @State private var showPayment = false
+   
+    @State private var showConfirmation = false
     
     @State private var showAttachmentMenu = false
     @State private var showImagePicker = false
@@ -40,17 +38,11 @@ struct DoctorBookingView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 32) {
                         
-                      
                         patientTypeSection
-                        
-                     
                         dateSelectionSection
                         timeSelectionSection
-                        
-                      
                         uploadSection(title: "Previous Medical Reports")
                         
-                       
                         Spacer(minLength: 240)
                     }
                     .padding(.horizontal, 20)
@@ -58,13 +50,10 @@ struct DoctorBookingView: View {
                 }
             }
             
-           
             bottomFooter
         }
         .navigationBarHidden(true)
-        .onTapGesture {
-            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-        }
+       
         .onAppear { generateDates() }
         
         .confirmationDialog("Select Photo", isPresented: $showAttachmentMenu, titleVisibility: .visible) {
@@ -80,18 +69,17 @@ struct DoctorBookingView: View {
         }
         
        
-        .navigationDestination(isPresented: $showPayment) {
-            PaymentView(
+        .navigationDestination(isPresented: $showConfirmation) {
+            BookingConfirmationView(
                 doctor: doctor,
                 selectedDate: selectedDate,
                 selectedTime: selectedTime,
-                flowType: .doctorBooking
+                patientType: selectedPatientType
             )
-            .navigationBarBackButtonHidden(true)
         }
     }
     
-  
+   
     
     private func generateDates() {
         let calendar = Calendar.current
@@ -108,7 +96,7 @@ struct DoctorBookingView: View {
         return Calendar.current.isDate(date1, inSameDayAs: date2)
     }
     
-    
+  
     
     private var headerView: some View {
         HStack(spacing: 16) {
@@ -155,7 +143,6 @@ struct DoctorBookingView: View {
         .padding(.bottom, 12)
     }
     
-   
     private var patientTypeSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Patient Type").font(.title3).fontWeight(.bold)
@@ -185,7 +172,6 @@ struct DoctorBookingView: View {
                 .padding(.vertical, 8)
                 .padding(.horizontal, 4)
             }
-          
             .padding(.horizontal, -20)
             .padding(.leading, 20)
         }
@@ -245,7 +231,7 @@ struct DoctorBookingView: View {
     
     private func timeSlotPill(time: String) -> some View {
         let isSelected = selectedTime == time
-        let isDisabled = time == "11:30 AM" // Example disabled logic
+        let isDisabled = time == "11:30 AM"
         
         return Button { if !isDisabled { withAnimation(.spring()) { selectedTime = time } } } label: {
             Text(time)
@@ -299,7 +285,6 @@ struct DoctorBookingView: View {
             }
         }
     }
-  
     
     private var bottomFooter: some View {
         VStack(spacing: 16) {
@@ -318,7 +303,7 @@ struct DoctorBookingView: View {
             }
             
             Button {
-                showPayment = true
+                showConfirmation = true
             } label: {
                 Text("Continue")
                     .font(.headline).fontWeight(.bold).foregroundStyle(.white)
@@ -337,10 +322,8 @@ struct DoctorBookingView: View {
     }
 }
 
-
 #Preview {
     NavigationStack {
-       
         DoctorBookingView(doctor: Doctor(name: "Dr. Sarah Jenkins", specialty: "Cardiologist", rating: 4.9, reviewCount: 120, fee: 150, image: "Image (2)", status: "Available Today", statusColor: .green, isBookable: true))
     }
 }

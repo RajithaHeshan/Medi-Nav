@@ -8,10 +8,10 @@ struct PrescriptionView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // 1. Navigation Header
+           
             headerView
             
-            // 2. Scrollable Content
+           
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     patientInfoCard
@@ -25,15 +25,15 @@ struct PrescriptionView: View {
             }
             .background(Color(uiColor: .systemGroupedBackground))
             
-            // 3. Sticky Action Footer
+           
             footerActionsView
         }
         .navigationBarHidden(true)
         
-        // 🔴 TRIGGERS THE SHARE UI FROM THE SECOND FILE
+      
         .sheet(isPresented: $showShareSheet) {
             PrescriptionShareSheet()
-                .presentationDetents([.height(480)]) // Fixed height matching your Figma design
+                .presentationDetents([.height(480)]) 
                 .presentationDragIndicator(.visible)
         }
     }
@@ -121,7 +121,7 @@ struct PrescriptionView: View {
     private var footerActionsView: some View {
         VStack(spacing: 16) {
             Button {
-                // 🔴 OPENS THE SHARE SHEET
+              
                 showShareSheet = true
             } label: {
                 HStack {
