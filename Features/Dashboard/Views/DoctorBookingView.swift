@@ -1,4 +1,5 @@
 
+
 import SwiftUI
 
 struct DoctorBookingView: View {
@@ -6,10 +7,15 @@ struct DoctorBookingView: View {
     
     let doctor: Doctor
     
+   
+    @State private var selectedPatientType: String = "Adult"
+    let patientTypes = ["Adult", "Child", "Elder", "Pregnant"]
+    
     @State private var selectedDate: Date = Date()
     @State private var calendarDays: [Date] = []
     @State private var selectedTime: String = "10:30 AM"
-    @State private var medicationText: String = ""
+    
+
     
     @State private var showPayment = false
     
@@ -34,15 +40,17 @@ struct DoctorBookingView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 32) {
                         
-                        // Date & Time
+                      
+                        patientTypeSection
+                        
+                     
                         dateSelectionSection
                         timeSelectionSection
                         
-                        // Uploads
+                      
                         uploadSection(title: "Previous Medical Reports")
-                        medicationSection
                         
-                       //Massive spacer so the user can completely scroll past the sticky footer
+                       
                         Spacer(minLength: 240)
                     }
                     .padding(.horizontal, 20)
@@ -50,7 +58,7 @@ struct DoctorBookingView: View {
                 }
             }
             
-            // 2. Fixed Sticky Footer (Pushed above Tab Bar)
+           
             bottomFooter
         }
         .navigationBarHidden(true)
@@ -71,7 +79,7 @@ struct DoctorBookingView: View {
                 .ignoresSafeArea()
         }
         
-        // Navigation to Payment
+       
         .navigationDestination(isPresented: $showPayment) {
             PaymentView(
                 doctor: doctor,
@@ -83,7 +91,7 @@ struct DoctorBookingView: View {
         }
     }
     
-    // MARK: - Logic
+  
     
     private func generateDates() {
         let calendar = Calendar.current
@@ -100,7 +108,7 @@ struct DoctorBookingView: View {
         return Calendar.current.isDate(date1, inSameDayAs: date2)
     }
     
-    // MARK: - Subviews
+    
     
     private var headerView: some View {
         HStack(spacing: 16) {
@@ -145,6 +153,42 @@ struct DoctorBookingView: View {
         .padding(.horizontal, 20)
         .padding(.top, 16)
         .padding(.bottom, 12)
+    }
+    
+   
+    private var patientTypeSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Patient Type").font(.title3).fontWeight(.bold)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(patientTypes, id: \.self) { type in
+                        let isSelected = selectedPatientType == type
+                        
+                        Button {
+                            withAnimation(.spring()) {
+                                selectedPatientType = type
+                            }
+                        } label: {
+                            Text(type)
+                                .font(.subheadline)
+                                .fontWeight(isSelected ? .bold : .semibold)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 12)
+                                .background(isSelected ? Color.blue : Color(uiColor: .systemBackground))
+                                .foregroundStyle(isSelected ? Color.white : Color(uiColor: .label))
+                                .clipShape(Capsule())
+                                .shadow(color: isSelected ? Color.blue.opacity(0.3) : Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
+                        }
+                    }
+                }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 4)
+            }
+          
+            .padding(.horizontal, -20)
+            .padding(.leading, 20)
+        }
     }
     
     private var dateSelectionSection: some View {
@@ -255,31 +299,7 @@ struct DoctorBookingView: View {
             }
         }
     }
-    
-    private var medicationSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Current Medications").font(.headline).fontWeight(.bold)
-            
-            TextEditor(text: $medicationText)
-                .frame(height: 120)
-                .padding(12)
-                .background(Color(uiColor: .systemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
-                .overlay(
-                    Group {
-                        if medicationText.isEmpty {
-                            Text("List any current prescriptions or tap to type...")
-                                .font(.subheadline)
-                                .foregroundStyle(Color(uiColor: .placeholderText))
-                                .padding(.top, 20)
-                                .padding(.leading, 16)
-                        }
-                    },
-                    alignment: .topLeading
-                )
-        }
-    }
+  
     
     private var bottomFooter: some View {
         VStack(spacing: 16) {
@@ -300,7 +320,7 @@ struct DoctorBookingView: View {
             Button {
                 showPayment = true
             } label: {
-                Text("Confirm Booking")
+                Text("Continue")
                     .font(.headline).fontWeight(.bold).foregroundStyle(.white)
                     .frame(maxWidth: .infinity).padding(.vertical, 16)
                     .background(Color.blue).clipShape(Capsule())
@@ -317,8 +337,10 @@ struct DoctorBookingView: View {
     }
 }
 
+
 #Preview {
     NavigationStack {
+       
         DoctorBookingView(doctor: Doctor(name: "Dr. Sarah Jenkins", specialty: "Cardiologist", rating: 4.9, reviewCount: 120, fee: 150, image: "Image (2)", status: "Available Today", statusColor: .green, isBookable: true))
     }
 }
