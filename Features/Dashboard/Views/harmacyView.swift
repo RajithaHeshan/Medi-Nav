@@ -1,43 +1,10 @@
-
 import SwiftUI
-
-
-struct Medication: Identifiable {
-    let id = UUID()
-    let name: String
-    let details: String
-    let fillStatus: String
-    let status: StatusType
-    
-    enum StatusType {
-        case pending, processing, completed
-        
-        var color: Color {
-            switch self {
-            case .pending: return .blue
-            case .processing: return .orange
-            case .completed: return .green
-            }
-        }
-    }
-}
 
 struct PharmacyView: View {
     @Environment(\.dismiss) var dismiss
     
-  
     @State private var navigateToMap = false
     @State private var navigateToLabSubmission = false
-    
-   
-    let medications: [Medication] = [
-        Medication(name: "Amoxicillin", details: "500mg • Capsules", fillStatus: "Filled 2 of 5 times", status: .pending),
-        Medication(name: "Amoxicillin", details: "500mg • Capsules", fillStatus: "Filled 2 of 5 times", status: .pending),
-        Medication(name: "Amoxicillin", details: "500mg • Capsules", fillStatus: "Filled 2 of 5 times", status: .processing),
-        Medication(name: "Amoxicillin", details: "500mg • Capsules", fillStatus: "Filled 2 of 5 times", status: .processing),
-        Medication(name: "Amoxicillin", details: "500mg • Capsules", fillStatus: "Filled 2 of 5 times", status: .completed),
-        Medication(name: "Amoxicillin", details: "500mg • Capsules", fillStatus: "Filled 2 of 5 times", status: .completed)
-    ]
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -51,21 +18,14 @@ struct PharmacyView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         
-                    
                         visitPharmacyCard
                         
-                   
                         visitLaboratoryCard
                         
-               
                         staffCard
                         
-                      
-                        medicationSection(title: "Pending", status: .pending)
-                        medicationSection(title: "Processing", status: .processing)
-                        medicationSection(title: "Completed", status: .completed)
+                        medicinesSection
                         
-                     
                         Spacer(minLength: 120)
                     }
                     .padding(.horizontal, 20)
@@ -75,7 +35,7 @@ struct PharmacyView: View {
         }
         .navigationBarHidden(true)
         
-     
+       
         .navigationDestination(isPresented: $navigateToMap) {
             ClinicMapView()
         }
@@ -84,7 +44,7 @@ struct PharmacyView: View {
         }
     }
     
-
+ 
     
     private var headerView: some View {
         HStack(spacing: 16) {
@@ -139,7 +99,6 @@ struct PharmacyView: View {
                 }
             }
             
-          
             HStack {
                 HStack(spacing: 8) {
                     Image(systemName: "person.2.fill")
@@ -172,7 +131,6 @@ struct PharmacyView: View {
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                 Spacer()
                 
-             
                 Button {
                     navigateToMap = true
                 } label: {
@@ -215,7 +173,6 @@ struct PharmacyView: View {
                 }
             }
             
-         
             Button {
                 navigateToLabSubmission = true
             } label: {
@@ -235,7 +192,6 @@ struct PharmacyView: View {
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                 Spacer()
                 
-              
                 Button {
                     navigateToMap = true
                 } label: {
@@ -264,52 +220,36 @@ struct PharmacyView: View {
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
     
-    private func medicationSection(title: String, status: Medication.StatusType) -> some View {
-        let sectionMeds = medications.filter { $0.status == status }
-        
-        return VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(Color(uiColor: .secondaryLabel))
-                .textCase(.uppercase)
-                .padding(.bottom, 4)
+    private var medicinesSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Medicines & Dosage")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color(uiColor: .label))
+                Spacer()
+                Text("3 ITEMS")
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color(uiColor: .systemBlue))
+                    .clipShape(Capsule())
+            }
             
-            ForEach(sectionMeds) { med in
-                HStack(alignment: .top, spacing: 16) {
-                    // Status Dot
-                    Circle()
-                        .fill(status.color)
-                        .frame(width: 10, height: 10)
-                        .padding(.top, 6)
-                    
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(med.name)
-                            .font(.headline)
-                            .foregroundStyle(Color(uiColor: .label))
-                        
-                        Text(med.details)
-                            .font(.subheadline)
-                            .foregroundStyle(Color(uiColor: .secondaryLabel))
-                        
-                        Text(med.fillStatus)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundStyle(Color.cyan)
-                    }
-                    
-                    Spacer()
-                }
-                .padding(16)
-                .background(Color(uiColor: .systemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.15), lineWidth: 1))
-                .shadow(color: Color.black.opacity(0.02), radius: 5, x: 0, y: 2)
+           
+            VStack(spacing: 12) {
+                PrescriptionMedicineCard(medicationName: "Amoxicillin 500mg", badgeText: "Antibiotic", dosage: "1 Tablet", duration: "5 Days", timing: "Morning / Night", instruction: "After meal")
+                PrescriptionMedicineCard(medicationName: "Paracetamol 500mg", badgeText: "Painkiller", dosage: "2 Tablets", duration: "As required", timing: "When needed", instruction: "Any time")
+                PrescriptionMedicineCard(medicationName: "Cetirizine 10mg", badgeText: "Antihistamine", dosage: "1 Tablet", duration: "10 Days", timing: "Night Only", instruction: "Before sleep")
             }
         }
     }
 }
 
-// MARK: - Subcomponents
+
+
 struct StaffRow: View {
     let imageName: String
     let title: String

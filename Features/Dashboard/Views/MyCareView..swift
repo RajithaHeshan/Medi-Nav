@@ -1,10 +1,11 @@
+
 import SwiftUI
 
 struct MyCareView: View {
     @Environment(\.dismiss) var dismiss
     
-   
-    @State private var navigateToPharmacy = false
+    // 🔴 CHANGED: Renamed state to match the new destination
+    @State private var navigateToPrescription = false
     @State private var navigateToLabReports = false
     @State private var navigateToMedicalHistory = false
     @State private var navigateToVitalReports = false
@@ -23,28 +24,21 @@ struct MyCareView: View {
             
             VStack(spacing: 0) {
                 
-              
                 headerView
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 32) {
                         
-                
                         actionGridSection
                         
-                   
                         orderRoutineSection
                         
-               
                         medicationsSection
-                        
                         
                         recentActivitySection
                         
-                     
                         bodyMetricsSection
                         
-                 
                         Spacer(minLength: 120)
                     }
                     .padding(.horizontal, 16)
@@ -54,9 +48,9 @@ struct MyCareView: View {
         }
         .navigationBarHidden(true)
         
-        
-        .navigationDestination(isPresented: $navigateToPharmacy) {
-            PharmacyView()
+        // 🔴 CHANGED: Now navigates to PrescriptionView
+        .navigationDestination(isPresented: $navigateToPrescription) {
+            PrescriptionView()
         }
         .navigationDestination(isPresented: $navigateToLabReports) {
             LabReportsView()
@@ -71,12 +65,9 @@ struct MyCareView: View {
             LaboratorySampleSubmissionView()
         }
         .navigationDestination(isPresented: $navigateToPrescriptionHistory) {
-            
             MyPrescriptionView()
         }
     }
-    
-   
     
     private var headerView: some View {
         HStack(spacing: 16) {
@@ -107,8 +98,9 @@ struct MyCareView: View {
     
     private var actionGridSection: some View {
         LazyVGrid(columns: columns, spacing: 16) {
-            Button { navigateToPharmacy = true } label: {
-                MyCareActionCard(title: "Pharmacy", iconName: "pills.fill", iconColor: Color(uiColor: .systemPink))
+            // 🔴 CHANGED: Renamed title to "Prescription"
+            Button { navigateToPrescription = true } label: {
+                MyCareActionCard(title: "Prescription", iconName: "pills.fill", iconColor: Color(uiColor: .systemPink))
             }
             .buttonStyle(PlainButtonStyle())
             
