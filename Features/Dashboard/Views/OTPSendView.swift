@@ -4,20 +4,23 @@ struct OTPSendView: View {
     @Environment(\.dismiss) var dismiss
     @State private var phoneNumber = ""
     
+  
+    @State private var navigateToVerification = false
+    
     var body: some View {
         ZStack {
-            // Native Background
+          
             Color(uiColor: .systemBackground)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // 1. Navigation Header
+               
                 headerView
                 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 32) {
                         
-                        // 2. Title & Description
+                       
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Reset Password")
                                 .font(.largeTitle)
@@ -31,7 +34,7 @@ struct OTPSendView: View {
                         }
                         .padding(.top, 16)
                         
-                        // 3. Input Field
+                      
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Mobile Number")
                                 .font(.subheadline)
@@ -41,7 +44,7 @@ struct OTPSendView: View {
                             HStack {
                                 TextField("+1 234 567 890", text: $phoneNumber)
                                     .font(.body)
-                                    // 🔴 HIG FIX: Forces the Number Pad and allows iOS to auto-suggest the user's phone number!
+                                   
                                     .keyboardType(.phonePad)
                                     .textContentType(.telephoneNumber)
                                 
@@ -50,23 +53,25 @@ struct OTPSendView: View {
                                     .foregroundStyle(Color(uiColor: .systemGray3))
                             }
                             .padding()
-                            // 🔴 HIG FIX: Modern borderless iOS fill
+                          
                             .background(Color(uiColor: .secondarySystemBackground))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
                     .padding(.horizontal, 24)
                     
-                    // Keyboard & Button clearance
+                
                     Spacer(minLength: 120)
                 }
             }
             
-            // 4. Bottom Sticky Action Button
+     
             VStack {
                 Spacer()
+                
+              
                 Button(action: {
-                    // Action to request OTP / Navigate to OTP Verification View
+                    navigateToVerification = true
                 }) {
                     Text("Get OTP Code")
                         .font(.headline)
@@ -80,7 +85,7 @@ struct OTPSendView: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
-                // Gradient fade so scrolling text disappears cleanly behind the button
+               
                 .background(
                     LinearGradient(
                         colors: [Color(uiColor: .systemBackground).opacity(0), Color(uiColor: .systemBackground)],
@@ -92,13 +97,18 @@ struct OTPSendView: View {
             }
         }
         .navigationBarHidden(true)
+        
+  
+        .navigationDestination(isPresented: $navigateToVerification) {
+            OTPVerificationView()
+        }
     }
     
-    // MARK: - Subviews
+   
     
     private var headerView: some View {
         HStack {
-            // 🔴 HIG FIX: Added missing back button so the user isn't trapped
+        
             Button(action: { dismiss() }) {
                 ZStack {
                     Circle()
@@ -119,7 +129,7 @@ struct OTPSendView: View {
                 .font(.headline)
                 .fontWeight(.bold)
                 .foregroundStyle(Color(uiColor: .label))
-                .padding(.trailing, 40) // Visually center the text against the back button
+                .padding(.trailing, 40)
             
             Spacer()
         }
@@ -130,6 +140,8 @@ struct OTPSendView: View {
 }
 
 #Preview {
-    OTPSendView()
+    NavigationStack {
+        OTPSendView()
+    }
 }
 

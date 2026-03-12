@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct LoginView: View {
-    // Form States
+
     @State private var username = ""
     @State private var password = ""
     @State private var isPasswordVisible = false
@@ -124,7 +124,7 @@ struct LoginView: View {
                                         .shadow(color: Color.blue.opacity(0.3), radius: 8, y: 4)
                                 }
                                 
-                                // Divider
+                               
                                 HStack {
                                     Rectangle().fill(Color(uiColor: .separator)).frame(height: 1)
                                     Text("Or")

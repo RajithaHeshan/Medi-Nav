@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 import PhotosUI
 import UniformTypeIdentifiers
@@ -22,8 +20,7 @@ struct DoctorConsultationView: View {
     @State private var navigateToLabSampleSubmission = false
     
     var body: some View {
-        
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: .top) {
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
             
@@ -34,23 +31,26 @@ struct DoctorConsultationView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         doctorProfileCard
+                            .padding(.horizontal, 20)
                         
-                       
                         visitDoctorQueueCard
+                            .padding(.horizontal, 20)
                         
-                        nextStepPharmacyCard
+                      
+                        nextStepsCarousel
+                        
                         vitalsOverviewSection
+                            .padding(.horizontal, 20)
                         prescriptionsSection
+                            .padding(.horizontal, 20)
                         labReportsSection
+                            .padding(.horizontal, 20)
                         
-                        Spacer(minLength: 120)
+                        Spacer(minLength: 60)
                     }
-                    .padding(.horizontal, 20)
                     .padding(.top, 16)
                 }
             }
-            
-            provideSampleStickyFooter
         }
         .navigationBarHidden(true)
         
@@ -66,7 +66,6 @@ struct DoctorConsultationView: View {
             LaboratorySampleSubmissionView()
         }
         
-    
         .sheet(isPresented: $showPrescriptionSheet) {
             PrescriptionDetailsSheet(
                 showAttachModal: $showAttachModal,
@@ -193,7 +192,6 @@ struct DoctorConsultationView: View {
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
     
-   
     private var visitDoctorQueueCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -245,7 +243,7 @@ struct DoctorConsultationView: View {
             .background(Color(uiColor: .systemGray6))
             .clipShape(RoundedRectangle(cornerRadius: 14))
             
-            // Footer row
+           
             HStack {
                 Text("Please proceed immediately")
                     .font(.caption)
@@ -270,7 +268,24 @@ struct DoctorConsultationView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
-    // ----------------------------
+    
+
+    private var nextStepsCarousel: some View {
+        TabView {
+            nextStepPharmacyCard
+                .padding(.horizontal, 20)
+               
+                .padding(.bottom, 12)
+            
+            nextStepLaboratoryCard
+                .padding(.horizontal, 20)
+                .padding(.bottom, 12)
+        }
+     
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+      
+        .frame(height: 250)
+    }
     
     private var nextStepPharmacyCard: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -338,6 +353,65 @@ struct DoctorConsultationView: View {
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
     
+   
+    private var nextStepLaboratoryCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Next Step: Visit Laboratory")
+                .font(.headline)
+                .fontWeight(.bold)
+                .foregroundStyle(Color(uiColor: .label))
+            
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "person.fill").foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 20)
+                    Text("DR. Wickrama").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                }
+                HStack(spacing: 8) {
+                    Image(systemName: "mappin.and.ellipse").foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 20)
+                    Text("2nd Floor, West Wing").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                }
+            }
+            
+            Button {
+                showLabReportSheet = true
+            } label: {
+               
+                HStack(spacing: 0) {
+                    Text("Provide Sample").fontWeight(.semibold)
+                }
+                .font(.subheadline)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Color(uiColor: .systemBlue))
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .padding(.top, 4)
+            
+            HStack {
+                Text("Please proceed immediately")
+                    .font(.caption)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                Spacer()
+                Button {
+                    
+                } label: {
+                    Text("View Map")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color(uiColor: .systemBlue))
+                        .padding(.vertical, 8)
+                        .padding(.leading, 8)
+                        .contentShape(Rectangle())
+                }
+            }
+        }
+        .padding(20)
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+    }
+    
     private var vitalsOverviewSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             SectionHeader(title: "Vitals Overview", actionText: "ALL")
@@ -370,38 +444,9 @@ struct DoctorConsultationView: View {
             }
         }
     }
-    
-  
-    private var provideSampleStickyFooter: some View {
-        VStack(spacing: 0) {
-            Button {
-                showLabReportSheet = true
-            } label: {
-                Text("Provide Sample")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.blue)
-                    .clipShape(Capsule())
-                    .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .padding(.bottom,90)
-        }
-        .background(
-            
-            LinearGradient(
-                colors: [Color(uiColor: .systemGroupedBackground).opacity(0), Color(uiColor: .systemGroupedBackground)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea(edges: .bottom)
-        )
-    }
 }
+
+
 
 struct LabReportSampleSheet: View {
     @Environment(\.dismiss) var dismiss
@@ -500,9 +545,7 @@ struct PharmacyRoutingButton: View { let title: String; let subtitle: String; le
 
 struct SectionHeader: View { let title: String; let actionText: String; var body: some View { HStack { Text(title).font(.title3).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Spacer(); Button(actionText) { }.font(.subheadline).fontWeight(.semibold).foregroundStyle(Color(uiColor: .systemBlue)).padding(.vertical, 8).padding(.leading, 8).contentShape(Rectangle()) } } }
 
-
 struct VitalsCard: View { let statusIcon: String; let statusColor: Color; let statusText: String; let title: String; let value: String; let unit: String; let progress: Double; var body: some View { VStack(alignment: .leading, spacing: 12) { HStack { ZStack { Circle().fill(statusColor.opacity(0.1)).frame(width: 28, height: 28); Image(systemName: statusIcon).font(.caption).foregroundStyle(statusColor) }; Spacer(); Text(statusText).font(.caption2).fontWeight(.semibold).foregroundStyle(Color(uiColor: .secondaryLabel)) }; VStack(alignment: .leading, spacing: 4) { Text(title).font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel)); HStack(alignment: .firstTextBaseline, spacing: 2) { Text(value).font(.title2).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Text(unit).font(.caption2).foregroundStyle(Color(uiColor: .tertiaryLabel)) } }; GeometryReader { geometry in ZStack(alignment: .leading) { Capsule().fill(Color(uiColor: .systemGray5)).frame(height: 4); Capsule().fill(statusColor).frame(width: geometry.size.width * progress, height: 4) } }.frame(height: 4) }.padding(16).frame(maxWidth: .infinity).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 20)).shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4) } }
-
 
 struct ConsultationItemRow: View { let icon: String; let iconColor: Color; let iconBgColor: Color; let title: String; let subtitle: String; var body: some View { HStack(spacing: 16) { ZStack { RoundedRectangle(cornerRadius: 12).fill(iconBgColor).frame(width: 48, height: 48); Image(systemName: icon).font(.title3).foregroundStyle(iconColor) }; VStack(alignment: .leading, spacing: 4) { Text(title).font(.subheadline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Text(subtitle).font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel)) }; Spacer() }.padding(16).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 20)).shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4) } }
 

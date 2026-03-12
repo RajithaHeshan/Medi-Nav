@@ -139,7 +139,7 @@ struct RegistrationStep2View: View {
      
         .navigationDestination(isPresented: $navigateToLogin) {
             LoginView()
-                .navigationBarBackButtonHidden(true) // Prevents swiping back to the registration form!
+                .navigationBarBackButtonHidden(true) 
         }
     }
     
@@ -147,7 +147,7 @@ struct RegistrationStep2View: View {
     
     private var headerView: some View {
         HStack {
-            Text("Skip").opacity(0) // Invisible spacer
+            Text("Skip").opacity(0)
             Spacer()
             Text("Registration")
                 .font(.title2)
