@@ -3,24 +3,21 @@ import SwiftUI
 struct OTPSendView: View {
     @Environment(\.dismiss) var dismiss
     @State private var phoneNumber = ""
-    
-  
     @State private var navigateToVerification = false
     
     var body: some View {
         ZStack {
-          
             Color(uiColor: .systemBackground)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-               
+                
                 headerView
                 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 32) {
                         
-                       
+                      
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Reset Password")
                                 .font(.largeTitle)
@@ -44,8 +41,8 @@ struct OTPSendView: View {
                             HStack {
                                 TextField("+1 234 567 890", text: $phoneNumber)
                                     .font(.body)
-                                   
                                     .keyboardType(.phonePad)
+                                    
                                     .textContentType(.telephoneNumber)
                                 
                                 Image(systemName: "iphone")
@@ -53,24 +50,24 @@ struct OTPSendView: View {
                                     .foregroundStyle(Color(uiColor: .systemGray3))
                             }
                             .padding()
-                          
                             .background(Color(uiColor: .secondarySystemBackground))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
                     .padding(.horizontal, 24)
                     
-                
                     Spacer(minLength: 120)
                 }
+               
+                .scrollDismissesKeyboard(.interactively)
             }
             
      
             VStack {
                 Spacer()
                 
-              
                 Button(action: {
+                  
                     navigateToVerification = true
                 }) {
                     Text("Get OTP Code")
@@ -85,7 +82,6 @@ struct OTPSendView: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
-               
                 .background(
                     LinearGradient(
                         colors: [Color(uiColor: .systemBackground).opacity(0), Color(uiColor: .systemBackground)],
@@ -98,17 +94,16 @@ struct OTPSendView: View {
         }
         .navigationBarHidden(true)
         
-  
+     
         .navigationDestination(isPresented: $navigateToVerification) {
             OTPVerificationView()
         }
     }
     
-   
+  
     
     private var headerView: some View {
         HStack {
-        
             Button(action: { dismiss() }) {
                 ZStack {
                     Circle()
@@ -139,9 +134,10 @@ struct OTPSendView: View {
     }
 }
 
+
+
 #Preview {
     NavigationStack {
         OTPSendView()
     }
 }
-

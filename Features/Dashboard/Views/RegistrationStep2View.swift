@@ -1,21 +1,17 @@
-
-
 import SwiftUI
 
 struct RegistrationStep2View: View {
     @Environment(\.dismiss) var dismiss
     
-
     @State private var allergies = ""
     @State private var conditions = ""
     @State private var isTakingMedication = false
     @State private var bloodType = "O Positive"
     
-
     @State private var previousReports: [String] = ["Blood_Test.pdf"]
     @State private var currentMedications: [String] = ["Prescription.pdf"]
     
-   
+    // Navigation State
     @State private var navigateToLogin = false
     
     let bloodTypes = ["A Positive", "A Negative", "B Positive", "B Negative", "O Positive", "O Negative", "AB Positive", "AB Negative"]
@@ -26,44 +22,34 @@ struct RegistrationStep2View: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-             
                 headerView
                 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
                         
-                        
                         progressSection
                         
-                    
                         VStack(spacing: 24) {
-                            
-                          
                             MultilineInputField(label: "Known Allergies", placeholder: "List any food, drug, or environmental allergies", text: $allergies)
                             
-                     
                             MultilineInputField(label: "Chronic Conditions", placeholder: "e.g., Diabetes, Hypertension, Asthma...", text: $conditions)
                             
-                          
-                            VStack(alignment: .leading, spacing: 8) {
-                                Toggle(isOn: $isTakingMedication) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Current Medication")
-                                            .font(.subheadline)
-                                            .fontWeight(.bold)
-                                            .foregroundStyle(Color(uiColor: .label))
-                                        
-                                        Text("Are you currently taking any prescription medication?")
-                                            .font(.caption)
-                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
-                                    }
+                            Toggle(isOn: $isTakingMedication) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Current Medication")
+                                        .font(.subheadline)
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(Color(uiColor: .label))
+                                    
+                                    Text("Are you currently taking any prescription medication?")
+                                        .font(.caption)
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
-                                .padding()
-                                .background(Color(uiColor: .secondarySystemBackground))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
+                            .padding()
+                            .background(Color(uiColor: .secondarySystemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                             
-                          
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Blood Type")
                                     .font(.subheadline)
@@ -92,24 +78,23 @@ struct RegistrationStep2View: View {
                                 }
                             }
                             
-                           
-                            FileUploadSection(title: "Upload Previous Medical Reports", files: $previousReports)
+                            FileUploadSection(title: "Upload Medical Reports", files: $previousReports)
                             
-                            FileUploadSection(title: "Upload Current Medication Prescriptions", files: $currentMedications)
+                            FileUploadSection(title: "Upload Prescriptions", files: $currentMedications)
                         }
                     }
                     .padding(24)
                     
-                    Spacer(minLength: 100)
+                    Spacer(minLength: 120)
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
             
-            
+            // Sticky Bottom Button
             VStack {
                 Spacer()
-                
-               
                 Button(action: {
+                    // 🔴 TRIGGERS NAVIGATION TO LOGIN
                     navigateToLogin = true
                 }) {
                     Text("Complete Registration")
@@ -136,18 +121,20 @@ struct RegistrationStep2View: View {
         }
         .navigationBarHidden(true)
         
-     
+        // 🔴 NAVIGATION DESTINATION
         .navigationDestination(isPresented: $navigateToLogin) {
             LoginView()
-                .navigationBarBackButtonHidden(true) 
+                .navigationBarBackButtonHidden(true)
         }
     }
     
-
-    
     private var headerView: some View {
         HStack {
-            Text("Skip").opacity(0)
+            Button(action: { dismiss() }) {
+                Image(systemName: "chevron.left")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(Color.blue)
+            }
             Spacer()
             Text("Registration")
                 .font(.title2)
@@ -177,7 +164,6 @@ struct RegistrationStep2View: View {
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
             
-        
             Capsule()
                 .fill(Color.blue)
                 .frame(height: 6)
@@ -187,13 +173,13 @@ struct RegistrationStep2View: View {
                 Text("100%")
                     .font(.caption2)
                     .fontWeight(.semibold)
-                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    .foregroundStyle(Color.blue)
             }
         }
     }
 }
 
-
+// MARK: - Local Components
 
 struct MultilineInputField: View {
     let label: String
@@ -208,7 +194,6 @@ struct MultilineInputField: View {
                 .foregroundStyle(Color(uiColor: .label))
             
             ZStack(alignment: .topLeading) {
-                // Placeholder logic for TextEditor
                 if text.isEmpty {
                     Text(placeholder)
                         .foregroundStyle(Color(uiColor: .placeholderText))
@@ -244,63 +229,57 @@ struct FileUploadSection: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
-                    
-                   
-                    Button(action: {
-                        
-                    }) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.blue.opacity(0.5), style: StrokeStyle(lineWidth: 2, dash: [6]))
-                                .frame(width: 80, height: 80)
-                                .background(Color.blue.opacity(0.05).clipShape(RoundedRectangle(cornerRadius: 12)))
-                            
+                    Button(action: { }) {
+                        VStack {
                             Image(systemName: "plus")
                                 .font(.title2)
                                 .foregroundStyle(Color.blue)
                         }
+                        .frame(width: 80, height: 80)
+                        .background(Color.blue.opacity(0.05))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.blue.opacity(0.3), style: StrokeStyle(lineWidth: 1, dash: [5]))
+                        )
                     }
                     
-              
-                    ForEach(files.indices, id: \.self) { index in
+                    ForEach(files, id: \.self) { file in
                         ZStack(alignment: .topTrailing) {
-                            
-                     
                             VStack(spacing: 8) {
                                 Image(systemName: "doc.text.fill")
                                     .font(.title)
-                                    .foregroundStyle(Color(uiColor: .systemGray3))
-                                Text(files[index])
+                                    .foregroundStyle(Color.blue.opacity(0.6))
+                                Text(file)
                                     .font(.caption2)
                                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                                     .lineLimit(1)
-                                    .truncationMode(.middle)
                                     .frame(width: 60)
                             }
                             .frame(width: 80, height: 80)
-                            .background(Color(uiColor: .systemBackground))
+                            .background(Color(uiColor: .secondarySystemBackground))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(uiColor: .systemGray5), lineWidth: 1))
                             
-                       
                             Button(action: {
-                                files.remove(at: index)
+                                if let index = files.firstIndex(of: file) {
+                                    files.remove(at: index)
+                                }
                             }) {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(Color.red, Color.white)
-                                    .font(.system(size: 20))
-                                    .offset(x: 6, y: -6)
+                                    .foregroundStyle(.red, .white)
+                                    .offset(x: 5, y: -5)
                             }
                         }
                     }
                 }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 4)
+                .padding(.trailing, 20)
             }
         }
     }
 }
 
 #Preview {
-    RegistrationStep2View()
+    NavigationStack {
+        RegistrationStep2View()
+    }
 }

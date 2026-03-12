@@ -3,18 +3,19 @@ import SwiftUI
 struct NewPasswordView: View {
     @Environment(\.dismiss) var dismiss
     
-   
+  
     @State private var newPassword = ""
     @State private var confirmPassword = ""
-    
-
     @State private var isNewPasswordVisible = false
     @State private var isConfirmPasswordVisible = false
     
+ 
+    @State private var navigateToLogin = false
+    
    
-    var isFormValid: Bool {
-        !newPassword.isEmpty && newPassword == confirmPassword
-    }
+    var isPasswordLongEnough: Bool { newPassword.count >= 8 }
+    var passwordsMatch: Bool { !newPassword.isEmpty && newPassword == confirmPassword }
+    var isFormValid: Bool { isPasswordLongEnough && passwordsMatch }
     
     var body: some View {
         ZStack {
@@ -22,16 +23,15 @@ struct NewPasswordView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-              
                 headerView
                 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 32) {
                         
-                      
+                       
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Create New Password")
-                                .font(.title2)
+                                .font(.title)
                                 .fontWeight(.bold)
                                 .foregroundStyle(Color(uiColor: .label))
                             
@@ -41,10 +41,8 @@ struct NewPasswordView: View {
                                 .lineSpacing(4)
                         }
                         
-                      
+                  
                         VStack(spacing: 20) {
-                            
-                       
                             PasswordInputField(
                                 label: "New Password",
                                 placeholder: "Enter Password",
@@ -52,7 +50,6 @@ struct NewPasswordView: View {
                                 isVisible: $isNewPasswordVisible
                             )
                             
-                        
                             PasswordInputField(
                                 label: "Confirm Password",
                                 placeholder: "Confirm Password",
@@ -60,28 +57,27 @@ struct NewPasswordView: View {
                                 isVisible: $isConfirmPasswordVisible
                             )
                             
-                           
-                            if !newPassword.isEmpty && !confirmPassword.isEmpty && newPassword != confirmPassword {
-                                Text("Passwords do not match.")
-                                    .font(.caption)
-                                    .fontWeight(.medium)
-                                    .foregroundStyle(Color.red)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                       
+                            VStack(alignment: .leading, spacing: 8) {
+                                validationRow(text: "Minimum 8 characters", isValid: isPasswordLongEnough)
+                                validationRow(text: "Passwords must match", isValid: passwordsMatch)
                             }
+                            .padding(.top, 4)
                         }
                     }
                     .padding(24)
                     
                     Spacer(minLength: 100)
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
             
-           
+         
             VStack {
                 Spacer()
                 Button(action: {
-                   
-                    print("Password updated!")
+               
+                    navigateToLogin = true
                 }) {
                     Text("Update Password")
                         .font(.headline)
@@ -107,16 +103,21 @@ struct NewPasswordView: View {
             }
         }
         .navigationBarHidden(true)
+     
+        .navigationDestination(isPresented: $navigateToLogin) {
+            LoginView()
+                .navigationBarBackButtonHidden(true)
+        }
     }
     
-    // MARK: - Subviews
+  
     
     private var headerView: some View {
         HStack {
             Button(action: { dismiss() }) {
                 ZStack {
                     Circle()
-                        .fill(Color(uiColor: .systemGroupedBackground))
+                        .fill(Color(uiColor: .secondarySystemBackground))
                         .frame(width: 40, height: 40)
                     
                     Image(systemName: "chevron.left")
@@ -125,20 +126,28 @@ struct NewPasswordView: View {
                         .offset(x: -1.5)
                 }
             }
-            
             Spacer()
-            
             Text("New Password")
-                .font(.title2)
+                .font(.headline)
                 .fontWeight(.bold)
                 .foregroundStyle(Color(uiColor: .label))
-                .padding(.trailing, 40) // Centers the text visually
-            
+                .padding(.trailing, 40)
             Spacer()
         }
         .padding(.horizontal, 24)
         .padding(.top, 16)
         .padding(.bottom, 8)
+    }
+    
+    private func validationRow(text: String, isValid: Bool) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: isValid ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(isValid ? .green : Color(uiColor: .systemGray4))
+            
+            Text(text)
+                .font(.caption)
+                .foregroundStyle(isValid ? Color(uiColor: .label) : Color(uiColor: .secondaryLabel))
+        }
     }
 }
 
@@ -165,9 +174,7 @@ struct PasswordInputField: View {
                         .font(.body)
                 }
                 
-                Button(action: {
-                    isVisible.toggle()
-                }) {
+                Button(action: { isVisible.toggle() }) {
                     Image(systemName: isVisible ? "eye.slash.fill" : "eye.fill")
                         .foregroundStyle(Color(uiColor: .systemGray3))
                 }
@@ -180,5 +187,7 @@ struct PasswordInputField: View {
 }
 
 #Preview {
-    NewPasswordView()
+    NavigationStack {
+        NewPasswordView()
+    }
 }

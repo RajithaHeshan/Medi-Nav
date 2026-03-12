@@ -1,3 +1,5 @@
+
+
 import SwiftUI
 
 struct OTPVerificationView: View {
@@ -6,10 +8,11 @@ struct OTPVerificationView: View {
    
     @State private var otpText = ""
     @FocusState private var isKeyboardShowing: Bool
-    
-   
     @State private var timeRemaining = 59
     @State private var timer: Timer? = nil
+    
+   
+    @State private var navigateToNewPassword = false
     
     let otpLength = 6
     
@@ -19,16 +22,15 @@ struct OTPVerificationView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-               
                 headerView
                 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 32) {
                         
-                      
+                       
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Enter OTP Code")
-                                .font(.title2)
+                                .font(.title)
                                 .fontWeight(.bold)
                                 .foregroundStyle(Color(uiColor: .label))
                             
@@ -38,10 +40,8 @@ struct OTPVerificationView: View {
                                 .lineSpacing(4)
                         }
                         
-                      
                         otpInputSection
                         
-                      
                         resendSection
                     }
                     .padding(24)
@@ -54,8 +54,8 @@ struct OTPVerificationView: View {
             VStack {
                 Spacer()
                 Button(action: {
-                  
-                    print("Verifying OTP: \(otpText)")
+                   
+                    navigateToNewPassword = true
                 }) {
                     Text("Verify & Proceed")
                         .font(.headline)
@@ -67,7 +67,7 @@ struct OTPVerificationView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                         .shadow(color: otpText.count == otpLength ? Color.blue.opacity(0.3) : .clear, radius: 8, y: 4)
                 }
-                .disabled(otpText.count != otpLength) // Disabled until all 6 digits are entered
+                .disabled(otpText.count != otpLength)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
                 .background(
@@ -81,9 +81,12 @@ struct OTPVerificationView: View {
             }
         }
         .navigationBarHidden(true)
+       
+        .navigationDestination(isPresented: $navigateToNewPassword) {
+            NewPasswordView()
+        }
         .onAppear {
             startTimer()
-            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 isKeyboardShowing = true
             }
@@ -93,14 +96,14 @@ struct OTPVerificationView: View {
         }
     }
     
-    
+   
     
     private var headerView: some View {
         HStack {
             Button(action: { dismiss() }) {
                 ZStack {
                     Circle()
-                        .fill(Color(uiColor: .systemGroupedBackground))
+                        .fill(Color(uiColor: .secondarySystemBackground))
                         .frame(width: 40, height: 40)
                     
                     Image(systemName: "chevron.left")
@@ -109,15 +112,12 @@ struct OTPVerificationView: View {
                         .offset(x: -1.5)
                 }
             }
-            
             Spacer()
-            
             Text("Verification")
-                .font(.title2)
+                .font(.headline)
                 .fontWeight(.bold)
                 .foregroundStyle(Color(uiColor: .label))
-                .padding(.trailing, 40) // Centers the text visually
-            
+                .padding(.trailing, 40)
             Spacer()
         }
         .padding(.horizontal, 24)
@@ -127,37 +127,33 @@ struct OTPVerificationView: View {
     
     private var otpInputSection: some View {
         ZStack {
-            // The visual boxes
             HStack(spacing: 12) {
                 ForEach(0..<otpLength, id: \.self) { index in
                     ZStack {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color(uiColor: .secondarySystemBackground))
-                            .frame(height: 64)
+                            .frame(height: 60)
                         
-                        // Blue border for the currently active box
                         if otpText.count == index {
                             RoundedRectangle(cornerRadius: 12)
                                 .stroke(Color.blue, lineWidth: 2)
                         }
                         
                         Text(getPinDigit(at: index))
-                            .font(.title)
+                            .font(.title2)
                             .fontWeight(.bold)
                             .foregroundStyle(Color(uiColor: .label))
                     }
                 }
             }
             
-           
             TextField("", text: $otpText)
                 .keyboardType(.numberPad)
-                .textContentType(.oneTimeCode) // Enables Apple's SMS OTP auto-fill!
+                .textContentType(.oneTimeCode)
                 .focused($isKeyboardShowing)
-                .foregroundStyle(.clear) // Hides the actual text
-                .tint(.clear) // Hides the cursor
-                .onChange(of: otpText) { newValue in
-                    // Limit input to 6 characters
+                .foregroundStyle(.clear)
+                .tint(.clear)
+                .onChange(of: otpText) { _, newValue in
                     if newValue.count > otpLength {
                         otpText = String(newValue.prefix(otpLength))
                     }
@@ -177,7 +173,6 @@ struct OTPVerificationView: View {
                     .foregroundStyle(Color(uiColor: .tertiaryLabel))
             } else {
                 Button(action: {
-                    // Resend OTP logic here
                     timeRemaining = 59
                     startTimer()
                 }) {
@@ -190,7 +185,7 @@ struct OTPVerificationView: View {
         }
     }
     
-    // MARK: - Logic
+  
     
     private func getPinDigit(at index: Int) -> String {
         guard otpText.count > index else { return "" }
@@ -210,7 +205,10 @@ struct OTPVerificationView: View {
     }
 }
 
-#Preview {
-    OTPVerificationView()
-}
 
+
+#Preview {
+    NavigationStack {
+        OTPVerificationView()
+    }
+}
