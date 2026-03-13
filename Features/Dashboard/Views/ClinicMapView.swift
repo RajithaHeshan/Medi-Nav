@@ -1,3 +1,5 @@
+
+
 import SwiftUI
 
 struct ClinicMapView: View {
@@ -32,7 +34,6 @@ struct ClinicMapView: View {
             mapContent
             
             VStack(spacing: 0) {
-               
                 searchBarArea
                 
                 Spacer()
@@ -51,14 +52,13 @@ struct ClinicMapView: View {
                 voiceAnimationOverlay
             }
         }
-      
         .navigationBarHidden(true)
         .sheet(isPresented: $showDetailsSheet) {
             if let node = tappedNode { RoomDetailsView(node: node) }
         }
     }
     
-  
+    // MARK: - Subviews
     
     private var searchBarArea: some View {
         VStack(spacing: 12) {
@@ -88,7 +88,6 @@ struct ClinicMapView: View {
                     
                     Divider().frame(height: 20).padding(.horizontal, 4)
                     
-                    // 🔴 FIXED: Calls the listening function
                     Button { startVoiceListening() } label: {
                         Image(systemName: "mic.fill").foregroundStyle(.blue).font(.system(size: 18))
                     }
@@ -214,15 +213,16 @@ struct ClinicMapView: View {
     
     @ViewBuilder
     private var bottomActionArea: some View {
-        VStack {
+        ZStack(alignment: .bottom) {
             if let tapped = tappedNode {
                 LocationPopupCard(node: tapped) {
                     showDetailsSheet = true
                 } onClose: {
-                    withAnimation { tappedNode = nil; pulseAnimation = false }
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { tappedNode = nil; pulseAnimation = false }
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .padding(.bottom, 90)
+                
             } else if let destName = selectedDestinationName {
                 VStack(spacing: 12) {
                     Text("Navigating to: \(destName)").font(.headline)
@@ -241,6 +241,7 @@ struct ClinicMapView: View {
                 .padding(.horizontal, 16).padding(.bottom, 16)
                 .padding(.bottom, 90)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
+                
             } else {
                 Button {
                     if let url = URL(string: "https://googleusercontent.com/maps.google.com/16") {
@@ -258,14 +259,15 @@ struct ClinicMapView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+       
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: tappedNode)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedDestinationName)
     }
     
     // MARK: - Logic
     
     private func startVoiceListening() {
         withAnimation { isListening = true }
-        
-        // Simulates voice processing for 2 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             if isListening {
                 withAnimation {
@@ -285,16 +287,18 @@ struct ClinicMapView: View {
             }
             .onEnded { _ in
                 lastScale = 1.0
-                if scale <= 1.0 { withAnimation { offset = .zero; lastOffset = .zero } }
+                
             }
     }
     
     var drag: some Gesture {
-        DragGesture(minimumDistance: 15)
+        DragGesture(minimumDistance: 10)
             .onChanged { value in
-                if scale > 1.0 {
-                    offset = CGSize(width: lastOffset.width + value.translation.width, height: lastOffset.height + value.translation.height)
-                }
+               
+                offset = CGSize(
+                    width: lastOffset.width + value.translation.width,
+                    height: lastOffset.height + value.translation.height
+                )
             }
             .onEnded { _ in lastOffset = offset }
     }
@@ -304,12 +308,10 @@ struct ClinicMapView: View {
     private func zoomOut() {
         withAnimation {
             scale = max(scale - 0.5, 1.0)
-            if scale == 1.0 { offset = .zero; lastOffset = .zero }
         }
     }
     
     var searchResults: [MapNode] {
-        
         let allDestinations = ClinicMapData.shared.searchableDestinations
         if searchText.isEmpty { return allDestinations } else { return allDestinations.filter { $0.name.localizedCaseInsensitiveContains(searchText) } }
     }
@@ -375,6 +377,7 @@ struct ClinicMapView: View {
 }
 
 
+
 struct LocationPopupCard: View {
     let node: MapNode
     let onDetailsTapped: () -> Void
@@ -416,6 +419,7 @@ struct LocationPopupCard: View {
         .padding(20).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 24)).shadow(color: Color.black.opacity(0.15), radius: 20, y: 10).padding(.horizontal, 16).padding(.bottom, 20)
     }
 }
+
 
 struct RoomDetailsView: View {
     @Environment(\.dismiss) var dismiss
