@@ -209,7 +209,7 @@ struct LoginView: View {
             .navigationDestination(isPresented: $navigateToRegistration) {
                 RegistrationView()
             }
-            .navigationDestination(isPresented: $navigateToMainApp) {
+            .fullScreenCover(isPresented: $navigateToMainApp) {
                 ContentView()
                     .navigationBarBackButtonHidden(true)
             }
