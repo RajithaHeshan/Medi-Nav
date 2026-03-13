@@ -1,25 +1,24 @@
+
+
 import SwiftUI
 
 struct ClinicMapView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.openURL) var openURL
     
-    // Native iOS Search State
     @State private var searchText = ""
     @State private var isSearchActive = false
     
-    // Navigation State
     @State private var routePath: [CGPoint] = []
     @State private var currentDotPosition: CGPoint = CGPoint(x: 0.05, y: 0.52)
     @State private var isNavigating = false
     @State private var selectedDestinationName: String? = nil
     
-    // Map Tapping State
     @State private var tappedNode: MapNode? = nil
     @State private var showDetailsSheet = false
     @State private var pulseAnimation = false
-    
-    // Zoom & Pan States
+    @State private var isListening = false
+
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
@@ -29,19 +28,16 @@ struct ClinicMapView: View {
     
     var body: some View {
         ZStack {
-            
-            // 1. The Canvas Background
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
             
-            // 2. The Map Area
             mapContent
             
-            // 3. Dynamic Safe Area UI Layout
             VStack(spacing: 0) {
+                searchBarArea
+                
                 Spacer()
                 
-                // Zoom Controls
                 HStack {
                     Spacer()
                     zoomControls
@@ -49,46 +45,97 @@ struct ClinicMapView: View {
                 .padding(.trailing, 16)
                 .padding(.bottom, 16)
                 
-                // Bottom Action Cards
                 bottomActionArea
             }
-        }
-        .navigationTitle("Clinic Navigation")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button { dismiss() } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(Color(uiColor: .label))
-                }
+            
+            if isListening {
+                voiceAnimationOverlay
             }
         }
-        .searchable(text: $searchText, isPresented: $isSearchActive, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search for a room or department...")
-        .searchSuggestions {
-            if !searchText.isEmpty {
-                ForEach(searchResults, id: \.id) { node in
-                    Button {
-                        selectDestination(node: node)
-                    } label: {
-                        HStack {
-                            Image(systemName: "mappin.and.ellipse").foregroundStyle(Color.blue)
-                            Text(node.name).font(.body).foregroundStyle(Color(uiColor: .label))
-                        }
-                    }
-                }
-            }
-        }
-        .onSubmit(of: .search) {
-            if let bestMatch = searchResults.first { selectDestination(node: bestMatch) }
-        }
+        .navigationBarHidden(true)
         .sheet(isPresented: $showDetailsSheet) {
             if let node = tappedNode { RoomDetailsView(node: node) }
         }
     }
     
-    // MARK: - Extracted UI Views
+    // MARK: - Subviews
+    
+    private var searchBarArea: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Color(uiColor: .label))
+                        .padding(10)
+                        .background(Color(uiColor: .systemBackground))
+                        .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.05), radius: 5)
+                }
+                Text("Clinic Navigation").font(.headline)
+                Spacer()
+            }
+            .padding(.horizontal).padding(.top, 8)
+            
+            HStack {
+                HStack {
+                    Image(systemName: "magnifyingglass").foregroundColor(.gray)
+                    TextField("Search for a room...", text: $searchText)
+                    
+                    if !searchText.isEmpty {
+                        Button { searchText = "" } label: { Image(systemName: "xmark.circle.fill").foregroundColor(.gray) }
+                    }
+                    
+                    Divider().frame(height: 20).padding(.horizontal, 4)
+                    
+                    Button { startVoiceListening() } label: {
+                        Image(systemName: "mic.fill").foregroundStyle(.blue).font(.system(size: 18))
+                    }
+                }
+                .padding(.vertical, 12).padding(.horizontal, 16)
+                .background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 15))
+                .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
+            }.padding(.horizontal)
+            
+            if !searchText.isEmpty {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(searchResults, id: \.id) { node in
+                            Button { selectDestination(node: node); searchText = "" } label: {
+                                HStack {
+                                    Image(systemName: "mappin.and.ellipse").foregroundStyle(.blue)
+                                    Text(node.name).foregroundStyle(Color(uiColor: .label))
+                                    Spacer()
+                                }.padding()
+                            }
+                            Divider().padding(.horizontal)
+                        }
+                    }
+                    .background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 15)).padding(.horizontal)
+                    .frame(maxHeight: 200)
+                }
+            }
+        }
+    }
+
+    private var voiceAnimationOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.3).ignoresSafeArea()
+            VStack(spacing: 25) {
+                Text("Listening...").font(.headline).foregroundStyle(.white)
+                HStack(spacing: 4) {
+                    ForEach(0..<8, id: \.self) { _ in
+                        RoundedRectangle(cornerRadius: 2).fill(.white)
+                            .frame(width: 4, height: isListening ? CGFloat.random(in: 10...60) : 10)
+                            .animation(.easeInOut(duration: 0.15).repeatForever(), value: isListening)
+                    }
+                }
+                Button { isListening = false } label: {
+                    Image(systemName: "xmark").font(.title2).foregroundStyle(.white).padding(20).background(Color.red).clipShape(Circle())
+                }
+            }.padding(40).background(.ultraThinMaterial).clipShape(RoundedRectangle(cornerRadius: 30))
+        }
+    }
     
     private var mapContent: some View {
         Image("ClinicMapImage")
@@ -98,7 +145,6 @@ struct ClinicMapView: View {
             .overlay(
                 GeometryReader { geometry in
                     ZStack(alignment: .topLeading) {
-                        
                         Color.clear
                             .contentShape(Rectangle())
                             .onTapGesture { location in
@@ -167,14 +213,15 @@ struct ClinicMapView: View {
     
     @ViewBuilder
     private var bottomActionArea: some View {
-        VStack {
+        ZStack(alignment: .bottom) {
             if let tapped = tappedNode {
                 LocationPopupCard(node: tapped) {
                     showDetailsSheet = true
                 } onClose: {
-                    withAnimation { tappedNode = nil; pulseAnimation = false }
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { tappedNode = nil; pulseAnimation = false }
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
+                .padding(.bottom, 90)
                 
             } else if let destName = selectedDestinationName {
                 VStack(spacing: 12) {
@@ -192,11 +239,10 @@ struct ClinicMapView: View {
                 .padding(20).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 24))
                 .shadow(color: Color.black.opacity(0.08), radius: 10, y: -5)
                 .padding(.horizontal, 16).padding(.bottom, 16)
+                .padding(.bottom, 90)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 
             } else {
-                
-                // 🔴 THE FIX: Using your exact provided URL, but upgraded to 'https' for iOS security!
                 Button {
                     if let url = URL(string: "https://googleusercontent.com/maps.google.com/16") {
                         openURL(url)
@@ -209,13 +255,28 @@ struct ClinicMapView: View {
                     .font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 16).background(Color.blue).clipShape(Capsule()).shadow(color: Color.blue.opacity(0.3), radius: 10, y: 5)
                 }
                 .padding(.horizontal, 20).padding(.bottom, 16)
+                .padding(.bottom, 90)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
-                
+            }
+        }
+       
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: tappedNode)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedDestinationName)
+    }
+    
+    // MARK: - Logic
+    
+    private func startVoiceListening() {
+        withAnimation { isListening = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            if isListening {
+                withAnimation {
+                    isListening = false
+                    searchText = "Pharmacy"
+                }
             }
         }
     }
-    
-    // MARK: - Logic & Computed Properties
     
     var magnification: some Gesture {
         MagnificationGesture()
@@ -226,16 +287,18 @@ struct ClinicMapView: View {
             }
             .onEnded { _ in
                 lastScale = 1.0
-                if scale <= 1.0 { withAnimation { offset = .zero; lastOffset = .zero } }
+                
             }
     }
     
     var drag: some Gesture {
-        DragGesture(minimumDistance: 15)
+        DragGesture(minimumDistance: 10)
             .onChanged { value in
-                if scale > 1.0 {
-                    offset = CGSize(width: lastOffset.width + value.translation.width, height: lastOffset.height + value.translation.height)
-                }
+               
+                offset = CGSize(
+                    width: lastOffset.width + value.translation.width,
+                    height: lastOffset.height + value.translation.height
+                )
             }
             .onEnded { _ in lastOffset = offset }
     }
@@ -245,7 +308,6 @@ struct ClinicMapView: View {
     private func zoomOut() {
         withAnimation {
             scale = max(scale - 0.5, 1.0)
-            if scale == 1.0 { offset = .zero; lastOffset = .zero }
         }
     }
     
@@ -260,7 +322,6 @@ struct ClinicMapView: View {
     
     private func selectDestination(node: MapNode) {
         isSearchActive = false
-        
         selectedDestinationName = node.name
         searchText = node.name
         tappedNode = nil
@@ -273,7 +334,6 @@ struct ClinicMapView: View {
     
     private func handleMapTap(at location: CGPoint, in size: CGSize) {
         isSearchActive = false
-        
         let relativeTap = CGPoint(x: location.x / size.width, y: location.y / size.height)
         var closestNode: MapNode? = nil
         var minDistance: CGFloat = 0.10
@@ -316,7 +376,7 @@ struct ClinicMapView: View {
     }
 }
 
-// MARK: - Custom UI Components
+
 
 struct LocationPopupCard: View {
     let node: MapNode
@@ -359,6 +419,7 @@ struct LocationPopupCard: View {
         .padding(20).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 24)).shadow(color: Color.black.opacity(0.15), radius: 20, y: 10).padding(.horizontal, 16).padding(.bottom, 20)
     }
 }
+
 
 struct RoomDetailsView: View {
     @Environment(\.dismiss) var dismiss

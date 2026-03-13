@@ -5,14 +5,17 @@ import Combine
 struct HomeView: View {
     @State private var searchText = ""
     
-    // Navigation States
     @State private var navigateToEmergency = false
-    @State private var navigateToDoctors = false // 🔴 Added navigation state for Doctors
-    @State private var navigateToMyCare = false // 🔴 Added navigation state for My Care
+    @State private var navigateToDoctors = false
+    @State private var navigateToMyCare = false
+    @State private var navigateToMap = false
+    @State private var navigateToQueue = false
+    @State private var navigateToBooking = false
+    @State private var navigateToLabReports = false
+    @State private var navigateToPharmacy = false
+    @State private var navigateToNotifications = false
     
-    // Auto-swipe states
     @State private var currentStepIndex = 0
-    let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
     
     let columns = [
         GridItem(.flexible(), spacing: 16),
@@ -22,7 +25,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottomTrailing) {
-                // Main Scrollable Content
+                
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         headerSection
@@ -31,46 +34,74 @@ struct HomeView: View {
                         actionGrid
                         visitProgressSection
                         recentActivitySection
-                        Spacer(minLength: 80)
+                        
+                        Spacer(minLength: 140)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 10)
                 }
                 .background(Color(uiColor: .systemGroupedBackground))
                 
-                // Smooth Swipe Button
+             
                 SmoothEmergencyButton {
                     navigateToEmergency = true
                 }
                 .padding(.trailing, 16)
-                .padding(.bottom, 20)
+                .padding(.bottom, 90)
             }
             .navigationBarHidden(true)
             
-            // MARK: - Navigation Destinations
+        
             .navigationDestination(isPresented: $navigateToEmergency) {
                 EmergencyView()
             }
             .navigationDestination(isPresented: $navigateToDoctors) {
-                DoctorServicesView() // 🔴 Connects to your Doctors UI
+                DoctorServicesView()
             }
             .navigationDestination(isPresented: $navigateToMyCare) {
-                MyCareView() // 🔴 Connects to your My Care UI
+                MyCareView()
+            }
+            .navigationDestination(isPresented: $navigateToMap) {
+                ClinicMapView()
+            }
+            .navigationDestination(isPresented: $navigateToQueue) {
+                QueueView()
+            }
+            .navigationDestination(isPresented: $navigateToBooking) {
+                DoctorBookingView(
+                    doctor: Doctor(
+                        name: "Dr. Sarah Wilson",
+                        specialty: "Cardiologist",
+                        rating: 4.9,
+                        reviewCount: 120,
+                        fee: 150,
+                        image: "Ellipse 522",
+                        status: "Available Today",
+                        statusColor: .green,
+                        isBookable: true
+                    )
+                )
+            }
+            .navigationDestination(isPresented: $navigateToLabReports) {
+                LabReportsView()
+            }
+            .navigationDestination(isPresented: $navigateToPharmacy) {
+                PharmacyView()
+            }
+            .navigationDestination(isPresented: $navigateToNotifications) {
+               
+                NotificationView()
             }
         }
     }
     
-    // MARK: - Subviews
-    
     private var headerSection: some View {
         HStack(spacing: 12) {
-            // 🔴 UPDATED: Using your custom application logo
             Image("Ellipse 522")
                 .resizable()
                 .scaledToFill()
                 .frame(width: 48, height: 48)
                 .clipShape(Circle())
-                // Optional: Add a subtle shadow or stroke if the logo blends into the background
                 .overlay(Circle().stroke(Color.gray.opacity(0.2), lineWidth: 1))
             
             VStack(alignment: .leading, spacing: 4) {
@@ -89,10 +120,15 @@ struct HomeView: View {
                 .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
             Spacer()
-            Button { } label: {
+            
+            Button {
+                navigateToNotifications = true
+            } label: {
                 Image(systemName: "bell.fill")
                     .font(.title2)
                     .foregroundStyle(Color(uiColor: .label))
+                    .padding(8) // Increased touch target
+                    .contentShape(Rectangle())
             }
         }
     }
@@ -102,12 +138,13 @@ struct HomeView: View {
             NextStepCard(
                 title: "Next Step: Visit Doctor",
                 time: "10:30 AM",
-                personName: "DR. Wickrama",
+                personName: "Dr. Wickrama",
                 personIcon: "person.fill",
                 location: "2nd Floor, West Wing",
                 queueCount: "5 Queue",
                 waitTime: "15 mins",
-                themeColor: Color(uiColor: .systemBlue)
+                themeColor: Color(uiColor: .systemBlue),
+                onViewMap: { navigateToMap = true }
             ).tag(0)
             
             NextStepCard(
@@ -118,16 +155,12 @@ struct HomeView: View {
                 location: "1st Floor, Room 5",
                 queueCount: "2 Queue",
                 waitTime: "5 mins",
-                themeColor: Color(uiColor: .systemBlue)
+                themeColor: Color(uiColor: .systemBlue),
+                onViewMap: { navigateToMap = true }
             ).tag(1)
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        .frame(height: 220)
-        .onReceive(timer) { _ in
-            withAnimation(.easeInOut(duration: 0.5)) {
-                currentStepIndex = (currentStepIndex + 1) % 2
-            }
-        }
+        .tabViewStyle(.page(indexDisplayMode: .always))
+        .frame(height: 240)
     }
     
     private var upcomingAppointmentCard: some View {
@@ -172,48 +205,55 @@ struct HomeView: View {
             }
             
             HStack(spacing: 12) {
-                Button { } label: {
+                Button {
+                    navigateToBooking = true
+                } label: {
                     Text("Reschedule")
-                        .font(.subheadline).fontWeight(.semibold)
-                        .foregroundStyle(Color(uiColor: .label))
+                        .font(.subheadline).fontWeight(.bold)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color(uiColor: .secondarySystemGroupedBackground))
-                        .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color(uiColor: .systemGray4), lineWidth: 1))
+                        .padding(.vertical, 14)
+                        .background(Color.blue)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
                 
-                Button { } label: {
+                Button {
+                   
+                } label: {
                     Text("Cancel")
-                        .font(.subheadline).fontWeight(.semibold)
-                        .foregroundStyle(Color(uiColor: .systemRed))
+                        .font(.subheadline).fontWeight(.bold)
+                        .foregroundStyle(Color.red)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color(uiColor: .systemRed).opacity(0.05))
-                        .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color(uiColor: .systemRed).opacity(0.3), lineWidth: 1))
+                        .padding(.vertical, 14)
+                        .background(Color.red.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
             }
+            .padding(.top, 4)
         }
         .padding(20)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
     
     private var actionGrid: some View {
         LazyVGrid(columns: columns, spacing: 16) {
-            // 🔴 UPDATED: Wrapped Doctors card in a Button
             Button { navigateToDoctors = true } label: {
                 GridMenuCard(title: "Doctors", icon: "stethoscope", color: Color(uiColor: .systemBlue))
             }
             .buttonStyle(PlainButtonStyle())
             
-            GridMenuCard(title: "Queue", icon: "list.clipboard.fill", color: Color(uiColor: .systemCyan))
+            Button { navigateToQueue = true } label: {
+                GridMenuCard(title: "Queue", icon: "list.clipboard.fill", color: Color(uiColor: .systemCyan))
+            }
+            .buttonStyle(PlainButtonStyle())
             
-            GridMenuCard(title: "Map", icon: "map.fill", color: Color(uiColor: .systemOrange))
+            Button { navigateToMap = true } label: {
+                GridMenuCard(title: "Map", icon: "map.fill", color: Color(uiColor: .systemOrange))
+            }
+            .buttonStyle(PlainButtonStyle())
             
-            // 🔴 UPDATED: Wrapped My Care card in a Button
             Button { navigateToMyCare = true } label: {
                 GridMenuCard(title: "My Care", icon: "heart.fill", color: Color(uiColor: .systemRed))
             }
@@ -232,13 +272,13 @@ struct HomeView: View {
             VStack(spacing: 0) {
                 HomeVisitProgressRow(icon: "checkmark", iconColor: .white, iconBg: Color(uiColor: .systemGreen), title: "Check-in", subtitle: "Registration complete", rightText: "08:15 AM", isLast: false, isActive: false)
                 HomeVisitProgressRow(icon: "checkmark", iconColor: .white, iconBg: Color(uiColor: .systemGreen), title: "Vitals", subtitle: "BP: 120/80, HR: 72", rightText: "08:30 AM", isLast: false, isActive: false)
-                HomeVisitProgressRow(icon: "stethoscope", iconColor: Color(uiColor: .systemGreen), iconBg: Color(uiColor: .systemGray6), title: "Doctor Consultation", subtitle: "Dr. Sarah Wilson - Room 12", rightText: "In Progress", isLast: false, isActive: true, isRightTextPill: true)
+                HomeVisitProgressRow(icon: "stethoscope", iconColor: Color(uiColor: .systemGreen), iconBg: Color.green.opacity(0.15), title: "Doctor Consultation", subtitle: "Dr. Sarah Wilson - Room 12", rightText: "In Progress", isLast: false, isActive: true, isRightTextPill: true)
                 HomeVisitProgressRow(icon: "testtube.2", iconColor: Color(uiColor: .systemGray), iconBg: Color(uiColor: .systemGray6), title: "Lab Work", subtitle: "Blood draw pending", rightText: "", isLast: false, isActive: false, isPending: true)
                 HomeVisitProgressRow(icon: "pills.fill", iconColor: Color(uiColor: .systemGray), iconBg: Color(uiColor: .systemGray6), title: "Pharmacy", subtitle: "Prescription pickup", rightText: "", isLast: true, isActive: false, isPending: true)
             }
         }
         .padding(20)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
@@ -250,21 +290,35 @@ struct HomeView: View {
                     .font(.headline)
                     .fontWeight(.bold)
                 Spacer()
-                Button("View All") { }
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color(uiColor: .systemBlue))
+                Button {
+                    // View all action
+                } label: {
+                    Text("View All")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color(uiColor: .systemBlue))
+                        .padding(.vertical, 8)
+                        .padding(.leading, 8)
+                        .contentShape(Rectangle())
+                }
             }
             
             VStack(spacing: 12) {
-                RecentActivityRow(icon: "flask.fill", iconColor: Color(uiColor: .systemBlue), title: "Blood Test Results", subtitle: "Lipid Profile • Yesterday")
-                RecentActivityRow(icon: "doc.text.fill", iconColor: Color(uiColor: .systemGreen), title: "New Prescription", subtitle: "Amoxicillin • Oct 22")
+                Button { navigateToLabReports = true } label: {
+                    RecentActivityRow(icon: "flask.fill", iconColor: Color(uiColor: .systemBlue), title: "Blood Test Results", subtitle: "Lipid Profile • Yesterday")
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                Button { navigateToPharmacy = true } label: {
+                    RecentActivityRow(icon: "doc.text.fill", iconColor: Color(uiColor: .systemGreen), title: "New Prescription", subtitle: "Amoxicillin • Oct 22")
+                }
+                .buttonStyle(PlainButtonStyle())
             }
         }
     }
 }
 
-// MARK: - Reusable Components
+
 
 struct SmoothEmergencyButton: View {
     let action: () -> Void
@@ -347,6 +401,7 @@ struct NextStepCard: View {
     let queueCount: String
     let waitTime: String
     let themeColor: Color
+    var onViewMap: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -360,7 +415,7 @@ struct NextStepCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
                     Image(systemName: personIcon).foregroundStyle(themeColor).frame(width: 20)
-                    Text(personName).font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                    Text(personName).font(.subheadline).fontWeight(.semibold).foregroundStyle(Color(uiColor: .label))
                 }
                 HStack(spacing: 8) {
                     Image(systemName: "mappin.and.ellipse").foregroundStyle(themeColor).frame(width: 20)
@@ -373,14 +428,22 @@ struct NextStepCard: View {
                 HStack(spacing: 8) { Image(systemName: "hourglass").foregroundStyle(Color(uiColor: .systemOrange)); Text(waitTime).fontWeight(.semibold) }.frame(maxWidth: .infinity)
             }
             .padding(.vertical, 12).background(Color(uiColor: .systemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 12))
+            
             HStack {
                 Text("Please proceed immediately").font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel))
                 Spacer()
-                Button { } label: { HStack(spacing: 4) { Text("View Map"); Image(systemName: "arrow.right") }.font(.caption).fontWeight(.bold).foregroundStyle(themeColor) }
+                Button(action: onViewMap) {
+                    HStack(spacing: 4) { Text("View Map"); Image(systemName: "arrow.right") }
+                    .font(.caption).fontWeight(.bold).foregroundStyle(themeColor)
+                    .padding(.vertical, 8)
+                    .padding(.leading, 8)
+                    .contentShape(Rectangle())
+                }
             }
         }
-        .padding(20).background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 20))
+        .padding(20).background(Color(uiColor: .systemBackground)).clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4).padding(.horizontal, 4)
+        .padding(.bottom, 20)
     }
 }
 
@@ -393,7 +456,7 @@ struct GridMenuCard: View {
             ZStack { Circle().fill(color.opacity(0.1)).frame(width: 56, height: 56); Image(systemName: icon).font(.title2).foregroundStyle(color) }
             Text(title).font(.subheadline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
         }
-        .frame(maxWidth: .infinity).padding(.vertical, 20).background(Color(uiColor: .secondarySystemGroupedBackground))
+        .frame(maxWidth: .infinity).padding(.vertical, 20).background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20)).shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
     }
 }
@@ -409,6 +472,7 @@ struct HomeVisitProgressRow: View {
     let isActive: Bool
     var isRightTextPill: Bool = false
     var isPending: Bool = false
+    
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             VStack(spacing: 0) {
@@ -426,7 +490,7 @@ struct HomeVisitProgressRow: View {
             .padding(.top, 6)
             Spacer()
             if !rightText.isEmpty {
-                if isRightTextPill { Text(rightText).font(.caption2).fontWeight(.bold).foregroundStyle(Color(uiColor: .systemGray)).padding(.horizontal, 10).padding(.vertical, 4).background(Color(uiColor: .systemGray5)).clipShape(Capsule()).padding(.top, 6) }
+                if isRightTextPill { Text(rightText).font(.caption2).fontWeight(.bold).foregroundStyle(Color(uiColor: .systemGreen)).padding(.horizontal, 10).padding(.vertical, 4).background(Color.green.opacity(0.15)).clipShape(Capsule()).padding(.top, 6) }
                 else { HStack(spacing: 4) { Image(systemName: "clock"); Text(rightText) }.font(.caption2).foregroundStyle(Color(uiColor: .secondaryLabel)).padding(.top, 6) }
             }
         }
@@ -445,7 +509,7 @@ struct RecentActivityRow: View {
             Spacer()
             Image(systemName: "chevron.right").font(.caption).foregroundStyle(Color(uiColor: .systemGray3))
         }
-        .padding(16).background(Color(uiColor: .secondarySystemGroupedBackground))
+        .padding(16).background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
     }
 }

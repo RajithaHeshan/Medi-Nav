@@ -1,3 +1,237 @@
+
+//import SwiftUI
+//
+//struct AppointmentHistory: Identifiable {
+//    let id = UUID()
+//    let doctor: Doctor
+//    let dateString: String
+//    let status: String
+//}
+//
+//struct BookingHistoryView: View {
+//    @Environment(\.dismiss) var dismiss
+//    @State private var searchText = ""
+//    @State private var selectedTab = "Completed"
+//    
+//    @State private var doctorToRebook: Doctor?
+//    
+//    let tabs = ["Upcoming", "Completed"]
+//    
+//    private let appointments = [
+//        AppointmentHistory(
+//            doctor: Doctor(name: "Dr. Sarah Jenkins", specialty: "General Practitioner", rating: 4.9, reviewCount: 120, fee: 150, image: "doctor1", status: "Available", statusColor: .green, isBookable: true),
+//            dateString: "Oct 12, 2023 - 10:00",
+//            status: "Completed"
+//        ),
+//        AppointmentHistory(
+//            doctor: Doctor(name: "Dr. Michael Chen", specialty: "Cardiologist", rating: 4.8, reviewCount: 90, fee: 180, image: "doctor1", status: "Available", statusColor: .green, isBookable: true),
+//            dateString: "Sep 28, 2023 - 02:30 PM",
+//            status: "Completed"
+//        ),
+//        AppointmentHistory(
+//            doctor: Doctor(name: "Dr. Elena Rodriguez", specialty: "Pediatrician", rating: 4.7, reviewCount: 65, fee: 120, image: "Image (2)", status: "Available", statusColor: .green, isBookable: true),
+//            dateString: "Aug 15, 2023 - 09:15",
+//            status: "Completed"
+//        )
+//    ]
+//    
+//    var filteredAppointments: [AppointmentHistory] {
+//        var filtered = appointments.filter { $0.status == selectedTab }
+//        
+//        if !searchText.isEmpty {
+//            filtered = filtered.filter {
+//                $0.doctor.name.localizedCaseInsensitiveContains(searchText) ||
+//                $0.doctor.specialty.localizedCaseInsensitiveContains(searchText)
+//            }
+//        }
+//        return filtered
+//    }
+//    
+//    var body: some View {
+//        // Removed the nested NavigationStack to prevent routing bugs
+//        ZStack(alignment: .top) {
+//            Color(uiColor: .systemGroupedBackground) // Standard HIG background
+//                .ignoresSafeArea()
+//            
+//            VStack(spacing: 0) {
+//                
+//                // 1. Standardized Circular Header
+//                HStack(spacing: 16) {
+//                    Button(action: { dismiss() }) {
+//                        ZStack {
+//                            Circle()
+//                                .fill(Color(uiColor: .systemBackground))
+//                                .frame(width: 40, height: 40)
+//                                .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+//                            
+//                            Image(systemName: "chevron.left")
+//                                .font(.system(size: 16, weight: .bold))
+//                                .foregroundStyle(Color.blue)
+//                                .offset(x: -1.5)
+//                        }
+//                    }
+//                    
+//                    Text("Booking History")
+//                        .font(.title2)
+//                        .fontWeight(.bold)
+//                        .foregroundStyle(Color(uiColor: .label))
+//                    
+//                    Spacer()
+//                }
+//                .padding(.horizontal, 20)
+//                .padding(.top, 16)
+//                .padding(.bottom, 16)
+//                
+//                // 2. HIG Smart Search Bar
+//                HStack(spacing: 8) {
+//                    Image(systemName: "magnifyingglass")
+//                        .foregroundStyle(Color(uiColor: .systemGray2))
+//                        .font(.body.weight(.medium))
+//                    
+//                    TextField("Search by name or specialty...", text: $searchText)
+//                    
+//                    Spacer()
+//                    
+//                    if !searchText.isEmpty {
+//                        Button(action: {
+//                            withAnimation { searchText = "" }
+//                        }) {
+//                            Image(systemName: "xmark.circle.fill")
+//                                .foregroundStyle(Color(uiColor: .systemGray3))
+//                                .font(.body.weight(.medium))
+//                        }
+//                    } else {
+//                        Image(systemName: "mic.fill")
+//                            .foregroundStyle(Color(uiColor: .systemGray2))
+//                            .font(.body.weight(.medium))
+//                    }
+//                }
+//                .padding(10)
+//                .background(Color(uiColor: .systemBackground)) // Swapped to match grouped background
+//                .clipShape(RoundedRectangle(cornerRadius: 10))
+//                .padding(.horizontal, 20)
+//                .padding(.bottom, 16)
+//                
+//                // 3. HIG Native Segmented Picker
+//                Picker("Status", selection: $selectedTab) {
+//                    ForEach(tabs, id: \.self) { tab in
+//                        Text(tab).tag(tab)
+//                    }
+//                }
+//                .pickerStyle(.segmented)
+//                .padding(.horizontal, 20)
+//                .padding(.bottom, 16)
+//                
+//                // 4. List
+//                ScrollView(showsIndicators: false) {
+//                    VStack(spacing: 16) {
+//                        ForEach(filteredAppointments) { appointment in
+//                            BookingHistoryCard(appointment: appointment) {
+//                                doctorToRebook = appointment.doctor
+//                            }
+//                        }
+//                        
+//                        // 🔴 FIXED: Keeps content above your Custom Tab Bar
+//                        Spacer(minLength: 120)
+//                    }
+//                    .padding(.horizontal, 20)
+//                    .padding(.top, 8)
+//                }
+//            }
+//        }
+//        .navigationBarHidden(true)
+//        .navigationDestination(item: $doctorToRebook) { doctor in
+//            DoctorBookingView(doctor: doctor)
+//        }
+//    }
+//}
+//
+//struct BookingHistoryCard: View {
+//    let appointment: AppointmentHistory
+//    var onRebook: () -> Void
+//    
+//    var body: some View {
+//        VStack(spacing: 0) {
+//            
+//            HStack(spacing: 16) {
+//                ZStack {
+//                    Circle()
+//                        .fill(Color(uiColor: .systemGray6))
+//                        .frame(width: 56, height: 56)
+//                    
+//                    Image(appointment.doctor.image)
+//                        .resizable()
+//                        .scaledToFill()
+//                        .frame(width: 56, height: 56)
+//                        .clipShape(Circle())
+//                }
+//                
+//                VStack(alignment: .leading, spacing: 4) {
+//                    Text(appointment.doctor.name)
+//                        .font(.headline)
+//                        .foregroundStyle(Color(uiColor: .label))
+//                    
+//                    Text(appointment.doctor.specialty)
+//                        .font(.subheadline)
+//                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+//                }
+//                
+//                Spacer()
+//                
+//                Image(systemName: "chevron.right")
+//                    .font(.caption.bold())
+//                    .foregroundStyle(Color(uiColor: .systemGray3))
+//            }
+//            .padding(16)
+//            
+//            Divider()
+//                .padding(.horizontal, 16)
+//            
+//            HStack {
+//                VStack(alignment: .leading, spacing: 4) {
+//                    Text("Date of visit")
+//                        .font(.caption)
+//                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+//                    
+//                    Text(appointment.dateString)
+//                        .font(.subheadline)
+//                        .fontWeight(.semibold)
+//                        .foregroundStyle(Color(uiColor: .label))
+//                }
+//                
+//                Spacer()
+//                
+//                Button(action: onRebook) {
+//                    Text("Rebook")
+//                        .font(.subheadline)
+//                        .fontWeight(.bold)
+//                        .foregroundStyle(.white)
+//                        .padding(.horizontal, 24)
+//                        .padding(.vertical, 10)
+//                        .background(Color.blue)
+//                        .clipShape(Capsule())
+//                }
+//            }
+//            .padding(16)
+//        }
+//        .background(Color(uiColor: .systemBackground))
+//        .clipShape(RoundedRectangle(cornerRadius: 20)) // Smoothed from 16 to 20 for modern feel
+//        .overlay(
+//            RoundedRectangle(cornerRadius: 20)
+//                .stroke(Color.green.opacity(0.4), lineWidth: 1) // slightly more visible
+//        )
+//        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+//    }
+//}
+//
+//#Preview {
+//    // Only wrap in NavigationStack for the preview, not the actual view!
+//    NavigationStack {
+//        BookingHistoryView()
+//    }
+//}
+
+
 import SwiftUI
 
 struct AppointmentHistory: Identifiable {
@@ -11,10 +245,12 @@ struct BookingHistoryView: View {
     @Environment(\.dismiss) var dismiss
     @State private var searchText = ""
     @State private var selectedTab = "Completed"
-    
-   
     @State private var doctorToRebook: Doctor?
     
+    // Voice State
+    @State private var isListening = false
+    
+    let tabs = ["Upcoming", "Completed"]
     
     private let appointments = [
         AppointmentHistory(
@@ -35,120 +271,181 @@ struct BookingHistoryView: View {
     ]
     
     var filteredAppointments: [AppointmentHistory] {
-        return appointments.filter { $0.status == selectedTab }
+        var filtered = appointments.filter { $0.status == selectedTab }
+        
+        if !searchText.isEmpty {
+            filtered = filtered.filter {
+                $0.doctor.name.localizedCaseInsensitiveContains(searchText) ||
+                $0.doctor.specialty.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        return filtered
     }
     
     var body: some View {
-        NavigationStack {
+        ZStack(alignment: .top) {
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
+            
             VStack(spacing: 0) {
                 
-                
-                headerView
-                
-              
-                HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundStyle(.gray)
-                    TextField("Search by name or specialty...", text: $searchText)
+                // 1. Standardized Circular Header
+                HStack(spacing: 16) {
+                    Button(action: { dismiss() }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color(uiColor: .systemBackground))
+                                .frame(width: 40, height: 40)
+                                .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                            
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(Color.blue)
+                                .offset(x: -1.5)
+                        }
+                    }
+                    
+                    Text("Booking History")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color(uiColor: .label))
+                    
+                    Spacer()
                 }
-                .padding(12)
-                .background(Color(uiColor: .systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
                 .padding(.bottom, 16)
                 
-              
-                HStack(spacing: 0) {
-                    tabButton(title: "Upcoming")
-                    tabButton(title: "Completed")
+                // 2. HIG Smart Search Bar with Mic Integration
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(Color(uiColor: .systemGray2))
+                        .font(.body.weight(.medium))
+                    
+                    TextField("Search by name or specialty...", text: $searchText)
+                    
+                    Spacer()
+                    
+                    if !searchText.isEmpty {
+                        Button(action: {
+                            withAnimation { searchText = "" }
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(Color(uiColor: .systemGray3))
+                                .font(.body.weight(.medium))
+                        }
+                    } else {
+                        // 🔴 MICROPHONE BUTTON ACTION
+                        Button(action: {
+                            withAnimation { isListening = true }
+                        }) {
+                            Image(systemName: "mic.fill")
+                                .foregroundStyle(Color.blue)
+                                .font(.body.weight(.medium))
+                        }
+                    }
                 }
-                .padding(4)
-                .background(Color(uiColor: .systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding(.horizontal)
-                .padding(.bottom, 20)
+                .padding(10)
+                .background(Color(uiColor: .systemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
+                
+                // 3. HIG Native Segmented Picker
+                Picker("Status", selection: $selectedTab) {
+                    ForEach(tabs, id: \.self) { tab in
+                        Text(tab).tag(tab)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
                 
                 // 4. List
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 16) {
                         ForEach(filteredAppointments) { appointment in
                             BookingHistoryCard(appointment: appointment) {
-                                // Rebook Action
                                 doctorToRebook = appointment.doctor
                             }
                         }
+                        
+                        Spacer(minLength: 120)
                     }
-                    .padding(.horizontal)
-                    .padding(.bottom, 20)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
                 }
             }
-            .navigationBarHidden(true)
             
-            // 5. Rebook Navigation
-            .navigationDestination(item: $doctorToRebook) { doctor in
-                DoctorBookingView(doctor: doctor)
-                    .navigationBarBackButtonHidden(true)
+            // 🔴 VOICE ANIMATION OVERLAY
+            if isListening {
+                voiceAnimationOverlay
             }
+        }
+        .navigationBarHidden(true)
+        .navigationDestination(item: $doctorToRebook) { doctor in
+            DoctorBookingView(doctor: doctor)
         }
     }
     
-    
-    
-    private var headerView: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3).bold()
-                    .foregroundStyle(.black)
+    // MARK: - Voice Animation View
+    private var voiceAnimationOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.3).ignoresSafeArea()
+            
+            VStack(spacing: 25) {
+                Text("Listening...")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                
+                HStack(spacing: 4) {
+                    ForEach(0..<8) { _ in
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(Color.white)
+                            .frame(width: 4, height: isListening ? CGFloat.random(in: 10...60) : 10)
+                            .animation(.easeInOut(duration: 0.15).repeatForever(autoreverses: true), value: isListening)
+                    }
+                }
+                
+                Button {
+                    isListening = false
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                        .padding(20)
+                        .background(Color.red)
+                        .clipShape(Circle())
+                }
             }
-            Spacer()
-            Text("Booking History")
-                .font(.headline)
-                .bold()
-            Spacer()
-            Image(systemName: "chevron.left").font(.title3).opacity(0)
+            .padding(40)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 30))
         }
-        .padding()
-    }
-    
-   
-    private func tabButton(title: String) -> some View {
-        Button {
-            withAnimation(.spring()) {
-                selectedTab = title
-            }
-        } label: {
-            Text(title)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background(selectedTab == title ? Color.white : Color.clear)
-                .foregroundStyle(selectedTab == title ? Color.black : Color.gray)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .shadow(color: selectedTab == title ? Color.black.opacity(0.1) : Color.clear, radius: 2, x: 0, y: 1)
-        }
+        .transition(.opacity)
     }
 }
 
-// MARK: - Card Component
+// Keep your original BookingHistoryCard and SearchTag exactly as they were
 struct BookingHistoryCard: View {
     let appointment: AppointmentHistory
     var onRebook: () -> Void
     
     var body: some View {
         VStack(spacing: 0) {
-            
-            // Top: Doctor Info
             HStack(spacing: 16) {
-                // Avatar
-                Image(appointment.doctor.image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 56, height: 56)
-                    .clipShape(Circle())
+                ZStack {
+                    Circle()
+                        .fill(Color(uiColor: .systemGray6))
+                        .frame(width: 56, height: 56)
+                    
+                    Image(appointment.doctor.image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 56, height: 56)
+                        .clipShape(Circle())
+                }
                 
-                // Text
                 VStack(alignment: .leading, spacing: 4) {
                     Text(appointment.doctor.name)
                         .font(.headline)
@@ -156,28 +453,25 @@ struct BookingHistoryCard: View {
                     
                     Text(appointment.doctor.specialty)
                         .font(.subheadline)
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
                 }
                 
                 Spacer()
                 
-                // Chevron
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.gray.opacity(0.5))
+                    .font(.caption.bold())
+                    .foregroundStyle(Color(uiColor: .systemGray3))
             }
             .padding(16)
             
-          
             Divider()
                 .padding(.horizontal, 16)
             
-         
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Date of visit")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
                     
                     Text(appointment.dateString)
                         .font(.subheadline)
@@ -187,31 +481,31 @@ struct BookingHistoryCard: View {
                 
                 Spacer()
                 
-                // Rebook Button
                 Button(action: onRebook) {
                     Text("Rebook")
                         .font(.subheadline)
-                        .fontWeight(.semibold)
+                        .fontWeight(.bold)
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 10)
                         .background(Color.blue)
                         .clipShape(Capsule())
                 }
             }
             .padding(16)
         }
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        
+        .background(Color(uiColor: .systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.green.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.green.opacity(0.4), lineWidth: 1)
         )
-        .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
 }
-
 #Preview {
-    BookingHistoryView()
+    // Only wrap in NavigationStack for the preview, not the actual view!
+    NavigationStack {
+        BookingHistoryView()
+    }
 }

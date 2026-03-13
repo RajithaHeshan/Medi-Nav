@@ -6,7 +6,7 @@ import SwiftUI
 struct Medi_NavApp: App {
     var body: some Scene {
         WindowGroup {
-         ContentView()
+            SplashScreenView()
             
         }
     }

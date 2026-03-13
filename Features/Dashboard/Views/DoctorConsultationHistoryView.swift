@@ -1,7 +1,7 @@
 
 import SwiftUI
 
-// Local Data Model
+
 struct ConsultationRecord: Identifiable, Hashable {
     let id = UUID()
     let doctorName: String
@@ -11,21 +11,20 @@ struct ConsultationRecord: Identifiable, Hashable {
     let image: String
     let status: String
     
-    // Hashable conformance for Navigation
+   
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
 }
 
 struct DoctorConsultationHistoryView: View {
-  
+    @Environment(\.dismiss) var dismiss
+    
     @State private var searchText = ""
     @State private var selectedTab = "Completed"
-    
-    
     @State private var selectedRecord: ConsultationRecord?
     
-    // MARK: - Mock Data
+   
     private let historyRecords = [
         ConsultationRecord(
             doctorName: "Dr. Sarah Jenkins",
@@ -53,55 +52,90 @@ struct DoctorConsultationHistoryView: View {
         )
     ]
     
+    // Filters by the selected tab AND the search text
     var filteredRecords: [ConsultationRecord] {
-        return historyRecords.filter { $0.status == selectedTab }
+        let tabFiltered = historyRecords.filter { $0.status == selectedTab }
+        
+        if searchText.isEmpty {
+            return tabFiltered
+        } else {
+            return tabFiltered.filter { record in
+                record.doctorName.localizedCaseInsensitiveContains(searchText) ||
+                record.specialty.localizedCaseInsensitiveContains(searchText) ||
+                record.diagnosis.localizedCaseInsensitiveContains(searchText)
+            }
+        }
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .top) {
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
             
-            // 1. Search Bar
-            HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.gray)
-                TextField("Search by name or specialty...", text: $searchText)
-            }
-            .padding(12)
-            .background(Color(uiColor: .systemGray6))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .padding(.horizontal)
-            .padding(.top, 10)
-            .padding(.bottom, 16)
-            
-            // 2. Tabs
-            HStack(spacing: 0) {
-                tabButton(title: "Cancelled")
-                tabButton(title: "Completed")
-            }
-            .padding(4)
-            .background(Color(uiColor: .systemGray6))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .padding(.horizontal)
-            .padding(.bottom, 20)
-            
-            // 3. List of Cards
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    ForEach(filteredRecords) { record in
-                        ConsultationHistoryCard(record: record) {
-                            // 🔴 2. TRIGGER NAVIGATION
-                            // When "View Summary" is tapped, we set the selected record
-                            selectedRecord = record
+            VStack(spacing: 0) {
+                
+                headerView
+                
+                // 1. Search Bar with Mic and Clear functionality
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(Color(uiColor: .systemGray2))
+                        .font(.body.weight(.medium))
+                    
+                    TextField("Search by name or specialty...", text: $searchText)
+                    
+                    Spacer()
+                    
+                    if !searchText.isEmpty {
+                        Button(action: {
+                            withAnimation { searchText = "" }
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(Color(uiColor: .systemGray3))
+                                .font(.body.weight(.medium))
                         }
+                    } else {
+                        Image(systemName: "mic.fill")
+                            .foregroundStyle(Color(uiColor: .systemGray2))
+                            .font(.body.weight(.medium))
                     }
                 }
-                .padding(.horizontal)
+                .padding(12)
+                .background(Color(uiColor: .systemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+                .padding(.bottom, 16)
+                
+                // 2. Tabs
+                HStack(spacing: 0) {
+                    tabButton(title: "Cancelled")
+                    tabButton(title: "Completed")
+                }
+                .padding(4)
+                .background(Color(uiColor: .systemGray5))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal, 20)
                 .padding(.bottom, 20)
+                
+                // 3. List of Cards
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 24) {
+                        ForEach(filteredRecords) { record in
+                            ConsultationHistoryCard(record: record) {
+                                selectedRecord = record
+                            }
+                        }
+                        
+                       
+                        Spacer(minLength: 120)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
+                }
             }
         }
-        .navigationTitle("Consultation History")
-        .navigationBarTitleDisplayMode(.inline)
-        
+        .navigationBarHidden(true)
         
         .navigationDestination(item: $selectedRecord) { record in
             ConsultationDetailView(
@@ -110,11 +144,39 @@ struct DoctorConsultationHistoryView: View {
                 date: record.date,
                 image: record.image
             )
-            .navigationBarBackButtonHidden(true) // We use our custom header in DetailView
+            .navigationBarBackButtonHidden(true)
         }
     }
     
     // MARK: - Subviews
+    
+    private var headerView: some View {
+        HStack(spacing: 16) {
+            Button(action: { dismiss() }) {
+                ZStack {
+                    Circle()
+                        .fill(Color(uiColor: .systemBackground))
+                        .frame(width: 40, height: 40)
+                        .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                    
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color.blue)
+                        .offset(x: -1.5)
+                }
+            }
+            
+            Text("Consultation History")
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundStyle(Color(uiColor: .label))
+            
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
+    }
     
     private func tabButton(title: String) -> some View {
         Button {
@@ -124,21 +186,19 @@ struct DoctorConsultationHistoryView: View {
         } label: {
             Text(title)
                 .font(.subheadline)
-                .fontWeight(.medium)
+                .fontWeight(.bold)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
-                .background(selectedTab == title ? Color.white : Color.clear)
-                .foregroundStyle(selectedTab == title ? Color.black : Color.gray)
+                .background(selectedTab == title ? Color(uiColor: .systemBackground) : Color.clear)
+                .foregroundStyle(selectedTab == title ? Color(uiColor: .label) : Color.gray)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .shadow(color: selectedTab == title ? Color.black.opacity(0.1) : Color.clear, radius: 2, x: 0, y: 1)
         }
     }
 }
 
-
 struct ConsultationHistoryCard: View {
     let record: ConsultationRecord
-    // Closure to handle the button tap
     var onViewSummary: () -> Void
     
     var body: some View {
@@ -149,16 +209,17 @@ struct ConsultationHistoryCard: View {
                 Image(record.image)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 50, height: 50)
+                    .frame(width: 56, height: 56)
                     .clipShape(Circle())
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.doctorName)
                         .font(.headline)
+                        .fontWeight(.bold)
                         .foregroundStyle(Color(uiColor: .label))
                     
                     Text(record.specialty)
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 
@@ -166,6 +227,7 @@ struct ConsultationHistoryCard: View {
                 
                 Text(record.date)
                     .font(.caption)
+                    .fontWeight(.medium)
                     .foregroundStyle(.secondary)
             }
             
@@ -173,7 +235,7 @@ struct ConsultationHistoryCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Primary Diagnosis")
                     .font(.caption)
-                    .fontWeight(.semibold)
+                    .fontWeight(.bold)
                     .foregroundStyle(.blue.opacity(0.8))
                 
                 Text(record.diagnosis)
@@ -184,42 +246,45 @@ struct ConsultationHistoryCard: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.gray.opacity(0.05))
+            .background(Color(uiColor: .systemGray6))
             .clipShape(RoundedRectangle(cornerRadius: 12))
             
             // Bottom Actions Row
-            HStack {
+            HStack(spacing: 8) {
                 Button {} label: {
                     Image(systemName: "plus.app.fill")
                         .font(.title2)
                         .foregroundStyle(.blue)
+                        .padding(8)
+                        .contentShape(Rectangle())
                 }
                 
                 Button {} label: {
                     Image(systemName: "doc.text.fill")
                         .font(.title2)
-                        .foregroundStyle(Color(uiColor: .systemGray4))
+                        .foregroundStyle(Color(uiColor: .systemGray3))
+                        .padding(8)
+                        .contentShape(Rectangle())
                 }
                 
                 Spacer()
                 
-               
                 Button {
-                    onViewSummary() // Call the closure
+                    onViewSummary()
                 } label: {
                     Text("View Summary")
                         .font(.subheadline)
-                        .fontWeight(.semibold)
+                        .fontWeight(.bold)
                         .foregroundStyle(.blue)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
                         .background(Color.blue.opacity(0.08))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
         }
         .padding(20)
-        .background(Color.white)
+        .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }

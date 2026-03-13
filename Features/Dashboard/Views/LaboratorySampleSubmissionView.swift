@@ -4,17 +4,17 @@ import SwiftUI
 struct LaboratorySampleSubmissionView: View {
     @Environment(\.dismiss) var dismiss
     
-    // 🔴 NEW: Navigation States
+   
     @State private var navigateToPharmacy = false
     @State private var navigateToLabSamplePickup = false
     
     var body: some View {
         VStack(spacing: 0) {
             
-            // 1. Navigation Header
+           
             headerView
             
-            // 2. Scrollable Content
+           
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
                     
@@ -37,19 +37,18 @@ struct LaboratorySampleSubmissionView: View {
             .background(Color(uiColor: .systemGroupedBackground))
         }
         .navigationBarHidden(true)
-        
-        // 🔴 NEW: Navigation to Pharmacy View
+   
         .navigationDestination(isPresented: $navigateToPharmacy) {
             PharmacyView()
         }
         
-        // 🔴 NEW: Navigation to Lab Sample Pickup View (QR Code)
+     
         .navigationDestination(isPresented: $navigateToLabSamplePickup) {
             LabSamplePickupView()
         }
     }
     
-    // MARK: - Subviews
+   
     
     private var headerView: some View {
         HStack {
@@ -71,7 +70,7 @@ struct LaboratorySampleSubmissionView: View {
             
             Spacer()
             
-            // Invisible placeholder to keep the title centered
+           
             Image(systemName: "chevron.left")
                 .font(.title2)
                 .opacity(0)
@@ -91,7 +90,7 @@ struct LaboratorySampleSubmissionView: View {
                 
                 Spacer()
                 
-                // Time Badge
+               
                 Text("10:30 AM")
                     .font(.subheadline)
                     .fontWeight(.bold)
@@ -102,7 +101,7 @@ struct LaboratorySampleSubmissionView: View {
                     .clipShape(Capsule())
             }
             
-            // Location Info
+           
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 12) {
                     Image(systemName: "person.fill")
@@ -123,7 +122,7 @@ struct LaboratorySampleSubmissionView: View {
                 }
             }
             
-            // Queue Status Box
+           
             HStack {
                 HStack(spacing: 8) {
                     Image(systemName: "person.2.fill")
@@ -180,7 +179,7 @@ struct LaboratorySampleSubmissionView: View {
                 .fontWeight(.bold)
                 .foregroundStyle(Color(uiColor: .label))
             
-            // Location Info
+          
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 12) {
                     Image(systemName: "person.fill")
@@ -201,7 +200,7 @@ struct LaboratorySampleSubmissionView: View {
                 }
             }
             
-            // 🔴 UPDATED: Fixed Button Alignment, Sizing, and Navigation
+           
             Button {
                 navigateToPharmacy = true
             } label: {
@@ -218,14 +217,14 @@ struct LaboratorySampleSubmissionView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             
-            // Footer
+            
             HStack {
                 Text("Please proceed immediately")
                     .font(.caption)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                 Spacer()
                 Button {
-                    // View Map Action
+               
                 } label: {
                     Text("View Map")
                         .font(.caption)
@@ -323,7 +322,7 @@ struct LaboratorySampleSubmissionView: View {
     }
 }
 
-// MARK: - Reusable View Components
+
 
 struct SampleTaskCard: View {
     let title: String
@@ -361,7 +360,7 @@ struct SampleTaskCard: View {
                 Spacer()
             }
             
-            // Scan Button
+         
             Button(action: buttonAction) {
                 HStack(spacing: 8) {
                     Text("Scan at Lab")

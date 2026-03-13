@@ -3,53 +3,79 @@ import SwiftUI
 struct PrescriptionView: View {
     @Environment(\.dismiss) var dismiss
     
-    // Controls the custom Share Sheet presentation
     @State private var showShareSheet = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            // 1. Navigation Header
-            headerView
+        ZStack(alignment: .top) {
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
             
-            // 2. Scrollable Content
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 20) {
-                    patientInfoCard
-                    visitDetailsCard
-                    medicinesSection
-                    attendingDoctorCard
-                    Spacer(minLength: 20)
+            VStack(spacing: 0) {
+                
+                headerView
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        patientInfoCard
+                        visitDetailsCard
+                        medicinesSection
+                        attendingDoctorCard
+                        Spacer(minLength: 20)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
+                
+                footerActionsView
             }
-            .background(Color(uiColor: .systemGroupedBackground))
-            
-            // 3. Sticky Action Footer
-            footerActionsView
         }
         .navigationBarHidden(true)
         
-        // 🔴 TRIGGERS THE SHARE UI FROM THE SECOND FILE
         .sheet(isPresented: $showShareSheet) {
+          
             PrescriptionShareSheet()
-                .presentationDetents([.height(480)]) // Fixed height matching your Figma design
+                .presentationDetents([.height(480)])
                 .presentationDragIndicator(.visible)
         }
     }
     
-    // MARK: - Subviews
+  
     
     private var headerView: some View {
         HStack {
-            Button { dismiss() } label: { Image(systemName: "chevron.left").font(.title3).fontWeight(.semibold).foregroundStyle(Color(uiColor: .systemBlue)) }
+            Button(action: { dismiss() }) {
+                ZStack {
+                    Circle()
+                        .fill(Color(uiColor: .systemBackground))
+                        .frame(width: 40, height: 40)
+                        .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                    
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color.blue)
+                        .offset(x: -1.5)
+                }
+            }
+            
             Spacer()
-            Text("Prescription").font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
+            
+            Text("Prescription")
+                .font(.headline)
+                .fontWeight(.bold)
+                .foregroundStyle(Color(uiColor: .label))
+            
             Spacer()
-            Button { } label: { Image(systemName: "ellipsis").font(.title3).foregroundStyle(Color(uiColor: .label)) }
+            
+            Button { } label: {
+                Image(systemName: "ellipsis")
+                    .font(.title3)
+                    .foregroundStyle(Color(uiColor: .label))
+                    .frame(width: 40, height: 40)
+            }
         }
-        .padding()
-        .background(Color(uiColor: .systemBackground))
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 12)
     }
     
     private var patientInfoCard: some View {
@@ -121,7 +147,6 @@ struct PrescriptionView: View {
     private var footerActionsView: some View {
         VStack(spacing: 16) {
             Button {
-                // 🔴 OPENS THE SHARE SHEET
                 showShareSheet = true
             } label: {
                 HStack {
@@ -143,7 +168,7 @@ struct PrescriptionView: View {
     }
 }
 
-// MARK: - Reusable View Components
+
 struct PrescriptionDetailRow: View {
     let title: String; let value: String
     var body: some View { HStack { Text(title).font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel)); Spacer(); Text(value).font(.subheadline).fontWeight(.medium).foregroundStyle(Color(uiColor: .label)) } }
@@ -169,5 +194,7 @@ struct MedicineInfoLabel: View {
 }
 
 #Preview {
-    PrescriptionView()
+    NavigationStack {
+        PrescriptionView()
+    }
 }
