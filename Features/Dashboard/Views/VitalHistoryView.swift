@@ -208,7 +208,7 @@ struct VitalHistoryRow: View {
                 
                 Spacer()
                 
-                // Values
+               
                 VStack(alignment: .trailing, spacing: 4) {
                     HStack(alignment: .firstTextBaseline, spacing: 2) {
                         Text(value)

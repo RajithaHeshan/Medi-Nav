@@ -26,7 +26,7 @@ struct MedicalHistoryView: View {
                     
                     VStack(spacing: 16) {
                         
-                        // Lab Reports
+                    
                         HistoryMenuRow(
                             title: "Lab Report History",
                             subtitle: "24 total reports",
@@ -37,7 +37,7 @@ struct MedicalHistoryView: View {
                             showLabHistory = true
                         }
                         
-                        // Prescription History
+                      
                         HistoryMenuRow(
                             title: "Prescription History",
                             subtitle: "Last filled: Oct 12, 2025",
@@ -48,7 +48,7 @@ struct MedicalHistoryView: View {
                             showPrescriptionHistory = true
                         }
                         
-                        // Vital Signs
+                    
                         HistoryMenuRow(
                             title: "Vital Signs History",
                             subtitle: "Last filled: Oct 12, 2025",
@@ -59,7 +59,7 @@ struct MedicalHistoryView: View {
                             showVitalHistory = true
                         }
                         
-                        Spacer(minLength: 120) // Keeps content above the bottom tab bar
+                        Spacer(minLength: 120)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
@@ -68,7 +68,7 @@ struct MedicalHistoryView: View {
         }
         .navigationBarHidden(true)
         
-        // MARK: - Navigation Destinations
+   
         .navigationDestination(isPresented: $showLabHistory) {
             LabReportHistoryView()
         }
@@ -80,9 +80,7 @@ struct MedicalHistoryView: View {
         }
     }
     
-    // MARK: - Subviews
-    
-    // Brought back the accessible, unified circular back button
+   
     private var headerView: some View {
         HStack(spacing: 16) {
             Button(action: { dismiss() }) {
@@ -111,7 +109,7 @@ struct MedicalHistoryView: View {
         .padding(.bottom, 12)
     }
     
-    // Unified Smart Search Bar
+  
     private var searchBar: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
@@ -144,7 +142,7 @@ struct MedicalHistoryView: View {
     }
 }
 
-// MARK: - Polished Row Component
+
 struct HistoryMenuRow: View {
     let title: String
     let subtitle: String
@@ -159,7 +157,7 @@ struct HistoryMenuRow: View {
                 ZStack {
                     Circle()
                         .fill(bgColor)
-                        .frame(width: 56, height: 56) // Slightly larger icon background for elder tap targets
+                        .frame(width: 56, height: 56)
                     Image(systemName: iconName)
                         .font(.title3)
                         .foregroundStyle(iconColor)
@@ -177,16 +175,16 @@ struct HistoryMenuRow: View {
                 
                 Spacer()
                 
-                // Vector Icon (Chevron)
+              
                 Image(systemName: "chevron.right")
                     .font(.subheadline.bold())
                     .foregroundStyle(Color(uiColor: .systemGray3))
             }
             .padding(20)
             .background(Color(uiColor: .systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 20)) //Cohesive 20pt corner radius
+            .clipShape(RoundedRectangle(cornerRadius: 20))
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.gray.opacity(0.1), lineWidth: 1))
-            .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4) //  FIX: Unified soft shadow
+            .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
         }
         .buttonStyle(PlainButtonStyle())
     }

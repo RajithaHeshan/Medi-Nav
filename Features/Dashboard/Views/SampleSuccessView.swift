@@ -6,17 +6,17 @@ struct SampleSuccessView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            // 1. Navigation Header
+     
             headerView
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 32) {
                     
-                    // 2. Success Graphic
+                
                     successIconView
                         .padding(.top, 20)
                     
-                    // 3. Titles and Descriptions
+                 
                     VStack(spacing: 16) {
                         Text("Report sample submitted successfully")
                             .font(.title3)
@@ -44,7 +44,7 @@ struct SampleSuccessView: View {
         .navigationBarHidden(true)
     }
     
-    // MARK: - Subviews
+  
     
     private var headerView: some View {
         HStack {
@@ -110,8 +110,7 @@ struct SampleSuccessView: View {
             )
         }
         .padding(.vertical, 8)
-        // Set the card background explicitly to white/system background
-        // and add a soft shadow to match the Figma mockup
+       
         .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: Color.black.opacity(0.04), radius: 15, x: 0, y: 8)
@@ -122,7 +121,6 @@ struct SampleSuccessView: View {
     }
 }
 
-// MARK: - Reusable Row Component
 
 struct SuccessDetailRow: View {
     let icon: String
@@ -132,7 +130,7 @@ struct SuccessDetailRow: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            // Light blue icon container
+          
             ZStack {
                 Circle()
                     .fill(Color(uiColor: .systemBlue).opacity(0.1))

@@ -195,7 +195,7 @@ struct LabReportHistoryView: View {
                     } label: {
                         Text(filter)
                             .font(.subheadline)
-                            .fontWeight(.bold) // Stronger weight for better readability
+                            .fontWeight(.bold)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 10)
                             .background(selectedFilter == filter ? Color.blue : Color(uiColor: .systemGroupedBackground))
@@ -222,7 +222,7 @@ struct LabReportHistoryView: View {
                 content()
             }
             .background(Color(uiColor: .systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 20)) // Matched to app standard 20pt
+            .clipShape(RoundedRectangle(cornerRadius: 20)) 
             .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 2)
         }
     }

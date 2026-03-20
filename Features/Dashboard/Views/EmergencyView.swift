@@ -53,7 +53,7 @@ struct EmergencyView: View {
                                         .fontWeight(.bold)
                                         .foregroundStyle(.white)
                                     Text("Immediate security and medical alert")
-                                        .font(.subheadline) // HIG FIX: Increased from caption for readability
+                                        .font(.subheadline)
                                         .fontWeight(.medium)
                                         .foregroundStyle(.white.opacity(0.9))
                                         .multilineTextAlignment(.leading)
@@ -68,7 +68,7 @@ struct EmergencyView: View {
                             .shadow(color: .red.opacity(0.4), radius: 15, x: 0, y: 8)
                         }
                         
-                        // 3. Emergency Options List
+                   
                         VStack(spacing: 16) {
                             
                             EmergencyOptionRow(
@@ -79,7 +79,7 @@ struct EmergencyView: View {
                                 isOn: $requestAmbulance,
                                 actionText: "Track Ambulance",
                                 onActionTap: {
-                                    // 🔴 WIRED: Triggers navigation to AmbulanceTrackingView
+                                   
                                     navigateToTracking = true
                                 }
                             )
@@ -153,7 +153,7 @@ struct EmergencyView: View {
     }
 }
 
-// MARK: - Reusable Row Component
+
 struct EmergencyOptionRow: View {
     let title: String
     let subtitle: String
@@ -168,7 +168,7 @@ struct EmergencyOptionRow: View {
         HStack(alignment: .center, spacing: 16) {
             
             ZStack {
-                RoundedRectangle(cornerRadius: 16) // HIG FIX: Softer corners
+                RoundedRectangle(cornerRadius: 16)
                     .fill(iconColor.opacity(0.15))
                     .frame(width: 56, height: 56)
                 Image(systemName: icon)
@@ -212,10 +212,10 @@ struct EmergencyOptionRow: View {
         }
         .padding(20)
         .background(Color(uiColor: .systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 20)) // Matched app's 20pt radius
+        .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.gray.opacity(0.1), lineWidth: 1))
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isOn) // Smoother animation
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isOn) 
     }
 }
 

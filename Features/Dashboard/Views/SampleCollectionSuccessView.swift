@@ -15,9 +15,8 @@ struct SampleCollectionSuccessView: View {
             
             Spacer()
             
-            // 1. Success Animation & Message
             VStack(spacing: 24) {
-                // Animated Circle Checkmark
+             
                 ZStack {
                     Circle()
                         .fill(Color.green.opacity(0.1))
@@ -95,7 +94,7 @@ struct SampleCollectionSuccessView: View {
             Button {
                
                 print("Move to Lab Reports tapped")
-                // In a real app, you might use a Binding to pop to root
+              
             } label: {
                 Text("Move to Lab Reports")
                     .font(.headline)

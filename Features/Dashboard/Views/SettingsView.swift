@@ -146,7 +146,7 @@ struct SettingsRow: View {
                             .foregroundStyle(.white)
                     }
                     
-                    // Texts
+                 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
                             .font(.subheadline)

@@ -26,7 +26,6 @@ struct PaymentConfirmationView: View {
                         
                         Spacer().frame(height: 10)
                         
-                       
                         VStack(spacing: 16) {
                             ZStack {
                                 Circle()
@@ -63,9 +62,7 @@ struct PaymentConfirmationView: View {
                             .padding(.top, 8)
                         }
                         
-                       
                         detailsCard
-                        
                         
                         VStack(spacing: 16) {
                             HStack {
@@ -88,24 +85,25 @@ struct PaymentConfirmationView: View {
                         .padding(.horizontal, 16)
                         .padding(.top, 8)
                         
-                        Spacer(minLength: 160)
                     }
                     .padding(.horizontal, 20)
+                   
+                    .padding(.bottom, 140)
                 }
             }
             
+          
             bottomFooter
         }
         .navigationBarHidden(true)
         
-        // Swapped the placeholder Text for your actual view!
         .navigationDestination(isPresented: $navigateToBookingHistory) {
             BookingHistoryView()
-                .navigationBarBackButtonHidden(true) // Keeps the flow clean
+                .navigationBarBackButtonHidden(true)
         }
     }
     
-    // MARK: - Subviews
+   
     
     private var headerView: some View {
         HStack(spacing: 16) {
@@ -163,11 +161,12 @@ struct PaymentConfirmationView: View {
                         .fontWeight(.semibold)
                         .foregroundStyle(.blue)
                 }
+                Spacer()
             }
             
             Divider()
             
-            // Date Row
+           
             HStack(alignment: .top, spacing: 16) {
                 Image(systemName: "calendar")
                     .font(.title3)
@@ -215,8 +214,9 @@ struct PaymentConfirmationView: View {
         )
     }
     
+   
     private var bottomFooter: some View {
-        VStack(spacing: 0) {
+        VStack {
             Button {
                 navigateToBookingHistory = true
             } label: {
@@ -230,14 +230,12 @@ struct PaymentConfirmationView: View {
                     .clipShape(Capsule())
                     .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
-            .padding(.bottom, 90)
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        .padding(.bottom, 24)
         .background(
-            Color(uiColor: .systemBackground)
-                .ignoresSafeArea(edges: .bottom)
-                .shadow(color: Color.black.opacity(0.03), radius: 10, x: 0, y: -5)
+            .regularMaterial // Native Apple Glassmorphism blur
         )
     }
 }

@@ -5,61 +5,74 @@ struct QueueView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
             
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    
+            VStack(spacing: 0) {
+      
+                headerView
                 
-                    statusHeader
-                    
-                  
-                    mainTitleSection
-                    
-                  
-                    statsCard
-                    
-                   
-                    queueStepper
-                    
-                
-                    locationTimeCard
-                    
-                 
-                    VStack(spacing: 12) {
-                        QueueExpandableRow(icon: "person.3.fill", iconColor: .blue, title: "Queue Details", subtitle: "2 ahead • 5 total today")
-                        QueueExpandableRow(icon: "doc.text.fill", iconColor: .purple, title: "Appointment Info", subtitle: "Follow-up • Dr. Sarah Chen")
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 24) {
+                        
+                        statusHeader
+                        
+                        mainTitleSection
+                        
+                        statsCard
+                        
+                        queueStepper
+                        
+                        locationTimeCard
+                        
+                        VStack(spacing: 12) {
+                            QueueExpandableRow(icon: "person.3.fill", iconColor: .blue, title: "Queue Details", subtitle: "2 ahead • 5 total today")
+                            QueueExpandableRow(icon: "doc.text.fill", iconColor: .purple, title: "Appointment Info", subtitle: "Follow-up • Dr. Sarah Chen")
+                        }
+                        
+                        Spacer(minLength: 120)
                     }
-                    
-                 
-                    Spacer(minLength: 120)
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-            }
-        }
-        .navigationTitle("Latest Queue")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button { dismiss() } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(Color(uiColor: .label))
-                        .frame(width: 40, height: 40)
-                        .background(Color(uiColor: .systemBackground))
-                        .clipShape(Circle())
-                        .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
                 }
             }
         }
+        .navigationBarHidden(true) // We are using the custom header now
     }
     
+
+    private var headerView: some View {
+        HStack(spacing: 16) {
+            Button(action: { dismiss() }) {
+                ZStack {
+                    Circle()
+                        .fill(Color(uiColor: .systemBackground))
+                        .frame(width: 40, height: 40)
+                        .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                    
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color.blue)
+                        .offset(x: -1.5)
+                }
+            }
+            
+            Spacer()
+            
+            Text("Latest Queue")
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundStyle(Color(uiColor: .label))
+                .padding(.trailing, 40) // Centers title by offsetting the back button width
+            
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 12)
+    }
     
     private var statusHeader: some View {
         HStack {
@@ -89,7 +102,7 @@ struct QueueView: View {
     private var mainTitleSection: some View {
         VStack(spacing: 8) {
             Text("OPD-10")
-                .font(.system(size: 38, weight: .bold, design: .rounded)) // Made slightly larger
+                .font(.system(size: 38, weight: .bold, design: .rounded))
                 .foregroundStyle(Color(uiColor: .label))
             
             Text("General Medicine • Dr. Chen")
@@ -117,7 +130,7 @@ struct QueueView: View {
                     .fontWeight(.bold)
                     .foregroundStyle(Color(uiColor: .label))
                 Text("~12 min wait")
-                    .font(.subheadline) // Increased from caption
+                    .font(.subheadline)
                     .foregroundStyle(Color.primary.opacity(0.75))
             }
             .frame(maxWidth: .infinity)
@@ -126,7 +139,7 @@ struct QueueView: View {
             Divider()
                 .frame(height: 60)
             
-           
+            
             VStack(spacing: 8) {
                 HStack(spacing: 6) {
                     Image(systemName: "bolt.fill")
@@ -216,8 +229,6 @@ struct QueueView: View {
     }
 }
 
-
-
 struct QueueStepView: View {
     enum StepState {
         case past, active, future
@@ -287,7 +298,7 @@ struct QueueExpandableRow: View {
         } label: {
             HStack(spacing: 16) {
                 ZStack {
-                    Circle().fill(iconColor.opacity(0.1)).frame(width: 44, height: 44) // Enlarged slightly
+                    Circle().fill(iconColor.opacity(0.1)).frame(width: 44, height: 44)
                     Image(systemName: icon).foregroundStyle(iconColor).font(.body.bold())
                 }
                 
@@ -297,7 +308,7 @@ struct QueueExpandableRow: View {
                         .fontWeight(.bold)
                         .foregroundStyle(Color(uiColor: .label))
                     Text(subtitle)
-                        .font(.subheadline) 
+                        .font(.subheadline)
                         .foregroundStyle(Color.primary.opacity(0.75))
                 }
                 

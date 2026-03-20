@@ -3,7 +3,6 @@ import SwiftUI
 struct DoctorServicesView: View {
     @Environment(\.dismiss) var dismiss
     
-    
     @State private var navigateToFindDoctor = false
     @State private var navigateToBookingHistory = false
     @State private var navigateToDoctorConsultation = false
@@ -12,6 +11,7 @@ struct DoctorServicesView: View {
     
     @State private var selectedSpecialtyForSearch = "All"
     
+   
     let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
@@ -19,7 +19,7 @@ struct DoctorServicesView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-          
+            
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
             
@@ -51,14 +51,13 @@ struct DoctorServicesView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 16)
                 
-               
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 28) {
                         upcomingAppointmentCard
                         browseBySpecialtySection
                         actionGrid
                         
-                        Spacer(minLength: 120) // Keeps content above Tab Bar
+                        Spacer(minLength: 120)
                     }
                     .padding(.horizontal, 20)
                 }
@@ -66,14 +65,13 @@ struct DoctorServicesView: View {
         }
         .navigationBarHidden(true)
         
-       
         .navigationDestination(isPresented: $navigateToFindDoctor) {
             FindDoctorView(initialSpecialty: selectedSpecialtyForSearch)
         }
         .navigationDestination(isPresented: $navigateToBookingHistory) {
             BookingHistoryView()
         }
-       
+        
         .navigationDestination(isPresented: $navigateToDoctorConsultation) {
             DoctorConsultationView()
         }
@@ -97,8 +95,6 @@ struct DoctorServicesView: View {
             )
         }
     }
-    
-   
     
     private var upcomingAppointmentCard: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -142,7 +138,7 @@ struct DoctorServicesView: View {
                 }
                 
                 Button {
-                    // Cancel action logic
+                    
                 } label: {
                     Text("Cancel")
                         .font(.subheadline)
@@ -193,6 +189,7 @@ struct DoctorServicesView: View {
         }
     }
     
+   
     private var actionGrid: some View {
         LazyVGrid(columns: columns, spacing: 16) {
             Button {
@@ -201,26 +198,24 @@ struct DoctorServicesView: View {
             } label: {
                 ServiceGridCard(icon: "calendar.badge.plus", iconColor: .blue, title: "Doctors Booking")
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(.plain)
             
             Button { navigateToBookingHistory = true } label: {
                 ServiceGridCard(icon: "list.clipboard.fill", iconColor: .cyan, title: "Booking History")
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(.plain)
             
             Button { navigateToDoctorConsultation = true } label: {
                 ServiceGridCard(icon: "video.fill", iconColor: .indigo, title: "Doctor Consulting")
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(.plain)
             
             Button { navigateToConsultationHistory = true } label: {
                 ServiceGridCard(icon: "clock.fill", iconColor: .purple, title: "Consulting History")
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(.plain)
         }
     }
-    
-   
     
     private func specialtyButton(icon: String, title: String, iconColor: Color, targetSpecialty: String) -> some View {
         Button {
@@ -245,6 +240,7 @@ struct DoctorServicesView: View {
     }
 }
 
+
 struct ServiceGridCard: View {
     let icon: String
     let iconColor: Color
@@ -257,13 +253,13 @@ struct ServiceGridCard: View {
                     .fill(iconColor.opacity(0.1))
                     .frame(width: 56, height: 56)
                 Image(systemName: icon)
-                    .font(.title2)
+                    .font(.system(size: 24, weight: .semibold))
                     .foregroundStyle(iconColor)
             }
             
             Text(title)
                 .font(.subheadline)
-                .fontWeight(.bold)
+                .fontWeight(.semibold)
                 .foregroundStyle(Color(uiColor: .label))
                 .multilineTextAlignment(.center)
         }
@@ -273,6 +269,7 @@ struct ServiceGridCard: View {
         .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 5)
+        .contentShape(RoundedRectangle(cornerRadius: 20))
     }
 }
 

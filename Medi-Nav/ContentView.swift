@@ -5,12 +5,16 @@
 //struct ContentView: View {
 //    @State private var currentTab: AppTab = .home
 //    
+//   
+//    @State private var homeNavigationPath = NavigationPath()
+//    
 //    var body: some View {
 //        ZStack(alignment: .bottom) {
 //            
 //            TabView(selection: $currentTab) {
 //                
-//                NavigationStack {
+//           
+//                NavigationStack(path: $homeNavigationPath) {
 //                    HomeView()
 //                }
 //                .tag(AppTab.home)
@@ -35,8 +39,8 @@
 //                .toolbar(.hidden, for: .tabBar)
 //            }
 //            
-//            // 🔴 HIG FIX: zIndex(1) forces this to NEVER be covered by TabView children
-//            CustomTabBar(selectedTab: $currentTab)
+//         
+//            CustomTabBar(selectedTab: $currentTab, homePath: $homeNavigationPath)
 //                .zIndex(1)
 //        }
 //        .ignoresSafeArea(.keyboard, edges: .bottom)
@@ -46,25 +50,26 @@
 //#Preview {
 //    ContentView()
 //}
-//
+
 
 import SwiftUI
 
 struct ContentView: View {
     @State private var currentTab: AppTab = .home
-    
-    // 🔴 HIG FIX: This path controls the "stack" of pages on the Home tab
     @State private var homeNavigationPath = NavigationPath()
+    
+    
+    @State private var homeResetID = UUID()
     
     var body: some View {
         ZStack(alignment: .bottom) {
             
             TabView(selection: $currentTab) {
                 
-                // 🔴 HIG FIX: Bind the path to the Home NavigationStack
                 NavigationStack(path: $homeNavigationPath) {
                     HomeView()
                 }
+                .id(homeResetID) // 🔴 FIX: Attach the ID to the stack
                 .tag(AppTab.home)
                 .toolbar(.hidden, for: .tabBar)
                 
@@ -87,9 +92,15 @@ struct ContentView: View {
                 .toolbar(.hidden, for: .tabBar)
             }
             
-            // 🔴 HIG FIX: Pass the path into the CustomTabBar
-            CustomTabBar(selectedTab: $currentTab, homePath: $homeNavigationPath)
-                .zIndex(1)
+            CustomTabBar(
+                selectedTab: $currentTab,
+                homePath: $homeNavigationPath,
+                onHomeDoubleTap: {
+                    // 🔴 FIX: When the TabBar says to reset, generate a new ID
+                    homeResetID = UUID()
+                }
+            )
+            .zIndex(1)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
     }

@@ -1,54 +1,103 @@
 
+
+
 import SwiftUI
 
 struct LaboratorySampleSubmissionView: View {
     @Environment(\.dismiss) var dismiss
     
-   
-    @State private var navigateToPharmacy = false
+    @State private var queueNumber = 5
+    @State private var waitTime = 15
+    
     @State private var navigateToLabSamplePickup = false
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .bottom) {
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
             
-           
-            headerView
-            
-           
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 16) {
-                    
-                    visitLaboratoryCard
-                    
-                    nextStepPharmacyCard
-                    
-                    personnelCard
-                    
-                    bloodSampleCard
-                    
-                    urineSampleCard
-                    
-                    Spacer(minLength: 20)
+            VStack(spacing: 0) {
+                
+                headerView
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        
+                        visitLaboratoryCard
+                        
+                        personnelCard
+                        
+                        bloodSampleCard
+                        
+                        urineSampleCard
+                        
+                        Spacer(minLength: 140)                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                .padding(.bottom, 40)
             }
-            .background(Color(uiColor: .systemGroupedBackground))
+            
+          
+            VStack(spacing: 0) {
+                Divider()
+                VStack(spacing: 12) {
+                    if queueNumber == 0 {
+                        Text("It's your turn! Please proceed to the lab desk.")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.green)
+                    } else {
+                        Text("Please wait until your number is called.")
+                            .font(.subheadline)
+                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    }
+                    
+                    Button {
+                        navigateToLabSamplePickup = true
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "qrcode.viewfinder")
+                                .font(.title3)
+                            Text("Scan QR Code")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(queueNumber == 0 ? Color.blue : Color.gray.opacity(0.4))
+                        .clipShape(Capsule())
+                        .shadow(color: queueNumber == 0 ? Color.blue.opacity(0.3) : .clear, radius: 8, y: 4)
+                    }
+                    .disabled(queueNumber > 0)
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 16)
+                .padding(.bottom, 24)
+                .background(Color(uiColor: .systemBackground))
+            }
+            .ignoresSafeArea(edges: .bottom)
         }
         .navigationBarHidden(true)
-   
-        .navigationDestination(isPresented: $navigateToPharmacy) {
-            PharmacyView()
+        
+      
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    queueNumber = 0
+                    waitTime = 0
+                }
+            }
         }
         
-     
+      
         .navigationDestination(isPresented: $navigateToLabSamplePickup) {
             LabSamplePickupView()
         }
     }
     
-   
+  
     
     private var headerView: some View {
         HStack {
@@ -63,14 +112,13 @@ struct LaboratorySampleSubmissionView: View {
             
             Spacer()
             
-            Text("Laboratory Sample Submission")
+            Text("Laboratory Sample")
                 .font(.headline)
                 .fontWeight(.bold)
                 .foregroundStyle(Color(uiColor: .label))
             
             Spacer()
             
-           
             Image(systemName: "chevron.left")
                 .font(.title2)
                 .opacity(0)
@@ -81,7 +129,7 @@ struct LaboratorySampleSubmissionView: View {
     
     private var visitLaboratoryCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Header Row
+        
             HStack {
                 Text("Visit Laboratory")
                     .font(.title3)
@@ -90,7 +138,6 @@ struct LaboratorySampleSubmissionView: View {
                 
                 Spacer()
                 
-               
                 Text("10:30 AM")
                     .font(.subheadline)
                     .fontWeight(.bold)
@@ -101,7 +148,6 @@ struct LaboratorySampleSubmissionView: View {
                     .clipShape(Capsule())
             }
             
-           
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 12) {
                     Image(systemName: "person.fill")
@@ -122,16 +168,17 @@ struct LaboratorySampleSubmissionView: View {
                 }
             }
             
-           
+          
             HStack {
                 HStack(spacing: 8) {
                     Image(systemName: "person.2.fill")
                         .font(.title3)
-                        .foregroundStyle(Color(uiColor: .systemBlue))
-                    Text("5 Queue")
+                        .foregroundStyle(queueNumber == 0 ? .green : Color(uiColor: .systemBlue))
+                    Text("\(queueNumber) Queue")
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundStyle(Color(uiColor: .label))
+                        .contentTransition(.numericText())
                 }
                 
                 Spacer()
@@ -139,92 +186,26 @@ struct LaboratorySampleSubmissionView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "hourglass")
                         .font(.title3)
-                        .foregroundStyle(.brown)
-                    Text("15 mins")
+                        .foregroundStyle(queueNumber == 0 ? .green : .brown)
+                    Text("\(waitTime) mins")
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundStyle(Color(uiColor: .label))
+                        .contentTransition(.numericText())
                 }
             }
             .padding()
             .background(Color(uiColor: .secondarySystemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 12))
             
-            // Footer
-            HStack {
-                Text("Please proceed immediately")
-                    .font(.caption)
-                    .foregroundStyle(Color(uiColor: .secondaryLabel))
-                Spacer()
-                Button {
-                    // View Map Action
-                } label: {
-                    Text("View Map")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(Color(uiColor: .systemBlue))
-                }
-            }
-        }
-        .padding(20)
-        .background(Color(uiColor: .systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
-    }
-    
-    private var nextStepPharmacyCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Next Step: Visit Pharmacy")
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundStyle(Color(uiColor: .label))
-            
-          
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 12) {
-                    Image(systemName: "person.fill")
-                        .foregroundStyle(Color(uiColor: .systemBlue))
-                        .frame(width: 20)
-                    Text("DR. Wickrama")
-                        .font(.subheadline)
-                        .foregroundStyle(Color(uiColor: .secondaryLabel))
-                }
-                
-                HStack(spacing: 12) {
-                    Image(systemName: "mappin.and.ellipse")
-                        .foregroundStyle(Color(uiColor: .systemBlue))
-                        .frame(width: 20)
-                    Text("2nd Floor, West Wing")
-                        .font(.subheadline)
-                        .foregroundStyle(Color(uiColor: .secondaryLabel))
-                }
-            }
-            
            
-            Button {
-                navigateToPharmacy = true
-            } label: {
-                HStack(spacing: 8) {
-                    Text("Check In to Pharmacy")
-                        .fontWeight(.semibold)
-                    Image(systemName: "qrcode.viewfinder")
-                }
-                .font(.subheadline)
-                .foregroundStyle(.white)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
-                .background(Color(uiColor: .systemBlue))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-            
-            
             HStack {
-                Text("Please proceed immediately")
+                Text("Please proceed when called")
                     .font(.caption)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                 Spacer()
                 Button {
-               
+                
                 } label: {
                     Text("View Map")
                         .font(.caption)
@@ -241,9 +222,8 @@ struct LaboratorySampleSubmissionView: View {
     
     private var personnelCard: some View {
         VStack(spacing: 16) {
-            // Lab Technician
+         
             HStack(spacing: 16) {
-                // 🔴 UPDATED: Added your requested asset image for Lab Technician
                 Image("images (2)")
                     .resizable()
                     .scaledToFill()
@@ -265,9 +245,8 @@ struct LaboratorySampleSubmissionView: View {
             
             Divider()
             
-            // Pharmacist / Doctor
+          
             HStack(spacing: 16) {
-                // 🔴 UPDATED: Added your requested asset image for Doctor
                 Image("Image (2)")
                     .resizable()
                     .scaledToFill()
@@ -299,11 +278,7 @@ struct LaboratorySampleSubmissionView: View {
             description: "Requires 8 hours fasting before collection.",
             icon: "drop.fill",
             iconColor: Color(uiColor: .systemRed),
-            iconBackground: Color(uiColor: .systemRed).opacity(0.1),
-            buttonAction: {
-                // 🔴 UPDATED: Navigates to the QR code view
-                navigateToLabSamplePickup = true
-            }
+            iconBackground: Color(uiColor: .systemRed).opacity(0.1)
         )
     }
     
@@ -313,67 +288,43 @@ struct LaboratorySampleSubmissionView: View {
             description: "Standard collection container provided at desk.",
             icon: "flask.fill",
             iconColor: .orange,
-            iconBackground: Color.orange.opacity(0.1),
-            buttonAction: {
-                // 🔴 UPDATED: Navigates to the QR code view
-                navigateToLabSamplePickup = true
-            }
+            iconBackground: Color.orange.opacity(0.1)
         )
     }
 }
 
-
-
-struct SampleTaskCard: View {
+fileprivate struct SampleTaskCard: View {
     let title: String
     let description: String
     let icon: String
     let iconColor: Color
     let iconBackground: Color
-    let buttonAction: () -> Void
     
     var body: some View {
-        VStack(spacing: 16) {
-            HStack(alignment: .top, spacing: 16) {
-                // Icon Box
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(iconBackground)
-                        .frame(width: 48, height: 48)
-                    
-                    Image(systemName: icon)
-                        .font(.title3)
-                        .foregroundStyle(iconColor)
-                }
+        HStack(alignment: .top, spacing: 16) {
+       
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(iconBackground)
+                    .frame(width: 48, height: 48)
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundStyle(Color(uiColor: .label))
-                    
-                    Text(description)
-                        .font(.caption)
-                        .foregroundStyle(Color(uiColor: .secondaryLabel))
-                        .lineSpacing(2)
-                }
-                Spacer()
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundStyle(iconColor)
             }
             
-         
-            Button(action: buttonAction) {
-                HStack(spacing: 8) {
-                    Text("Scan at Lab")
-                        .fontWeight(.bold)
-                    Image(systemName: "qrcode.viewfinder")
-                }
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(Color(uiColor: .systemBlue))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color(uiColor: .label))
+                
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    .lineSpacing(2)
             }
+            Spacer()
         }
         .padding(20)
         .background(Color(uiColor: .systemBackground))

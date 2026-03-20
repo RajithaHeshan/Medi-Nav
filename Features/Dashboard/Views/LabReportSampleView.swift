@@ -3,19 +3,19 @@ import SwiftUI
 struct LabReportSampleView: View {
     @Environment(\.dismiss) var dismiss
     
-    // Controls the custom Share Sheet presentation
+ 
     @State private var showShareSheet = false
     
-    // 🔴 NEW: Navigation State for the Success View
+ 
     @State private var navigateToSuccess = false
     
     var body: some View {
         VStack(spacing: 0) {
             
-            // 1. Navigation Header
+         
             headerView
             
-            // 2. Scrollable Content
+          
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     
@@ -31,21 +31,20 @@ struct LabReportSampleView: View {
             }
             .background(Color(uiColor: .systemGroupedBackground))
             
-            // 3. Sticky Action Footer
+           
             footerActionsView
         }
         .navigationBarHidden(true)
         
-        // 🔴 NEW: Navigation hook to SampleSuccessView
+      
         .navigationDestination(isPresented: $navigateToSuccess) {
             SampleSuccessView()
         }
         
-        // The Custom Share Modal Presentation
+     
         .sheet(isPresented: $showShareSheet) {
             LabReportShareSheet(
                 onAppIconTapped: {
-                    // Triggers the navigation after the sheet closes
                     navigateToSuccess = true
                 }
             )
@@ -54,7 +53,7 @@ struct LabReportSampleView: View {
         }
     }
     
-    // MARK: - Subviews
+
     
     private var headerView: some View {
         HStack {
@@ -153,17 +152,17 @@ struct LabReportSampleView: View {
     }
 }
 
-// MARK: - The Custom Lab Report Share Sheet
+
 struct LabReportShareSheet: View {
     @Environment(\.dismiss) var dismiss
     
-    // 🔴 NEW: Callback function so we can tell the parent view to navigate
+  
     var onAppIconTapped: () -> Void
     
     var body: some View {
         VStack(spacing: 24) {
             
-            // 1. Document Header
+  
             HStack(alignment: .center, spacing: 16) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
@@ -203,14 +202,14 @@ struct LabReportShareSheet: View {
             .padding(.horizontal, 20)
             .padding(.top, 24)
             
-            // 2. Apps Horizontal Scroll
+    
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 20) {
-                    // 🔴 UPDATED: Passed the action to trigger navigation
+                 
                     let tapAction = {
-                        dismiss() // Close the sheet first
+                        dismiss()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            onAppIconTapped() // Then trigger the view transition
+                            onAppIconTapped()
                         }
                     }
                     
@@ -223,7 +222,6 @@ struct LabReportShareSheet: View {
                 .padding(.horizontal, 20)
             }
             
-            // 3. System Actions List
             VStack(spacing: 0) {
                 LabShareActionRow(title: "Copy", icon: "doc.on.doc")
                 Divider().padding(.leading, 16)
@@ -244,14 +242,14 @@ struct LabReportShareSheet: View {
     }
 }
 
-// MARK: - Dedicated Share Sheet Components
+
 
 struct LabShareAppIcon: View {
     let title: String
     let icon: String
     let iconColor: Color
     let bgColor: Color
-    let action: () -> Void // 🔴 NEW: The button action
+    let action: () -> Void
     
     var body: some View {
         Button(action: action) {
@@ -305,7 +303,7 @@ struct LabShareActionRow: View {
     }
 }
 
-// MARK: - Reusable Background Components
+
 
 struct LabReportDetailRow: View {
     let title: String; let value: String

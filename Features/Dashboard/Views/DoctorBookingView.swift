@@ -1,3 +1,4 @@
+
 import SwiftUI
 
 struct DoctorBookingView: View {
@@ -39,13 +40,15 @@ struct DoctorBookingView: View {
                         timeSelectionSection
                         uploadSection(title: "Previous Medical Reports")
                         
-                        Spacer(minLength: 200)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
+                  
+                    .padding(.bottom, 260)
                 }
             }
             
+           
             bottomFooter
         }
         .navigationBarHidden(true)
@@ -63,7 +66,6 @@ struct DoctorBookingView: View {
                 .ignoresSafeArea()
         }
         
-        // 🔴 FIXED: Restored your actual navigation to BookingConfirmationView
         .navigationDestination(isPresented: $showConfirmation) {
             BookingConfirmationView(
                 doctor: doctor,
@@ -73,8 +75,6 @@ struct DoctorBookingView: View {
             )
         }
     }
-    
-    // MARK: - Logic
     
     private func generateDates() {
         let calendar = Calendar.current
@@ -90,8 +90,6 @@ struct DoctorBookingView: View {
     private func isSameDay(date1: Date, date2: Date) -> Bool {
         return Calendar.current.isDate(date1, inSameDayAs: date2)
     }
-    
-    // MARK: - Subviews
     
     private var headerView: some View {
         HStack(spacing: 16) {
@@ -281,66 +279,17 @@ struct DoctorBookingView: View {
         }
     }
     
-    //    private var bottomFooter: some View {
-    //        VStack(spacing: 16) {
-    //            HStack(alignment: .bottom) {
-    //                VStack(alignment: .leading, spacing: 4) {
-    //                    Text("Total Fee").font(.subheadline).foregroundStyle(.secondary)
-    //                    Text("$\(doctor.fee).00").font(.title2).fontWeight(.heavy)
-    //                }
-    //
-    //                Spacer()
-    //
-    //                VStack(alignment: .trailing, spacing: 4) {
-    //                    Text("Duration").font(.subheadline).foregroundStyle(.secondary)
-    //                    Text("30 Mins").font(.headline).fontWeight(.bold)
-    //                }
-    //            }
-    //
-    //            Button {
-    //                showConfirmation = true
-    //            } label: {
-    //                Text("Continue")
-    //                    .font(.headline).fontWeight(.bold).foregroundStyle(.white)
-    //                    .frame(maxWidth: .infinity).padding(.vertical, 16)
-    //                    .background(Color.blue).clipShape(Capsule())
-    //                    .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
-    //            }
-    //        }
-    //        .padding(.horizontal, 20)
-    //        .padding(.top, 20)
-    //        .padding(.bottom, 80)
-    //        .background(
-    //            Color(uiColor: .systemBackground)
-    //                .ignoresSafeArea(edges: .bottom)
-    //                .shadow(color: Color.black.opacity(0.06), radius: 15, x: 0, y: -5)
-    //        )
-    //    }
-    //}
-    //
-    //#Preview {
-    //    ZStack(alignment: .bottom) {
-    //        NavigationStack {
-    //            DoctorBookingView(
-    //                doctor: Doctor(name: "Dr. Sarah Jenkins", specialty: "Cardiologist", rating: 4.9, reviewCount: 120, fee: 150, image: "doctor1", status: "Available Today", statusColor: .green, isBookable: true)
-    //            )
-    //        }
-    //
-    //        CustomTabBar(selectedTab: .constant(.booking))
-    //    }
-    //}
-    
     private var bottomFooter: some View {
         VStack(spacing: 16) {
             HStack(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Total Fee").font(.subheadline).foregroundStyle(.secondary)
-                    Text("$\(doctor.fee).00").font(.title2).fontWeight(.heavy)
+                    Text("$\(doctor.fee).00").font(.title2).fontWeight(.heavy).foregroundStyle(Color(uiColor: .label))
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("Duration").font(.subheadline).foregroundStyle(.secondary)
-                    Text("30 Mins").font(.headline).fontWeight(.bold)
+                    Text("30 Mins").font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
                 }
             }
             
@@ -356,12 +305,30 @@ struct DoctorBookingView: View {
         }
         .padding(.horizontal, 20)
         .padding(.top, 20)
-        .padding(.bottom, 80) 
+        .padding(.bottom, 24)
         .background(
-            Color(uiColor: .systemBackground)
-            
-                .ignoresSafeArea(edges: .bottom)
-                .shadow(color: Color.black.opacity(0.06), radius: 15, x: 0, y: -5)
+            .regularMaterial
         )
     }
 }
+
+#Preview {
+    NavigationStack {
+        DoctorBookingView(
+            doctor: Doctor(
+                name: "Dr. Sarah Jenkins",
+                specialty: "Cardiologist",
+                rating: 4.9,
+                reviewCount: 120,
+                fee: 150,
+                image: "Image (2)",
+                status: "Available",
+                statusColor: .green,
+                isBookable: true
+            )
+        )
+    }
+}
+
+
+
