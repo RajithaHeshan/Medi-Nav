@@ -3,19 +3,19 @@ import SwiftUI
 struct LabReportDetailView: View {
     @Environment(\.dismiss) var dismiss
     
-    // Data passed from the list
+   
     let reportTitle: String
-    let status: LabStatus // 🟢 Recognized now because LabStatus is global
+    let status: LabStatus 
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
+       
             headerView
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     
-                    // Status Banner
+               
                     statusBanner
                     
                     // Info Section
@@ -138,7 +138,7 @@ struct LabReportDetailView: View {
         .padding()
     }
     
-    // 🟢 Local Enum for Results
+   
     enum ResultStatus { case normal, high, low }
     
     private func resultRow(name: String, value: String, range: String, status: ResultStatus) -> some View {
@@ -148,7 +148,7 @@ struct LabReportDetailView: View {
                 Text("Ref: \(range)").font(.caption2).foregroundStyle(.secondary)
             }
             Spacer()
-            // 🟢 FIXED: Explicitly use Color.primary and Color.red to avoid ambiguity
+          
             Text(value)
                 .font(.subheadline)
                 .fontWeight(.bold)

@@ -1,8 +1,18 @@
+
+
+
 import SwiftUI
 
 struct VitalView: View {
     @Environment(\.dismiss) var dismiss
     @State private var searchText = ""
+    
+    @State private var navigateToConsultation = false
+    @State private var navigateToMap = false
+    
+   
+    @State private var queueNumber = 5
+    @State private var waitTime = 15
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -10,28 +20,22 @@ struct VitalView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-              
+                
                 headerView
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         
-              
                         searchBar
                         
-                
                         nurseProfileCard
                         
-                      
                         queueCard
                         
-                      
                         actionCard
                         
-                   
                         vitalsSection
                         
-                       
                         Spacer(minLength: 120)
                     }
                     .padding(.horizontal, 20)
@@ -40,9 +44,24 @@ struct VitalView: View {
             }
         }
         .navigationBarHidden(true)
+        
+     
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    queueNumber = 0
+                    waitTime = 0
+                }
+            }
+        }
+     
+        .navigationDestination(isPresented: $navigateToConsultation) {
+            DoctorConsultationView()
+        }
+        .navigationDestination(isPresented: $navigateToMap) {
+            ClinicMapView()
+        }
     }
-    
-   
     
     private var headerView: some View {
         HStack(spacing: 16) {
@@ -123,7 +142,6 @@ struct VitalView: View {
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
     
-    
     private var queueCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Visit Nurse")
@@ -142,19 +160,24 @@ struct VitalView: View {
                 }
             }
             
-          
             HStack {
                 HStack(spacing: 8) {
-                    Image(systemName: "person.2.fill").foregroundStyle(Color.blue)
-                    Text("05 Queue").font(.subheadline).fontWeight(.bold)
+                
+                    Image(systemName: "person.2.fill")
+                        .foregroundStyle(queueNumber == 0 ? Color.green : Color.blue)
+                    Text(queueNumber == 0 ? "00" : String(format: "%02d Queue", queueNumber))
+                        .font(.subheadline).fontWeight(.bold)
                 }
                 .frame(maxWidth: .infinity)
                 
                 Divider().frame(height: 24)
                 
                 HStack(spacing: 8) {
-                    Image(systemName: "hourglass").foregroundStyle(Color.orange)
-                    Text("15 mins").font(.subheadline).fontWeight(.bold)
+                
+                    Image(systemName: "hourglass")
+                        .foregroundStyle(queueNumber == 0 ? Color.green : Color.orange)
+                    Text(queueNumber == 0 ? "0 mins" : "\(waitTime) mins")
+                        .font(.subheadline).fontWeight(.bold)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -167,7 +190,8 @@ struct VitalView: View {
                     .font(.caption)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                 Spacer()
-                Button(action: { }) {
+                
+                Button(action: { navigateToMap = true }) {
                     HStack(spacing: 4) {
                         Text("View Map")
                         Image(systemName: "arrow.right")
@@ -186,7 +210,6 @@ struct VitalView: View {
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
     
-
     private var actionCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Next Step: Visit Doctor")
@@ -206,7 +229,7 @@ struct VitalView: View {
             }
             
             Button {
-               
+                navigateToConsultation = true
             } label: {
                 Text("Check in to consultation")
                     .font(.subheadline)
@@ -214,9 +237,12 @@ struct VitalView: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .background(Color.blue)
+                 
+                    .background(queueNumber == 0 ? Color.blue : Color.gray.opacity(0.4))
                     .clipShape(RoundedRectangle(cornerRadius: 14))
             }
+          
+            .disabled(queueNumber > 0)
             .padding(.top, 4)
             
             HStack {
@@ -224,13 +250,17 @@ struct VitalView: View {
                     .font(.caption)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                 Spacer()
-                Button(action: { }) {
-                    Text("View Map")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(Color.blue)
-                        .padding(.vertical, 8)
-                        .contentShape(Rectangle())
+                
+                Button(action: { navigateToMap = true }) {
+                    HStack(spacing: 4) {
+                        Text("View Map")
+                        Image(systemName: "arrow.right")
+                    }
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.blue)
+                    .padding(.vertical, 8)
+                    .contentShape(Rectangle())
                 }
             }
         }
@@ -260,7 +290,6 @@ struct VitalView: View {
     }
 }
 
-
 struct VitalMeasurementCard: View {
     let icon: String
     let iconColor: Color
@@ -275,7 +304,6 @@ struct VitalMeasurementCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             
-        
             HStack {
                 HStack(spacing: 8) {
                     Image(systemName: icon)
@@ -300,7 +328,6 @@ struct VitalMeasurementCard: View {
                 }
             }
             
-          
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(value)
                     .font(.system(size: 36, weight: .bold))
@@ -311,13 +338,10 @@ struct VitalMeasurementCard: View {
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
             
-         
             ZStack {
-             
-                SmoothLineGraph(points: graphPoints.reversed()) 
+                SmoothLineGraph(points: graphPoints.reversed())
                     .stroke(Color.green.opacity(0.3), style: StrokeStyle(lineWidth: 2, dash: [5, 5]))
                 
-        
                 SmoothLineGraph(points: graphPoints)
                     .stroke(graphLineColor, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
             }
@@ -331,7 +355,6 @@ struct VitalMeasurementCard: View {
     }
 }
 
-
 struct SmoothLineGraph: Shape {
     var points: [CGFloat]
     
@@ -341,11 +364,9 @@ struct SmoothLineGraph: Shape {
         
         let stepX = rect.width / CGFloat(points.count - 1)
         
-       
         var currentPoint = CGPoint(x: 0, y: rect.height - (points[0] * rect.height))
         path.move(to: currentPoint)
         
-      
         for i in 1..<points.count {
             let nextPoint = CGPoint(x: CGFloat(i) * stepX, y: rect.height - (points[i] * rect.height))
             let control1 = CGPoint(x: currentPoint.x + (nextPoint.x - currentPoint.x) / 2, y: currentPoint.y)

@@ -16,8 +16,12 @@ struct DoctorConsultationView: View {
     @State private var attachedFileName: String?
     
     @State private var navigateToPrescription = false
-    @State private var navigateToMedicationPickup = false
+  
+    @State private var navigateToPharmacy = false
     @State private var navigateToLabSampleSubmission = false
+    
+    @State private var queueNumber = 5
+    @State private var waitTime = 15
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -36,7 +40,6 @@ struct DoctorConsultationView: View {
                         visitDoctorQueueCard
                             .padding(.horizontal, 20)
                         
-                      
                         nextStepsCarousel
                         
                         vitalsOverviewSection
@@ -54,12 +57,21 @@ struct DoctorConsultationView: View {
         }
         .navigationBarHidden(true)
         
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    queueNumber = 0
+                    waitTime = 0
+                }
+            }
+        }
+        
         .navigationDestination(isPresented: $navigateToPrescription) {
             PrescriptionView()
         }
         
-        .navigationDestination(isPresented: $navigateToMedicationPickup) {
-            MedicationPickupView()
+        .navigationDestination(isPresented: $navigateToPharmacy) {
+            PharmacyView()
         }
         
         .navigationDestination(isPresented: $navigateToLabSampleSubmission) {
@@ -70,7 +82,7 @@ struct DoctorConsultationView: View {
             PrescriptionDetailsSheet(
                 showAttachModal: $showAttachModal,
                 onClinicPharmacyTapped: {
-                    navigateToMedicationPickup = true
+                    navigateToPharmacy = true
                 }
             )
             .presentationDetents([.fraction(0.85), .large])
@@ -128,8 +140,6 @@ struct DoctorConsultationView: View {
             }
         }
     }
-    
-   
     
     private var headerView: some View {
         HStack(spacing: 16) {
@@ -223,19 +233,28 @@ struct DoctorConsultationView: View {
                 }
             }
             
-            // Queue & Time Info Box
             HStack {
                 HStack(spacing: 8) {
-                    Image(systemName: "person.2.fill").foregroundStyle(Color.blue)
-                    Text("5 Queue").font(.subheadline).fontWeight(.bold)
+            
+                    Image(systemName: "person.2.fill")
+                        .foregroundStyle(queueNumber == 0 ? Color.green : Color.blue)
+                  
+                    Text(queueNumber == 0 ? "00" : "\(queueNumber) Queue")
+                        .font(.subheadline)
+                        .fontWeight(.bold)
                 }
                 .frame(maxWidth: .infinity)
                 
                 Divider().frame(height: 24)
                 
                 HStack(spacing: 8) {
-                    Image(systemName: "hourglass").foregroundStyle(Color.orange)
-                    Text("15 mins").font(.subheadline).fontWeight(.bold)
+                
+                    Image(systemName: "hourglass")
+                        .foregroundStyle(queueNumber == 0 ? Color.green : Color.orange)
+                
+                    Text(queueNumber == 0 ? "0 mins" : "\(waitTime) mins")
+                        .font(.subheadline)
+                        .fontWeight(.bold)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -243,7 +262,6 @@ struct DoctorConsultationView: View {
             .background(Color(uiColor: .systemGray6))
             .clipShape(RoundedRectangle(cornerRadius: 14))
             
-           
             HStack {
                 Text("Please proceed immediately")
                     .font(.caption)
@@ -268,22 +286,18 @@ struct DoctorConsultationView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
-    
 
     private var nextStepsCarousel: some View {
         TabView {
             nextStepPharmacyCard
                 .padding(.horizontal, 20)
-               
                 .padding(.bottom, 12)
             
             nextStepLaboratoryCard
                 .padding(.horizontal, 20)
                 .padding(.bottom, 12)
         }
-     
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-      
         .frame(height: 250)
     }
     
@@ -316,17 +330,17 @@ struct DoctorConsultationView: View {
             Button {
                 showPrescriptionSheet = true
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: 0) {
                     Text("Check In to Pharmacy").fontWeight(.semibold)
-                    Image(systemName: "qrcode.viewfinder")
                 }
                 .font(.subheadline)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color(uiColor: .systemBlue))
+                .background(queueNumber == 0 ? Color(uiColor: .systemBlue) : Color.gray.opacity(0.4))
                 .clipShape(RoundedRectangle(cornerRadius: 14))
             }
+            .disabled(queueNumber > 0)
             .padding(.top, 4)
             
             HStack {
@@ -353,7 +367,6 @@ struct DoctorConsultationView: View {
         .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
     
-   
     private var nextStepLaboratoryCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Next Step: Visit Laboratory")
@@ -375,7 +388,6 @@ struct DoctorConsultationView: View {
             Button {
                 showLabReportSheet = true
             } label: {
-               
                 HStack(spacing: 0) {
                     Text("Provide Sample").fontWeight(.semibold)
                 }
@@ -446,8 +458,6 @@ struct DoctorConsultationView: View {
     }
 }
 
-
-
 struct LabReportSampleSheet: View {
     @Environment(\.dismiss) var dismiss
     @Binding var showAttachModal: Bool
@@ -499,8 +509,20 @@ struct PrescriptionDetailsSheet: View {
                     VStack(alignment: .leading, spacing: 16) { Text("Medications Prescribed (2)").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel)); PrescribedMedicationRow(icon: "pills.fill", iconColor: Color(uiColor: .systemBlue), title: "Amoxicillin", badgeText: "ANTIBIOTIC", badgeColor: Color(uiColor: .systemBlue), dosageInfo: "500mg • 20 Capsules", instructions: "Take 1 tablet every 12 hours after food"); PrescribedMedicationRow(icon: "cross.vial.fill", iconColor: Color(uiColor: .systemBlue), title: "Paracetamol", badgeText: "PAIN RELIEF", badgeColor: Color(uiColor: .systemGreen), dosageInfo: "500mg • 10 Tablets", instructions: "Take 1 tablet every 6 hours if needed") }
                     
                     VStack(spacing: 16) {
-                        PharmacyRoutingButton(title: "Get at Clinic Pharmacy", subtitle: "Generate QR code & join internal queue", icon: "qrcode.viewfinder", isPrimary: true) { dismiss(); DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { onClinicPharmacyTapped() } }
-                        PharmacyRoutingButton(title: "Get at Outside Pharmacy", subtitle: "Attach prescription file or photo", icon: "link", isPrimary: false) { dismiss(); DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { showAttachModal = true } }
+                        PharmacyRoutingButton(
+                            title: "Join the Pharmacy Queue",
+                            subtitle: "Join internal queue for clinic pharmacy",
+                            icon: "person.3.fill",
+                            isPrimary: true
+                        ) { dismiss(); DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { onClinicPharmacyTapped() } }
+                        
+                        PharmacyRoutingButton(
+                            title: "Share Prescription",
+                            subtitle: "You can share prescription clinic or outside pharmacies.",
+                            icon: "square.and.arrow.up",
+                            isPrimary: false
+                        ) { dismiss(); DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { showAttachModal = true } }
+                        
                     }.padding(.top, 8)
                 }.padding(.horizontal, 20).padding(.bottom, 40)
             }
@@ -511,28 +533,8 @@ struct PrescriptionDetailsSheet: View {
 struct CustomAttachMenuSheet: View {
     @Environment(\.dismiss) var dismiss
     @Binding var selectedPhotoItem: PhotosPickerItem?
-    
-    var onCameraTapped: () -> Void
-    var onFileTapped: () -> Void
-    var onUploadTapped: () -> Void
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            VStack(spacing: 6) { Text("Select Photo").font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Text("Choose how you'd like to add a photo").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel)).multilineTextAlignment(.center) }.padding(.top, 24).padding(.bottom, 8)
-            
-            VStack(spacing: 0) {
-                ModalMenuButton(title: "Camera", icon: "camera.fill") { dismiss(); DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { onCameraTapped() } }
-                Divider()
-                PhotosPicker(selection: $selectedPhotoItem, matching: .images, photoLibrary: .shared()) { HStack(spacing: 16) { Image(systemName: "photo.fill").font(.title3).foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 24); Text("Photo Library").font(.headline).foregroundStyle(Color(uiColor: .label)); Spacer(); Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(Color(uiColor: .systemGray3)) }.padding().background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2) }.onChange(of: selectedPhotoItem) { _ in dismiss() }
-                Divider()
-                ModalMenuButton(title: "File Manager", icon: "folder.fill") { dismiss(); DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { onFileTapped() } }
-            }.background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16))
-            
-            Button { dismiss(); DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { onUploadTapped() } } label: { Text("Upload").font(.title3).fontWeight(.bold).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 16).background(Color(uiColor: .systemBlue)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color(uiColor: .systemBlue).opacity(0.3), radius: 8, x: 0, y: 4) }
-            
-            Spacer()
-        }.padding(.horizontal, 16).background(Color(uiColor: .systemGroupedBackground))
-    }
+    var onCameraTapped: () -> Void; var onFileTapped: () -> Void; var onUploadTapped: () -> Void
+    var body: some View { VStack(spacing: 16) { VStack(spacing: 6) { Text("Select Photo").font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label)); Text("Choose how you'd like to add a photo").font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel)).multilineTextAlignment(.center) }.padding(.top, 24).padding(.bottom, 8); VStack(spacing: 0) { ModalMenuButton(title: "Camera", icon: "camera.fill") { dismiss(); DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { onCameraTapped() } }; Divider(); PhotosPicker(selection: $selectedPhotoItem, matching: .images, photoLibrary: .shared()) { HStack(spacing: 16) { Image(systemName: "photo.fill").font(.title3).foregroundStyle(Color(uiColor: .systemBlue)).frame(width: 24); Text("Photo Library").font(.headline).foregroundStyle(Color(uiColor: .label)); Spacer(); Image(systemName: "chevron.right").font(.subheadline).foregroundStyle(Color(uiColor: .systemGray3)) }.padding().background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2) }.onChange(of: selectedPhotoItem) { _ in dismiss() }; Divider(); ModalMenuButton(title: "File Manager", icon: "folder.fill") { dismiss(); DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { onFileTapped() } } }.background(Color(uiColor: .secondarySystemGroupedBackground)).clipShape(RoundedRectangle(cornerRadius: 16)); Button { dismiss(); DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { onUploadTapped() } } label: { Text("Upload").font(.title3).fontWeight(.bold).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 16).background(Color(uiColor: .systemBlue)).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: Color(uiColor: .systemBlue).opacity(0.3), radius: 8, x: 0, y: 4) }; Spacer() }.padding(.horizontal, 16).background(Color(uiColor: .systemGroupedBackground)) }
 }
 
 struct CameraCaptureView: UIViewControllerRepresentable { @Binding var image: UIImage?; @Environment(\.presentationMode) var presentationMode; func makeUIViewController(context: Context) -> UIImagePickerController { let picker = UIImagePickerController(); picker.delegate = context.coordinator; picker.sourceType = .camera; return picker }; func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}; func makeCoordinator() -> Coordinator { Coordinator(self) }; class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate { let parent: CameraCaptureView; init(_ parent: CameraCaptureView) { self.parent = parent }; func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) { if let uiImage = info[.originalImage] as? UIImage { parent.image = uiImage }; parent.presentationMode.wrappedValue.dismiss() } } }

@@ -4,7 +4,7 @@ import SwiftUI
 struct ConsultationDetailView: View {
     @Environment(\.dismiss) var dismiss
     
-    // Data passed from the History List
+  
     let doctorName: String
     let specialty: String
     let date: String
@@ -16,25 +16,24 @@ struct ConsultationDetailView: View {
           
             customHeaderView
             
-            Divider() // Subtle separation
+            Divider()
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     
-                    // 2. Consultation Status Summary
-                    // (Since name/image are now in the header, we just show Date/Status here)
+                   
                     statusSummaryRow
                     
-                    // 3. Clinical Notes
+                 
                     clinicalNotesSection
                     
-                    // 4. Vitals
+                 
                     vitalsSection
                     
-                    // 5. Prescriptions
+                 
                     prescriptionsSection
                     
-                    // 6. Lab Reports
+               
                     labReportsSection
                     
                     Spacer(minLength: 40)
@@ -43,17 +42,17 @@ struct ConsultationDetailView: View {
             }
         }
         .background(Color(uiColor: .systemBackground))
-        .navigationBarHidden(true) // Hide default nav bar to use our custom one
+        .navigationBarHidden(true)
     }
     
-    // MARK: - Subviews
+
     
    
     private var customHeaderView: some View {
         HStack(alignment: .center) {
-            // Back Button
+         
             Button {
-                dismiss() // Navigate back to History View
+                dismiss()
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.title3)
@@ -64,7 +63,7 @@ struct ConsultationDetailView: View {
             
             Spacer()
             
-            // Center Profile Info
+        
             HStack(spacing: 12) {
                 Image(image)
                     .resizable()

@@ -18,10 +18,9 @@ struct PaymentView: View {
     
     @State private var selectedPaymentMethod: Int = 0
     
-   
-    @State private var navigateToPharmacy = false
+    @State private var navigateToPrescriptionComplete = false
     @State private var navigateToLabReports = false
-    @State private var navigateToBookingConfirmation = false
+    @State private var navigateToPaymentConfirmationView = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -92,7 +91,6 @@ struct PaymentView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.blue.opacity(0.2), lineWidth: 1))
                         
-                       
                         Spacer(minLength: 240)
                     }
                     .padding(.horizontal, 20)
@@ -100,31 +98,27 @@ struct PaymentView: View {
                 }
             }
             
-       
             bottomFooter
         }
         .navigationBarHidden(true)
         
-      
-        .navigationDestination(isPresented: $navigateToPharmacy) {
-            PharmacyView()
+        .navigationDestination(isPresented: $navigateToPrescriptionComplete) {
+            PrescriptionCompleteView()
         }
         .navigationDestination(isPresented: $navigateToLabReports) {
             LabReportsView()
         }
-        .navigationDestination(isPresented: $navigateToBookingConfirmation) {
-            
+        
+        // 🔴 FIXED: Passed the required arguments to PaymentConfirmationView so Xcode stops crashing
+        .navigationDestination(isPresented: $navigateToPaymentConfirmationView) {
             PaymentConfirmationView(
                 doctor: doctor,
                 selectedDate: selectedDate,
                 selectedTime: selectedTime,
                 fee: doctor.fee
             )
-            .navigationBarBackButtonHidden(true)
         }
     }
-    
-    
     
     private var headerView: some View {
         HStack(spacing: 16) {
@@ -189,18 +183,24 @@ struct PaymentView: View {
     private var bottomFooter: some View {
         VStack(spacing: 16) {
             HStack(alignment: .bottom) {
-                Text("Total Amount").font(.subheadline).foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Total Fee").font(.subheadline).foregroundStyle(.secondary)
+                    Text("$\(doctor.fee).00").font(.title2).fontWeight(.heavy).foregroundStyle(Color(uiColor: .label))
+                }
                 Spacer()
-                Text("$\(doctor.fee).00").font(.title2).fontWeight(.heavy)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("Duration").font(.subheadline).foregroundStyle(.secondary)
+                    Text("30 Mins").font(.headline).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
+                }
             }
             
             Button {
                 if flowType == .pharmacy {
-                    navigateToPharmacy = true
+                    navigateToPrescriptionComplete = true
                 } else if flowType == .labReport {
                     navigateToLabReports = true
                 } else if flowType == .doctorBooking {
-                    navigateToBookingConfirmation = true
+                    navigateToPaymentConfirmationView = true
                 }
             } label: {
                 Text("Pay Now")
@@ -212,10 +212,9 @@ struct PaymentView: View {
         }
         .padding(.horizontal, 20)
         .padding(.top, 20)
-        .padding(.bottom, 90)
+        .padding(.bottom, 24)
         .background(
-            Color(uiColor: .systemBackground)
-                .shadow(color: Color.black.opacity(0.06), radius: 15, x: 0, y: -5)
+            .regularMaterial
         )
     }
 }
@@ -256,16 +255,5 @@ struct PaymentOptionRow: View {
             .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         }
         .buttonStyle(.plain)
-    }
-}
-
-#Preview {
-    NavigationStack {
-        PaymentView(
-            doctor: Doctor(name: "Dr. Mike Ross", specialty: "Neurologist", rating: 4.8, reviewCount: 90, fee: 180, image: "Image (2)", status: "Available", statusColor: .green, isBookable: true),
-            selectedDate: Date(),
-            selectedTime: "10:30 AM",
-            flowType: .doctorBooking
-        )
     }
 }

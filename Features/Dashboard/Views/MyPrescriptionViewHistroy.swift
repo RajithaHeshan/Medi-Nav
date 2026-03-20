@@ -147,7 +147,7 @@ struct MyPrescriptionView: View {
                     buttonIcon: "checkmark.circle.fill",
                     buttonBgColor: Color(uiColor: .systemGray5),
                     buttonTextColor: Color(uiColor: .secondaryLabel),
-                    action: { } // This stays empty because the request is already sent!
+                    action: { } 
                 )
             }
         }
@@ -171,7 +171,7 @@ struct MyPrescriptionView: View {
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
             
-            // Active Card
+           
             VStack(spacing: 16) {
                 HStack(alignment: .top, spacing: 16) {
                     ZStack {

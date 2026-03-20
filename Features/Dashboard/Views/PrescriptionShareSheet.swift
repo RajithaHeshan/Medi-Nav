@@ -1,12 +1,16 @@
+
 import SwiftUI
 
 struct PrescriptionShareSheet: View {
     @Environment(\.dismiss) var dismiss
     
+   
+    @State private var navigateToNotification = false
+    
     var body: some View {
         VStack(spacing: 24) {
             
-            // 1. Document Header
+         
             HStack(alignment: .center, spacing: 16) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
@@ -46,13 +50,23 @@ struct PrescriptionShareSheet: View {
             .padding(.horizontal, 20)
             .padding(.top, 24)
             
-            // 2. Apps Horizontal Scroll
+            
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 20) {
-                    ShareAppIcon(title: "AirDrop", icon: "airdrop", iconColor: Color(uiColor: .systemBlue), bgColor: .white)
-                    ShareAppIcon(title: "WhatsApp", icon: "message.fill", iconColor: .white, bgColor: Color(uiColor: .systemGreen))
+              
+                    ShareAppIcon(title: "AirDrop", icon: "airdrop", iconColor: Color(uiColor: .systemBlue), bgColor: .white) {
+                        navigateToNotification = true
+                    }
+                    
+                    
+                    ShareAppIcon(title: "WhatsApp", icon: "message.fill", iconColor: .white, bgColor: Color(uiColor: .systemGreen)) {
+                        navigateToNotification = true
+                    }
+                    
                     ShareAppIcon(title: "Gmail", icon: "envelope.fill", iconColor: .white, bgColor: Color(uiColor: .systemRed))
+                    
                     ShareAppIcon(title: "Drive", icon: "externaldrive.fill", iconColor: .white, bgColor: Color(uiColor: .systemYellow))
+                    
                     ShareAppIcon(title: "Bluetooth", icon: "network", iconColor: .white, bgColor: Color(uiColor: .systemBlue))
                 }
                 .padding(.horizontal, 20)
@@ -76,37 +90,46 @@ struct PrescriptionShareSheet: View {
             Spacer()
         }
         .background(Color(uiColor: .systemGroupedBackground))
+     
+        .navigationDestination(isPresented: $navigateToNotification) {
+            NotificationView()
+        }
     }
 }
 
-// MARK: - Reusable Share Sheet Components
+
 
 struct ShareAppIcon: View {
     let title: String
     let icon: String
     let iconColor: Color
     let bgColor: Color
-    
+    var action: (() -> Void)? = nil
     var body: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(bgColor)
-                    .frame(width: 60, height: 60)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.gray.opacity(0.2), lineWidth: bgColor == .white ? 1 : 0)
-                    )
+        Button {
+            action?()
+        } label: {
+            VStack(spacing: 8) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(bgColor)
+                        .frame(width: 60, height: 60)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.gray.opacity(0.2), lineWidth: bgColor == .white ? 1 : 0)
+                        )
+                    
+                    Image(systemName: icon)
+                        .font(.title2)
+                        .foregroundStyle(iconColor)
+                }
                 
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundStyle(iconColor)
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(Color(uiColor: .label))
             }
-            
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(Color(uiColor: .label))
         }
+        .buttonStyle(.plain)
     }
 }
 
@@ -116,7 +139,7 @@ struct ShareActionRow: View {
     
     var body: some View {
         Button {
-            // Action
+          
         } label: {
             HStack {
                 Text(title)
@@ -133,5 +156,11 @@ struct ShareActionRow: View {
             .padding(.horizontal, 16)
             .background(Color(uiColor: .secondarySystemGroupedBackground))
         }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        PrescriptionShareSheet()
     }
 }

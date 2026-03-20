@@ -16,7 +16,7 @@ enum LabStatus: String, CaseIterable, Hashable {
     
     var textColor: Color {
         switch self {
-        // 🔴 HIG FIX: Darkened text colors for much better contrast
+      
         case .ready: return Color(red: 0.0, green: 0.5, blue: 0.0)
         case .processing: return Color(red: 0.85, green: 0.4, blue: 0.0)
         case .archived: return Color(uiColor: .secondaryLabel)
@@ -224,9 +224,9 @@ struct LabReportRow: View {
                         .foregroundStyle(.gray.opacity(0.5))
                 }
             }
-            .padding(20) // Slightly increased padding for better touch targets
+            .padding(20)
             .background(Color(uiColor: .systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 20)) // Matched 20pt corner radius
+            .clipShape(RoundedRectangle(cornerRadius: 20)) 
             .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
         }
         .buttonStyle(PlainButtonStyle())

@@ -1,14 +1,13 @@
+
 import SwiftUI
 
 struct LoginView: View {
     
-
     @State private var username = ""
     @State private var password = ""
     @State private var isPasswordVisible = false
     @State private var rememberMe = false
     
-  
     @State private var navigateToMainApp = false
     @State private var navigateToRegistration = false
     @State private var navigateToOTP = false
@@ -16,26 +15,22 @@ struct LoginView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-              
                 Color(uiColor: .systemBackground)
                     .ignoresSafeArea()
                 
-               
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         
-                       
                         Image("NewLogin")
                             .resizable()
                             .scaledToFit()
-                            .frame(maxWidth: .infinity)
+                            .frame(height: 220)
                             .padding(.top, 16)
-                            .padding(.bottom, 24)
+                            .padding(.bottom, 16)
                         
-                     
-                        VStack(spacing: 20) {
+                        VStack(spacing: 16) {
                             
-                        
+                       
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Username")
                                     .font(.subheadline)
@@ -48,7 +43,7 @@ struct LoginView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
                             
-                         
+                           
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Password")
                                     .font(.subheadline)
@@ -73,17 +68,13 @@ struct LoginView: View {
                             
                         
                             HStack {
-                                Button(action: { rememberMe.toggle() }) {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: rememberMe ? "checkmark.square.fill" : "square")
-                                            .font(.system(size: 18, weight: .medium))
-                                            .foregroundStyle(rememberMe ? Color.blue : Color(uiColor: .systemGray3))
-                                        
-                                        Text("Remember me")
-                                            .font(.subheadline)
-                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
-                                    }
+                                Toggle(isOn: $rememberMe) {
+                                    Text("Remember me")
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
+                                .tint(.blue)
+                                .fixedSize()
                                 
                                 Spacer()
                                 
@@ -95,6 +86,8 @@ struct LoginView: View {
                                 }
                             }
                             .padding(.top, -4)
+                            
+                         
                             Button(action: {
                                 navigateToMainApp = true
                             }) {
@@ -103,14 +96,14 @@ struct LoginView: View {
                                     .fontWeight(.bold)
                                     .foregroundStyle(.white)
                                     .frame(maxWidth: .infinity)
-                                    .frame(height: 56)
+                                    .frame(height: 50)
                                     .background(Color.blue)
                                     .clipShape(Capsule())
                                     .shadow(color: Color.blue.opacity(0.3), radius: 8, y: 4)
                             }
                             .padding(.top, 8)
                             
-                         
+                        
                             HStack {
                                 Rectangle().fill(Color(uiColor: .separator)).frame(height: 1)
                                 Text("Or")
@@ -121,97 +114,97 @@ struct LoginView: View {
                             }
                             .padding(.vertical, 8)
                             
-                         
-                            Button(action: {
-                                navigateToRegistration = true
-                            }) {
-                                Text("Create Account")
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(Color.blue)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 56)
-                                    .background(Color(uiColor: .systemBackground))
-                                    .clipShape(Capsule())
-                                    .overlay(Capsule().stroke(Color.blue, lineWidth: 1.5))
-                            }
                             
-                          
+                     
                             Button(action: {
-                               
+                                
                             }) {
-                                HStack(spacing: 12) {
+                                HStack(spacing: 8) {
                                     Image(systemName: "apple.logo")
-                                        .font(.title2)
+                                        .font(.title3)
                                         .foregroundStyle(Color(uiColor: .label))
                                         .offset(y: -2)
                                     
                                     Text("Continue with Apple")
-                                        .font(.headline)
+                                        .font(.subheadline)
                                         .fontWeight(.semibold)
                                         .foregroundStyle(Color(uiColor: .label))
                                 }
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 56)
+                                .frame(height: 50)
                                 .background(Color(uiColor: .systemBackground))
                                 .clipShape(Capsule())
                                 .overlay(Capsule().stroke(Color(uiColor: .systemGray4), lineWidth: 1))
                             }
                             
-                            // Google Button
+                        
                             Button(action: {
-                                // Google Auth Action
+                                
                             }) {
-                                HStack(spacing: 12) {
+                                HStack(spacing: 8) {
                                     Text("G")
-                                        .font(.title3)
+                                        .font(.headline)
                                         .fontWeight(.black)
                                         .foregroundStyle(
                                             LinearGradient(colors: [.blue, .red, .yellow, .green], startPoint: .topLeading, endPoint: .bottomTrailing)
                                         )
                                     
                                     Text("Continue with Google")
-                                        .font(.headline)
+                                        .font(.subheadline)
                                         .fontWeight(.semibold)
                                         .foregroundStyle(Color(uiColor: .label))
                                 }
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 56)
+                                .frame(height: 50)
                                 .background(Color(uiColor: .systemBackground))
                                 .clipShape(Capsule())
                                 .overlay(Capsule().stroke(Color(uiColor: .systemGray4), lineWidth: 1))
                             }
                             
-                            
+                      
                             Button(action: {
                                 navigateToMainApp = true
                             }) {
-                                HStack(spacing: 8) {
+                                HStack(spacing: 6) {
                                     Image(systemName: "person.fill")
                                     Text("Continue as Guest")
                                 }
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(Color(uiColor: .secondaryLabel))
-                                .padding(.vertical, 16)
+                                .padding(.top, 4)
                             }
-                            .padding(.top, 8)
+                            
+                            Spacer(minLength: 24)
+                            
+                          
+                            Button(action: {
+                                navigateToRegistration = true
+                            }) {
+                                HStack(spacing: 4) {
+                                    Text("Don't have an account?")
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    Text("Sign Up")
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(Color.blue)
+                                }
+                                .font(.subheadline)
+                            }
+                            .padding(.bottom, 16)
                             
                         }
                         .padding(.horizontal, 24)
-                        .padding(.bottom, 40) 
                     }
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
             .navigationBarHidden(true)
             
-           
             .navigationDestination(isPresented: $navigateToRegistration) {
                 RegistrationView()
             }
             .fullScreenCover(isPresented: $navigateToMainApp) {
                 ContentView()
-                    .navigationBarBackButtonHidden(true)
             }
             .navigationDestination(isPresented: $navigateToOTP) {
                 OTPSendView()

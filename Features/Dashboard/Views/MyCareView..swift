@@ -4,7 +4,6 @@ import SwiftUI
 struct MyCareView: View {
     @Environment(\.dismiss) var dismiss
     
-    // 🔴 CHANGED: Renamed state to match the new destination
     @State private var navigateToPrescription = false
     @State private var navigateToLabReports = false
     @State private var navigateToMedicalHistory = false
@@ -12,6 +11,7 @@ struct MyCareView: View {
     @State private var navigateToLabSubmission = false
     @State private var navigateToPrescriptionHistory = false
     
+   
     let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
@@ -48,7 +48,6 @@ struct MyCareView: View {
         }
         .navigationBarHidden(true)
         
-        // 🔴 CHANGED: Now navigates to PrescriptionView
         .navigationDestination(isPresented: $navigateToPrescription) {
             PrescriptionView()
         }
@@ -98,26 +97,25 @@ struct MyCareView: View {
     
     private var actionGridSection: some View {
         LazyVGrid(columns: columns, spacing: 16) {
-            // 🔴 CHANGED: Renamed title to "Prescription"
             Button { navigateToPrescription = true } label: {
                 MyCareActionCard(title: "Prescription", iconName: "pills.fill", iconColor: Color(uiColor: .systemPink))
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(.plain)
             
             Button { navigateToLabReports = true } label: {
                 MyCareActionCard(title: "Lab Reports", iconName: "clipboard.fill", iconColor: Color(uiColor: .systemOrange))
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(.plain)
             
             Button { navigateToMedicalHistory = true } label: {
                 MyCareActionCard(title: "Medical History", iconName: "doc.text.fill", iconColor: Color(uiColor: .systemBlue))
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(.plain)
             
             Button { navigateToVitalReports = true } label: {
                 MyCareActionCard(title: "Vital Reports", iconName: "heart.text.square.fill", iconColor: Color(uiColor: .systemPurple))
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(.plain)
         }
     }
     
@@ -293,6 +291,7 @@ struct MyCareActionCard: View {
         .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
+        .contentShape(RoundedRectangle(cornerRadius: 20))
     }
 }
 
